@@ -3746,15 +3746,19 @@ document.getElementById('btn-share').addEventListener('click', async e=>{
 function showVisitingBar(){ document.getElementById('visiting-bar').style.display = 'block'; }
 document.getElementById('btn-visit-back').addEventListener('click', e=>{
   e.stopPropagation();
-  location.href = location.origin + location.pathname;   // ハッシュ無しで再読込→自分の世界
+  // ハッシュ無しで再読込→自分の世界（in-app ブラウザ等の差異に備え多重フォールバック）
+  try{ location.href = location.origin + location.pathname; }
+  catch(_){ try{ location.hash = ''; location.reload(); }catch(__){ visiting = false; } }
 });
 document.getElementById('btn-visit-keep').addEventListener('click', e=>{
   e.stopPropagation();
   visiting = false;
-  history.replaceState(null, '', location.pathname);
-  saveState(); restartAutosave();
+  // UI の解除を先に確定（アプリ内ブラウザ等で history.replaceState が
+  // 例外/制限に当たってもバーが残らないようにする）
   document.getElementById('visiting-bar').style.display = 'none';
   showToast(tr('toast.kept'));
+  try{ history.replaceState(null, '', location.pathname); }catch(_){}
+  saveState(); restartAutosave();
 });
 
 // 新規マップ
