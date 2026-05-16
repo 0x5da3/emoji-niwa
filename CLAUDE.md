@@ -62,9 +62,14 @@ npm test            # Chromium + Mobile WebKit で全 spec
 ```
 
 検証はセーブ JSON（`emoji-niwa-save`）・DOM・コンソールエラー無しが主軸（絵文字 canvas は
-OS 依存のため厳密比較しない）。多人数 / OAuth / Rust `server/` はバックエンド必須のため
-スコープ外（UI 存在＋オフライン非破壊のみ）。詳細は `tests/README.md`。
-構文チェック（上記）は依存ゼロの常用クイック確認として引き続き必須。
+OS 依存のため厳密比較しない）。Playwright では多人数 / OAuth はスコープ外（UI 存在＋
+オフライン非破壊のみ）。詳細は `tests/README.md`。構文チェック（上記）は依存ゼロの
+常用クイック確認として引き続き必須。
+
+Rust `server/`（多人数リレー）の負荷/疎通は `tests/load/`（dev 専用・`ws` クライアント、
+ブラウザ不要）で別途検証する。`cargo build --release --manifest-path server/Cargo.toml`
+後に `npm run load`（`ROOMS`/`PEERS`/`SNAP_MS` 等で規模可変。ルームを事前シードして
+OAuth を回避）。詳細と基準値は `tests/load/README.md`。
 
 ## コミット規約
 
