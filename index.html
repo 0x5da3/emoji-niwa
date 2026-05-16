@@ -2734,6 +2734,12 @@ function carveRiver(t, seed, startSide){
 }
 
 // Classify terrain by elevation thresholds
+// 高さ上限（手動編集・生成共通）。生成された高さは GEN_H_SCALE 倍して
+// 0..MAX_H レンジを活用する。地形タイプ判定は各ジェネレータ側で確定済みのため
+// この再スケールでは変わらず、見た目の起伏だけが大きくなる。
+const MAX_H = 16;
+const GEN_H_SCALE = 1.5;
+
 function classifyByHeight(t, h, profile){
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
     const key=`${c},${r}`;
@@ -3230,6 +3236,7 @@ function applyTerrainMap(result){
   // Accept either {terrain, heights} or legacy plain terrain object
   const tmap = result.terrain || result;
   const hmap = result.heights || {};
+  for(const k in hmap) hmap[k] = Math.min(MAX_H, Math.max(0, Math.round(hmap[k]*GEN_H_SCALE)));
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   Object.assign(terrain, tmap);
@@ -3439,7 +3446,7 @@ function act(c,r){
       history.push({type:'terrain',key,c,r,old,terrain:selTerrain});
     } else if(terrainAction==='up'){
       const oldH=heights[key]||0;
-      if(oldH>=8) return;
+      if(oldH>=MAX_H) return;
       heights[key]=oldH+1;
       history.push({type:'height',key,c,r,old:oldH,new:heights[key]});
     } else if(terrainAction==='down'){
@@ -3638,7 +3645,10 @@ function getFitScale(){
   const {TW,TH} = getTileDims();
   const maxW = cv.width  * 0.88;
   const maxH = (cv.height - 120) * 0.88;
-  let fs = Math.min(maxW / (GRID * TW), maxH / (GRID * TH));
+  // 3D は高い柱（最大 MAX_H、1段=TH*0.5 持ち上げ）が上にはみ出すので、
+  // 縦の必要量にピーク分の余白を見込んで fit させる。
+  const gridH = drawMode==='3d' ? (GRID + MAX_H*0.5) * TH : GRID * TH;
+  let fs = Math.min(maxW / (GRID * TW), maxH / gridH);
   if(drawMode!=='3d') fs *= 0.8; // 2D は full-fit から 1 段引く
   return fs;
 }
@@ -3651,7 +3661,8 @@ function resetView(){
   if(drawMode==='3d'){
     // OX = screen center (iso origin is center-top of diamond)
     ox = cv.width / 2;
-    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
+    // ピーク余白の半分だけ下げ、高い柱が上端で切れないようにする
+    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20 + (MAX_H * TH * fitScale * 0.5) / 2;
   } else {
     ox = cv.width  / 2 - (GRID * TW / 2) * fitScale - 30;
     oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
