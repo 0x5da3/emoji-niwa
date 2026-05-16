@@ -42,13 +42,29 @@ python3 -m http.server 8000   # → http://localhost:8000
 
 ## 編集後の検証
 
-自動テストは無い。`index.html` を編集したら以下で JS の構文を確認する（依存ゼロ）:
+`index.html` を編集したら、まず以下で JS の構文を確認する（依存ゼロ・Web セッションでも常用）:
 
 ```bash
 node .claude/scripts/check-syntax.mjs
 ```
 
 挙動の確認はブラウザで目視（配置・天気・時間・セーブ／ロード・日英切替など）。
+
+## テスト（dev 専用・任意）
+
+`tests/` に Playwright のブラウザ回帰テストがある。**これは開発ツールであり出荷物ではない**
+— アプリ本体は依存ゼロの単一 `index.html` のまま。`package.json` / `node_modules`
+はテスト用かつ git 無視で、`index.html` には一切持ち込まない（上記「絶対に守る制約」を満たす）。
+
+```bash
+npm install && npx playwright install --with-deps chromium webkit   # 初回のみ
+npm test            # Chromium + Mobile WebKit で全 spec
+```
+
+検証はセーブ JSON（`emoji-niwa-save`）・DOM・コンソールエラー無しが主軸（絵文字 canvas は
+OS 依存のため厳密比較しない）。多人数 / OAuth / Rust `server/` はバックエンド必須のため
+スコープ外（UI 存在＋オフライン非破壊のみ）。詳細は `tests/README.md`。
+構文チェック（上記）は依存ゼロの常用クイック確認として引き続き必須。
 
 ## コミット規約
 
@@ -64,7 +80,12 @@ emoji-niwa/
 ├── README.md             # 英語
 ├── README.ja.md          # 日本語
 ├── assets/screenshot.jpg # README 用画像
+├── server/               # 任意・多人数用 Rust/Actix バックエンド（別管理）
+├── tests/                # dev 専用 Playwright（出荷物ではない）
+├── playwright.config.ts  # dev 専用
+├── package.json          # dev 専用（テストのみ・git 無視の node_modules）
 └── .claude/              # Claude Code 用のフック・スクリプト・設定
 ```
 
-大きなバイナリを増やさない（GitHub Pages 直配信のため軽量に保つ）。
+大きなバイナリを増やさない（GitHub Pages 直配信のため軽量に保つ）。`node_modules/` と
+Playwright のレポートは `.gitignore` 済み＝配信物には含めない。

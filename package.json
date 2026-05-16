@@ -1,0 +1,14 @@
+{
+  "name": "emoji-niwa",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Dev-only Playwright regression tests for emoji-niwa. The shipped product is still a single zero-dependency index.html; nothing here is bundled or served.",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}
