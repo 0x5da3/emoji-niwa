@@ -3035,22 +3035,21 @@ function genWaterfall(s){
 // NEW: Seaside — wavy coastline with a sandy beach band, sea on one side
 function genCoast(s){
   const n=makeNoise(s), n2=makeNoise(s+9), t={}, h={};
+  // 砂浜の幅はマップサイズ連動。最大 6 マス、最小 2 マス（フラットな平地）
+  const beachW = Math.min(6, Math.max(2, Math.round(GRID*0.25)));
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
     const k=`${c},${r}`;
-    const shore = GRID*0.55 + n(c/7,0)*GRID*0.10;     // 波打ち際（うねる）
-    const d = r - shore;
-    const v = d < 0
-      ? 2 + (-d)*0.40 + n2(c/5,r/5)*1.4                // 内陸ほど高く
-      : -0.6 - d*0.5 + n(c/4,r/4)*0.6;                 // 沖ほど深く
-    h[k] = Math.round(v);
-  }
-  smoothHeights(h,1);
-  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
-    const k=`${c},${r}`, v=h[k];
-    if(v <= 0){ t[k]='water'; delete h[k]; }           // 海
-    else if(v <= 2){ t[k]='sand'; }                    // ビーチ（砂浜）＝元より広め
-    else if(v <= 6){ t[k]='grass'; }                   // 海辺の草地
-    else { t[k]='dark'; }                              // 内陸の丘
+    const shore = GRID*0.55 + n(c/7,0)*GRID*0.10;     // うねる波打ち際
+    const d = r - shore;                               // d>=0=海側 / d<0=陸側
+    if(d >= 0){
+      t[k]='water';                                    // 海
+    } else if(d >= -beachW){
+      t[k]='sand'; h[k]=1;                             // 砂浜＝フラットな平地
+    } else {
+      const v = 1 + (-d - beachW)*0.45 + n2(c/5,r/5)*1.4; // 砂浜の先から起伏
+      h[k] = Math.round(v);
+      t[k] = v >= 6 ? 'dark' : 'grass';                // 草地→内陸の丘
+    }
   }
   return {terrain:t, heights:h};
 }
