@@ -1,6 +1,6 @@
 # 🌿 emoji-niwa (絵文字庭)
 
-🌐 **English** | [日本語](ja.md)
+🌐 **English** | [日本語](readme.ja.md)
 
 Place emoji to build your own little garden — a sandbox that runs entirely in the browser.
 
@@ -63,8 +63,8 @@ python3 -m http.server 8000   # → http://localhost:8000
 ```
 emoji-niwa/
 ├── index.html   # The whole app (HTML + CSS + JS)
-├── README.md    # English (this file)
-└── ja.md        # Japanese
+├── README.md       # English (this file)
+└── readme.ja.md    # Japanese
 ```
 
 ## 🌐 Deploy (GitHub Pages)
