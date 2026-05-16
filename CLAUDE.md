@@ -15,7 +15,6 @@
 - 描画: Canvas 2D（アイソメトリック投影）＋自前の Perlin ノイズ地形生成。
 - 効果音: Web Audio API でリアルタイム合成（音声ファイルは持たない）。
 - 永続化: localStorage。保存キーは `emoji-niwa-save`（`index.html` 4104 行付近）。オートセーブ＋手動セーブ。
-- `entrance-chime.html` は入店音を単体確認するためのスタンドアロンプレビュー。
 
 ## 多言語（日英）規約
 
@@ -55,7 +54,6 @@ node .claude/scripts/check-syntax.mjs
 ```
 emoji-niwa/
 ├── index.html            # アプリ本体（HTML + CSS + JS すべて）
-├── entrance-chime.html   # 入店音の単体プレビュー
 ├── README.md             # 英語
 ├── README.ja.md          # 日本語
 ├── assets/screenshot.jpg # README 用画像
