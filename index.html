@@ -327,9 +327,9 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
     <button class="tbtn" id="btn-visit-keep" data-i18n="visiting.keep">💾 これを自分のものに</button>
   </div>
 </div>
-<div id="mp-bar" style="display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:48;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(16px);max-width:92vw;text-align:center">
+<div id="mp-bar" style="display:none;position:fixed;left:8px;top:60px;z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 12px;backdrop-filter:blur(16px);max-width:min(80vw,240px);text-align:left">
   <div id="mp-text" style="font-size:12px;color:#a8e063;margin-bottom:8px"></div>
-  <div id="mp-actions" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
+  <div id="mp-actions" style="display:flex;flex-direction:column;gap:6px"></div>
 </div>
 
 <div id="gen-popup">
@@ -3795,6 +3795,14 @@ function mpSetToken(t){ try{ localStorage.setItem(MP_AUTH_KEY, t); }catch(_){ } 
 function mpClearToken(){ try{ localStorage.removeItem(MP_AUTH_KEY); }catch(_){ } }
 function mpInviteUrl(){ return location.origin + location.pathname + '#r=' + mpRoomId; }
 
+// 共有プレイメニューを 👥 アイコン列の直下（画面左）に配置
+function mpPlace(){
+  const bar=document.getElementById('mp-bar'), cb=document.getElementById('corner-btns');
+  if(!bar||!cb) return;
+  const r=cb.getBoundingClientRect();
+  bar.style.left=Math.round(r.left)+'px';
+  bar.style.top =Math.round(r.bottom+6)+'px';
+}
 function mpBar(mode){
   const bar=document.getElementById('mp-bar');
   if(!bar) return;
@@ -3813,9 +3821,18 @@ function mpBar(mode){
     mk(tr('mp.leave'), mpLeave);
     if(mpToken()) mk(tr('auth.logout'), mpLogout);
   }
+  mpPlace();
   bar.style.display='block';
 }
-function mpRefreshBar(){ if(mpActive) mpBar('room'); }
+// 人数等の更新は「開いているとき」だけ再描画（折りたたみ中に勝手に開かない）
+function mpRefreshBar(){
+  const bar=document.getElementById('mp-bar');
+  if(mpActive && bar && bar.style.display==='block') mpBar('room');
+}
+window.addEventListener('resize', ()=>{
+  const bar=document.getElementById('mp-bar');
+  if(bar && bar.style.display==='block') mpPlace();
+});
 
 async function mpCopyInvite(){
   const u=mpInviteUrl();
@@ -3889,7 +3906,11 @@ document.getElementById('btn-room').addEventListener('click', async e=>{
   e.stopPropagation();
   closeAllPopups();
   if(!MP_WS || !MP_HTTP){ showToast(tr('toast.mpUnconfigured')); return; }
-  if(mpActive){ mpCopyInvite(); return; }
+  if(mpActive){
+    const bar=document.getElementById('mp-bar');
+    if(bar && bar.style.display==='block') mpBar('hide'); else mpBar('room');
+    return;
+  }
   const t=mpToken();
   if(!t){ mpBar('login'); return; }
   try{
