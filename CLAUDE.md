@@ -56,13 +56,20 @@ node .claude/scripts/check-syntax.mjs
 行ったら、**毎回スクリーンショットを撮ってユーザーに共有する**こと。
 
 ```bash
-node .claude/scripts/screenshot.mjs            # → /tmp/emoji-niwa-<ts>.png
-# 任意: SHOT_VP=390,844 で幅指定（モバイル確認など）
+node .claude/scripts/screenshot.mjs            # 既定で3環境を撮影
+# 出力: /tmp/emoji-niwa-<ts>-iphone-air.png / -ipad.png / -fullhd.png
+# 任意: SHOT_VP=390,844 で単一カスタム viewport のみ
 ```
 
-撮った画像は `SendUserFile` で必ずユーザーに見せる（スクショ取得だけで終わらせない）。
-Playwright/Chromium は dev のみで使用しリポジトリには含めない（コンテナ初回のみ
-`npx --yes playwright install chromium`）。多人数 UI（チャット/人数バッジ等）は
+**必ず以下 3 環境すべてを撮る**（スクリプト既定で自動）:
+
+- `iphone-air` 420×912（iPhone Air 相当ポートレート）
+- `ipad` 820×1180（iPad 相当ポートレート）
+- `fullhd` 1920×1080（フル HD の Web ブラウザ）
+
+3 枚すべてを `SendUserFile` でユーザーに見せる（取得だけで終わらせない・1環境だけで
+省略しない）。Playwright/Chromium は dev のみで使用しリポジトリには含めない（未導入なら
+スクリプトが自動 `npx playwright install chromium`）。多人数 UI（チャット/人数バッジ等）は
 `MP_*` 未設定では非表示のためオフラインで見える範囲を撮る。
 
 ## コミット規約
