@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>🌿 絵文字箱庭</title>
+<title>🌿 絵文字庭</title>
 <style>
 :root{--panel:rgba(8,16,10,.93);--border:rgba(120,210,130,.18);--accent:#5dba6a;--accent2:#a8e063;--text:rgba(220,255,220,.88);--dim:rgba(180,220,180,.4)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -29,7 +29,7 @@ body{background:#0a150b;overflow:hidden;font-family:'Hiragino Kaku Gothic ProN',
 .acc-section.open .acc-summary{display:none}
 .acc-content{display:none;padding:0 12px 12px}
 .acc-section.open .acc-content{display:block;padding-top:10px}
-body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #toast{display:none !important}
+body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast{display:none !important}
 body.fullscreen #map-btns{top:auto;bottom:14px;right:14px}
 body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 .mapbtn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
@@ -70,6 +70,8 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .sc-src-btn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .sound-opt{padding:6px 4px;font-size:10px;line-height:1.2}
 .sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.autosave-opt{padding:6px 2px;font-size:10px;line-height:1.2}
+.autosave-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:215px;z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
 #minimap.visible{display:block}
 #btn-3d.dim-toggle{position:fixed;right:10px;bottom:215px;z-index:27}
@@ -151,6 +153,8 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 #toast{position:fixed;top:98px;left:50%;transform:translateX(-50%);background:rgba(93,186,106,.88);color:#fff;font-size:12px;padding:6px 16px;border-radius:20px;pointer-events:none;z-index:50;opacity:0;transition:opacity .3s}
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 #map-btns{position:fixed;right:10px;top:60px;z-index:27;display:flex;flex-direction:column;gap:6px}
+#corner-btns{position:fixed;left:8px;top:56px;z-index:27;display:flex;flex-direction:column;gap:6px}
+#corner-btns .tbtn{min-width:42px;text-align:center}
 .mapbtn{width:36px;height:36px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s}
 .mapbtn:active{background:rgba(93,186,106,.3)}
 </style>
@@ -162,11 +166,16 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 <div id="topbar">
   <button class="tbtn" id="clock-display">☀️ 12:00</button>
   <button class="tbtn" id="weather-btn">☀️ 天気</button>
-  <button class="tbtn" id="btn-menu">⚙️</button>
-  <button class="tbtn" id="sound-btn">🔇</button>
   <button class="tbtn" id="btn-undo">↩</button>
   <button class="tbtn" id="btn-gen">🎲 生成</button>
   <button class="tbtn" id="btn-effects">✨ 演出</button>
+</div>
+
+<!-- Settings / Save / Sound — vertical stack under the top-left -->
+<div id="corner-btns">
+  <button class="tbtn" id="btn-menu">⚙️</button>
+  <button class="tbtn" id="btn-save">💾</button>
+  <button class="tbtn" id="sound-btn">🔇</button>
 </div>
 
 <!-- WEATHER POPUP -->
@@ -218,6 +227,10 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
   <div style="display:flex;flex-direction:column;gap:6px">
     <button class="tbtn" id="btn-newmap">🆕 新規マップ</button>
     <button class="tbtn" id="btn-clear-all">🗑 全リセット</button>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">💾 オートセーブ間隔</div>
+    <div id="autosave-opts" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px"></div>
   </div>
 </div>
 
@@ -3047,6 +3060,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   history=[];
+  clearSave();
   document.getElementById('menu-popup').style.display = 'none';
   showToast('🗑 全リセットしました');
 });
@@ -3175,6 +3189,7 @@ document.getElementById('nm-create').addEventListener('click',()=>{
   nmPopup.style.display='none';
   resetView();
   if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
+  saveState();
   showToast(`🆕 ${GRID}×${GRID} マップを作成しました`);
 });
 
@@ -3533,6 +3548,179 @@ document.getElementById('btn-scatter').addEventListener('click',()=>{
   },i*20));
   closeAllPopups();
   showToast(`🎲 ${count}個をランダム配置！`);
+});
+
+// ═══════════════════════════════════════════
+// PERSISTENCE (localStorage + 1-min autosave)
+// ═══════════════════════════════════════════
+const SAVE_KEY = 'emoji-niwa-save';
+const SAVE_VERSION = 1;
+const HISTORY_SAVE_CAP = 1000; // bound persisted undo stack so it can't exceed the storage quota
+const AUTOSAVE_PRESETS = [
+  {ms:0,      label:'オフ'},
+  {ms:30000,  label:'30秒'},
+  {ms:60000,  label:'1分'},
+  {ms:180000, label:'3分'},
+  {ms:300000, label:'5分'},
+];
+let autosaveMs = 60000;
+let autosaveTimerId = null;
+const btnSave = document.getElementById('btn-save');
+let saveFlashTid = null;
+
+// Briefly mark the 💾 button with ✅ to signal an autosave fired
+function flashSaved(){
+  btnSave.textContent = '💾✅';
+  clearTimeout(saveFlashTid);
+  saveFlashTid = setTimeout(() => { btnSave.textContent = '💾'; }, 1600);
+}
+// (Re)create the autosave interval from autosaveMs; 0 = off
+function restartAutosave(){
+  if(autosaveTimerId !== null){ clearInterval(autosaveTimerId); autosaveTimerId = null; }
+  if(autosaveMs > 0){
+    autosaveTimerId = setInterval(() => { saveState(); flashSaved(); }, autosaveMs);
+  }
+}
+function refreshAutosaveUI(){
+  document.querySelectorAll('#autosave-opts .autosave-opt').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.ms) === autosaveMs);
+  });
+}
+
+function saveState(){
+  try{
+    const data = {
+      v: SAVE_VERSION,
+      grid: GRID,
+      terrain, items, heights, animals, animalId,
+      history: history.length > HISTORY_SAVE_CAP ? history.slice(-HISTORY_SAVE_CAP) : history,
+      recent: CATEGORIES['📌 履歴'],
+      selCat, selEmoji, selTerrain, mode,
+      timeOfDay, dayPaused, weather,
+      drawMode, showHeights, heightsTouched,
+      muted, selectedSound,
+      weatherRandomOn,
+      weatherRandomPool: [...weatherRandomPool],
+      fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
+      autosaveMs,
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  }catch(e){ /* quota exceeded or storage disabled — keep running */ }
+}
+
+function clearSave(){
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+}
+
+function loadState(){
+  let data;
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    data = JSON.parse(raw);
+  }catch(e){ return false; }
+  if(!data || data.v !== SAVE_VERSION) return false;
+  try{
+    if(typeof data.grid === 'number') GRID = data.grid;
+
+    const repl = (target, src) => { for(const k in target) delete target[k]; if(src) Object.assign(target, src); };
+    repl(terrain, data.terrain);
+    repl(items,   data.items);
+    repl(heights, data.heights);
+    repl(animals, data.animals);
+    if(typeof data.animalId === 'number') animalId = data.animalId;
+
+    // Custom solid/paint colors are stored straight into terrain as hex
+    // strings; their TERRAIN_COLORS entry must be rebuilt or they fall
+    // back to grass on reload.
+    for(const v of Object.values(terrain)){
+      if(typeof v === 'string' && v[0] === '#' && !TERRAIN_COLORS[v]) TERRAIN_COLORS[v] = [v, v];
+    }
+
+    history = Array.isArray(data.history) ? data.history : [];
+
+    const recent = CATEGORIES['📌 履歴'];
+    recent.length = 0;
+    if(Array.isArray(data.recent)) recent.push(...data.recent);
+
+    if(typeof data.selCat === 'string' && CATEGORIES[data.selCat]) selCat = data.selCat;
+    if(data.selEmoji != null)   selEmoji   = data.selEmoji;
+    if(data.selTerrain != null) selTerrain = data.selTerrain;
+    if(data.mode)               mode       = data.mode;
+
+    if(typeof data.timeOfDay === 'number') timeOfDay = data.timeOfDay;
+    dayPaused = !!data.dayPaused;
+
+    drawMode = data.drawMode === '2d' ? '2d' : '3d';
+    rotation = drawMode === '2d' ? 1 : 0;
+    showHeights    = !!data.showHeights;
+    heightsTouched = !!data.heightsTouched;
+
+    muted = !!data.muted;
+    if(typeof data.selectedSound === 'string') selectedSound = data.selectedSound;
+
+    weatherRandomOn = !!data.weatherRandomOn;
+    weatherRandomPool = new Set(Array.isArray(data.weatherRandomPool) ? data.weatherRandomPool : []);
+    weatherRandomTimer = 30 + Math.random() * 30;
+
+    if(typeof data.autosaveMs === 'number' && AUTOSAVE_PRESETS.some(p => p.ms === data.autosaveMs)){
+      autosaveMs = data.autosaveMs;
+    }
+
+    if(data.fx){
+      auroraOn    = !!data.fx.aurora;
+      fireworksOn = !!data.fx.fireworks;
+      bubblesOn   = !!data.fx.bubbles;
+      mistOn      = !!data.fx.mist;
+    }
+    if(mistOn && mistPatches.length === 0) initMist();
+
+    // Reflect restored state across the UI
+    buildCatTabs(); buildPalette();
+    updateModeUI();
+    refreshDimToggle();
+    refreshHeightsBtn();
+    refreshSoundBtn(); refreshMuteToggle();
+    document.querySelectorAll('.sound-opt').forEach(b => b.classList.toggle('active', b.dataset.sound === selectedSound));
+    refreshAllFxToggles();
+    applyWeather(typeof data.weather === 'string' ? data.weather : weather);
+    refreshRandomToggle(); refreshWeatherChecks();
+    refreshAutosaveUI();
+    refreshScatterUI();
+    resetView(); // refit camera to the restored grid size
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+// Build autosave-interval options into the ⚙️ settings menu
+AUTOSAVE_PRESETS.forEach(({ms,label}) => {
+  const b = document.createElement('button');
+  b.className = 'tbtn autosave-opt';
+  b.dataset.ms = ms;
+  b.textContent = label;
+  b.addEventListener('click', e => {
+    e.stopPropagation();
+    autosaveMs = ms;
+    restartAutosave();
+    refreshAutosaveUI();
+    saveState();
+    showToast(ms === 0 ? '💾 オートセーブ：オフ' : `💾 オートセーブ：${label}ごと`);
+  });
+  document.getElementById('autosave-opts').appendChild(b);
+});
+refreshAutosaveUI();
+
+loadState();
+restartAutosave();
+window.addEventListener('pagehide', saveState);
+document.addEventListener('visibilitychange', () => { if(document.hidden) saveState(); });
+
+// Manual save button (💾, next to ⚙️ settings)
+document.getElementById('btn-save').addEventListener('click', () => {
+  saveState();
+  showToast('💾 セーブしました');
 });
 
 // ═══════════════════════════════════════════
