@@ -3047,6 +3047,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   history=[];
+  clearSave();
   document.getElementById('menu-popup').style.display = 'none';
   showToast('🗑 全リセットしました');
 });
@@ -3175,6 +3176,7 @@ document.getElementById('nm-create').addEventListener('click',()=>{
   nmPopup.style.display='none';
   resetView();
   if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
+  saveState();
   showToast(`🆕 ${GRID}×${GRID} マップを作成しました`);
 });
 
@@ -3534,6 +3536,119 @@ document.getElementById('btn-scatter').addEventListener('click',()=>{
   closeAllPopups();
   showToast(`🎲 ${count}個をランダム配置！`);
 });
+
+// ═══════════════════════════════════════════
+// PERSISTENCE (localStorage + 1-min autosave)
+// ═══════════════════════════════════════════
+const SAVE_KEY = 'emoji-niwa-save';
+const SAVE_VERSION = 1;
+const HISTORY_SAVE_CAP = 1000; // bound persisted undo stack so it can't exceed the storage quota
+
+function saveState(){
+  try{
+    const data = {
+      v: SAVE_VERSION,
+      grid: GRID,
+      terrain, items, heights, animals, animalId,
+      history: history.length > HISTORY_SAVE_CAP ? history.slice(-HISTORY_SAVE_CAP) : history,
+      recent: CATEGORIES['📌 履歴'],
+      selCat, selEmoji, selTerrain, mode,
+      timeOfDay, dayPaused, weather,
+      drawMode, showHeights, heightsTouched,
+      muted, selectedSound,
+      weatherRandomOn,
+      weatherRandomPool: [...weatherRandomPool],
+      fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  }catch(e){ /* quota exceeded or storage disabled — keep running */ }
+}
+
+function clearSave(){
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+}
+
+function loadState(){
+  let data;
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    data = JSON.parse(raw);
+  }catch(e){ return false; }
+  if(!data || data.v !== SAVE_VERSION) return false;
+  try{
+    if(typeof data.grid === 'number') GRID = data.grid;
+
+    const repl = (target, src) => { for(const k in target) delete target[k]; if(src) Object.assign(target, src); };
+    repl(terrain, data.terrain);
+    repl(items,   data.items);
+    repl(heights, data.heights);
+    repl(animals, data.animals);
+    if(typeof data.animalId === 'number') animalId = data.animalId;
+
+    // Custom solid/paint colors are stored straight into terrain as hex
+    // strings; their TERRAIN_COLORS entry must be rebuilt or they fall
+    // back to grass on reload.
+    for(const v of Object.values(terrain)){
+      if(typeof v === 'string' && v[0] === '#' && !TERRAIN_COLORS[v]) TERRAIN_COLORS[v] = [v, v];
+    }
+
+    history = Array.isArray(data.history) ? data.history : [];
+
+    const recent = CATEGORIES['📌 履歴'];
+    recent.length = 0;
+    if(Array.isArray(data.recent)) recent.push(...data.recent);
+
+    if(typeof data.selCat === 'string' && CATEGORIES[data.selCat]) selCat = data.selCat;
+    if(data.selEmoji != null)   selEmoji   = data.selEmoji;
+    if(data.selTerrain != null) selTerrain = data.selTerrain;
+    if(data.mode)               mode       = data.mode;
+
+    if(typeof data.timeOfDay === 'number') timeOfDay = data.timeOfDay;
+    dayPaused = !!data.dayPaused;
+
+    drawMode = data.drawMode === '2d' ? '2d' : '3d';
+    rotation = drawMode === '2d' ? 1 : 0;
+    showHeights    = !!data.showHeights;
+    heightsTouched = !!data.heightsTouched;
+
+    muted = !!data.muted;
+    if(typeof data.selectedSound === 'string') selectedSound = data.selectedSound;
+
+    weatherRandomOn = !!data.weatherRandomOn;
+    weatherRandomPool = new Set(Array.isArray(data.weatherRandomPool) ? data.weatherRandomPool : []);
+    weatherRandomTimer = 30 + Math.random() * 30;
+
+    if(data.fx){
+      auroraOn    = !!data.fx.aurora;
+      fireworksOn = !!data.fx.fireworks;
+      bubblesOn   = !!data.fx.bubbles;
+      mistOn      = !!data.fx.mist;
+    }
+    if(mistOn && mistPatches.length === 0) initMist();
+
+    // Reflect restored state across the UI
+    buildCatTabs(); buildPalette();
+    updateModeUI();
+    refreshDimToggle();
+    refreshHeightsBtn();
+    refreshSoundBtn(); refreshMuteToggle();
+    document.querySelectorAll('.sound-opt').forEach(b => b.classList.toggle('active', b.dataset.sound === selectedSound));
+    refreshAllFxToggles();
+    applyWeather(typeof data.weather === 'string' ? data.weather : weather);
+    refreshRandomToggle(); refreshWeatherChecks();
+    refreshScatterUI();
+    resetView(); // refit camera to the restored grid size
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+loadState();
+setInterval(saveState, 60000); // autosave every 1 minute
+window.addEventListener('pagehide', saveState);
+document.addEventListener('visibilitychange', () => { if(document.hidden) saveState(); });
 
 // ═══════════════════════════════════════════
 // ANIMATE LOOP
