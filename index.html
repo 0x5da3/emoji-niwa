@@ -2269,6 +2269,7 @@ function render(){
           if(items[key].emoji === '🏪') drawRainbowGlow(x, y-eSize*0.1+bob-lift, eSize);
           else drawEmojiFx(items[key].emoji, x, y-eSize*0.1+bob-lift, eSize);
           ctx.drawImage(img, x-eSize/2, y-eSize*0.6+bob-lift, eSize, eSize);
+          if(items[key].emoji==='🏪') drawStoreCount(x, y-eSize*0.6+bob-lift, items[key].customers||0, eSize);
         }
       }
     }
@@ -2287,6 +2288,7 @@ function render(){
       drawRainbowGlow(cx, gy, bigSize);
       const img=getEmojiImg('🏪',bigSize);
       ctx.drawImage(img, cx-bigSize/2, gy-bigSize/2, bigSize, bigSize);
+      drawStoreCount(cx, gy-bigSize/2, it.customers||0, bigSize);
     }
     // Animals in 3D
     for(const a of Object.values(animals)){
@@ -2333,6 +2335,7 @@ function render(){
       if(items[key].emoji === '🏪') drawRainbowGlow(x+tw/2, y+th/2+bob, eSize);
       else drawEmojiFx(items[key].emoji, x+tw/2, y+th/2+bob, eSize);
       ctx.drawImage(img, x+tw/2-eSize/2, y+th/2-eSize/2+bob, eSize, eSize);
+      if(items[key].emoji==='🏪') drawStoreCount(x+tw/2, y+th/2-eSize/2+bob, items[key].customers||0, eSize);
     }
     // Big 🏪 (size>1) on top of the 2D board
     for(const k in items){
@@ -2348,6 +2351,7 @@ function render(){
       drawRainbowGlow(cx, cy+bob, bigSize);
       const img=getEmojiImg('🏪',bigSize);
       ctx.drawImage(img, cx-bigSize/2, cy-bigSize/2+bob, bigSize, bigSize);
+      drawStoreCount(cx, cy-bigSize/2+bob, it.customers||0, bigSize);
     }
     for(const a of Object.values(animals)){
       const {x,y}=isoToScreen(Math.floor(a.wx),Math.floor(a.wy));
@@ -2911,6 +2915,40 @@ function spawnAnimal(emoji,c,r){
   history.push({type:'animal',id,c,r,emoji});
 }
 function removeAnimal(id){delete animals[id];}
+// 人（徘徊する人物絵文字）が 🏪 に入店する
+const PEOPLE = new Set(['🚶','🏃','💃','🕺','🤸','🧑','👶']);
+const STORE_RADIUS = 8;   // 人が 🏪 に吸い寄せられる半径（セル）
+function storeAnchorKey(){ for(const k in items) if(items[k].emoji==='🏪') return k; return null; }
+function nearestStoreCell(a, key){
+  const [ac,ar]=key.split(',').map(Number);
+  const n=storeSize(items[key]);
+  let best={c:ac,r:ar}, bd=Infinity;
+  for(let dc=0;dc<n;dc++)for(let dr=0;dr<n;dr++){
+    const c=ac+dc, r=ar+dr, d=(c-a.wx)*(c-a.wx)+(r-a.wy)*(r-a.wy);
+    if(d<bd){ bd=d; best={c,r}; }
+  }
+  return best;
+}
+function storeKeyAt(c,r){
+  const k=`${c},${r}`;
+  if(items[k] && items[k].emoji==='🏪') return k;   // 1×1
+  return storeCovering(c,r);                          // 3×3 footprint
+}
+// 🏪 の上に入店人数を表示（topY = 店画像の上端、sz = 店の描画サイズ）
+function drawStoreCount(cx, topY, count, sz){
+  if(!(count>0)) return;
+  const fs=Math.max(11, Math.floor(sz*0.42));
+  ctx.save();
+  ctx.font=`bold ${fs}px sans-serif`;
+  ctx.textAlign='center';
+  ctx.textBaseline='bottom';
+  const txt=`👤${count}`;
+  ctx.fillStyle='rgba(0,0,0,.6)';
+  ctx.fillText(txt, cx+1, topY-3+1);
+  ctx.fillStyle='#fff';
+  ctx.fillText(txt, cx, topY-3);
+  ctx.restore();
+}
 const EAT_RADIUS = 5;     // 食べ物探索半径（セル）
 const EAT_COOLDOWN = 4;   // 食後クールダウン（秒）
 // アイドルの動物の周囲から最も近い食べ物セルを探す（無ければ null）
@@ -2934,7 +2972,17 @@ function updateAnimals(dt){
       a.waitTimer-=dt;
       if(a.waitTimer<=0){
         let picked=false;
-        if((a.eatCD||0)<=0){
+        if(PEOPLE.has(a.emoji)){
+          const sk=storeAnchorKey();
+          if(sk){
+            const cell=nearestStoreCell(a,sk);
+            const cx=Math.floor(a.wx), cy=Math.floor(a.wy);
+            if((cell.c-cx)*(cell.c-cx)+(cell.r-cy)*(cell.r-cy) <= STORE_RADIUS*STORE_RADIUS){
+              a.tx=cell.c; a.ty=cell.r; a.moving=true; a.flip=(a.tx<a.wx); picked=true;
+            }
+          }
+        }
+        if(!picked && (a.eatCD||0)<=0){
           const f=findNearestFood(a);
           if(f){ a.tx=f.c; a.ty=f.r; a.moving=true; a.flip=(a.tx<a.wx); picked=true; }
         }
@@ -2962,6 +3010,10 @@ function updateAnimals(dt){
           spawnEatFx(a.tx,a.ty,it.emoji);
           playEatSound();
           a.eatCD=EAT_COOLDOWN;
+        }
+        else if(PEOPLE.has(a.emoji)){
+          const sk=storeKeyAt(a.tx,a.ty);
+          if(sk){ items[sk].customers=(items[sk].customers||0)+1; delete animals[id]; }
         }
       }
       else{const step=Math.min(a.speed*dt,dist);a.wx+=dx/dist*step;a.wy+=dy/dist*step;}
