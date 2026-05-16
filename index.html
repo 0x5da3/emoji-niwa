@@ -29,7 +29,7 @@ body{background:#0a150b;overflow:hidden;font-family:'Hiragino Kaku Gothic ProN',
 .acc-section.open .acc-summary{display:none}
 .acc-content{display:none;padding:0 12px 12px}
 .acc-section.open .acc-content{display:block;padding-top:10px}
-body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast{display:none !important}
+body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast,body.fullscreen #btn-palette,body.fullscreen #low-toggles{display:none !important}
 body.fullscreen #map-btns{top:auto;bottom:14px;right:14px}
 body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 .mapbtn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
@@ -74,10 +74,10 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .autosave-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .lang-opt{padding:7px 4px;font-size:11px}
 .lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
-#minimap{position:fixed;left:10px;bottom:215px;z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
+#minimap{position:fixed;left:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
 #minimap.visible{display:block}
-#btn-3d.dim-toggle{position:fixed;right:10px;bottom:215px;z-index:27}
-#btn-heights{position:fixed;right:10px;bottom:255px;z-index:27}
+#low-toggles{position:fixed;right:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;display:flex;gap:6px;align-items:center}
+body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:none!important}
 #modebar{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:29;display:flex;background:var(--panel);border:1px solid var(--border);border-radius:20px;overflow:hidden}
 .mbtn{padding:5px 13px;font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:all .12s}
 .mbtn.active{background:rgba(93,186,106,.25);color:var(--accent2)}
@@ -87,6 +87,19 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .cattab.active{background:rgba(93,186,106,.22);color:var(--accent2);border-color:var(--accent)}
 #palette-wrap{position:fixed;bottom:0;left:0;right:0;z-index:28;background:var(--panel);border-top:1px solid var(--border);backdrop-filter:blur(14px);padding:6px 8px 14px}
 #palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;grid-auto-rows:42px;height:136px;overflow-y:auto;align-content:start;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:rgba(168,224,99,.4) transparent;-webkit-overflow-scrolling:touch}
+/* 共有プレイ用チャット（パレット上・既定3行・最小化/拡大可） */
+#mp-chat{display:none;flex-direction:column;gap:4px;margin-bottom:6px;border:1px solid rgba(120,210,130,.3);border-radius:10px;background:rgba(8,20,10,.55);padding:5px 6px}
+#mpc-head{display:flex;align-items:center;gap:6px;font-size:11px;color:#a8e063}
+#mpc-head .mpc-t{flex:1;font-weight:700}
+#mpc-head button{background:rgba(120,210,130,.18);border:1px solid rgba(120,210,130,.3);color:#cfeecb;border-radius:6px;font-size:11px;line-height:1;padding:3px 7px;cursor:pointer}
+#mpc-log{height:54px;overflow-y:auto;font-size:12px;line-height:1.45;color:#e9f5e5;word-break:break-word;scrollbar-width:thin}
+#mp-chat.exp #mpc-log{height:min(42vh,260px)}
+#mp-chat.min #mpc-log,#mp-chat.min #mpc-inrow{display:none}
+#mpc-log .ts{color:rgba(180,220,180,.5);margin-right:5px;font-variant-numeric:tabular-nums}
+#mpc-log .nm{color:#a8e063;font-weight:700;margin-right:4px}
+#mpc-inrow{display:flex;gap:5px}
+#mpc-in{flex:1;min-width:0;background:rgba(0,0,0,.3);border:1px solid rgba(120,210,130,.3);color:#fff;border-radius:6px;font-size:13px;padding:5px 7px}
+#mpc-send{background:rgba(93,186,106,.5);border:1px solid rgba(168,224,99,.6);color:#fff;border-radius:6px;font-size:12px;padding:5px 10px;cursor:pointer}
 #palette .ebtn{scroll-snap-align:start}
 #palette::-webkit-scrollbar{width:5px}
 #palette::-webkit-scrollbar-thumb{background:rgba(168,224,99,.35);border-radius:3px}
@@ -161,7 +174,8 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .weather-opt.checked .w-check::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff}
 #toast{position:fixed;top:98px;left:50%;transform:translateX(-50%);background:rgba(93,186,106,.88);color:#fff;font-size:12px;padding:6px 16px;border-radius:20px;pointer-events:none;z-index:50;opacity:0;transition:opacity .3s}
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
-#map-btns{position:fixed;right:10px;top:60px;z-index:27;display:flex;flex-direction:column;gap:6px}
+#map-btns{position:fixed;right:10px;top:60px;z-index:27;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+#map-btns .mb-row{display:flex;gap:6px}
 #corner-btns{position:fixed;left:8px;top:56px;z-index:27;display:flex;flex-direction:column;gap:6px}
 #corner-btns .tbtn{width:46px;text-align:center;background:var(--panel);backdrop-filter:blur(10px)}
 #btn-save{position:relative}
@@ -327,9 +341,9 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
     <button class="tbtn" id="btn-visit-keep" data-i18n="visiting.keep">💾 これを自分のものに</button>
   </div>
 </div>
-<div id="mp-bar" style="display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:48;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(16px);max-width:92vw;text-align:center">
+<div id="mp-bar" style="display:none;position:fixed;left:8px;top:60px;z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 12px;backdrop-filter:blur(16px);max-width:min(80vw,240px);text-align:left">
   <div id="mp-text" style="font-size:12px;color:#a8e063;margin-bottom:8px"></div>
-  <div id="mp-actions" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
+  <div id="mp-actions" style="display:flex;flex-direction:column;gap:6px"></div>
 </div>
 
 <div id="gen-popup">
@@ -391,6 +405,18 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 </div>
 
 <div id="palette-wrap">
+  <div id="mp-chat">
+    <div id="mpc-head">
+      <span class="mpc-t" data-i18n="chat.title">💬 チャット</span>
+      <button id="mpc-exp" type="button" title="拡大/戻す">⤢</button>
+      <button id="mpc-min" type="button" title="最小化/戻す">▾</button>
+    </div>
+    <div id="mpc-log"></div>
+    <div id="mpc-inrow">
+      <input id="mpc-in" type="text" maxlength="400" autocomplete="off" data-i18n-ph="chat.ph" placeholder="メッセージ…">
+      <button id="mpc-send" type="button" data-i18n="chat.send">送信</button>
+    </div>
+  </div>
   <div id="cattabs"></div>
   <div id="palette"></div>
   <div id="terrain-palette"></div>
@@ -398,23 +424,29 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 <canvas id="minimap" width="80" height="80"></canvas>
 
 <div id="map-btns">
-  <button class="mapbtn" id="btn-zoom-in">＋</button>
-  <button class="mapbtn" id="btn-zoom-out">－</button>
-  <button class="mapbtn" id="btn-reset-view">⊡</button>
-  <button class="mapbtn" id="btn-minimap">🗺</button>
-  <button class="mapbtn" id="btn-fullscreen">⛶</button>
+  <div class="mb-row">
+    <button class="mapbtn" id="btn-minimap">🗺</button>
+    <button class="mapbtn" id="btn-palette" data-i18n-title="ttPalette" title="パレットの折りたたみ">🎨</button>
+  </div>
+  <div class="mb-row">
+    <button class="mapbtn" id="btn-zoom-in">＋</button>
+    <button class="mapbtn" id="btn-zoom-out">－</button>
+    <button class="mapbtn" id="btn-reset-view">⊡</button>
+    <button class="mapbtn" id="btn-fullscreen">⛶</button>
+  </div>
 </div>
 
-<button class="mapbtn dim-toggle" id="btn-3d" data-i18n-title="tt3d" title="2D/3D 切り替え">
-  <span class="dim-label dim-2d">2D</span>
-  <span class="dim-track"><span class="dim-thumb"></span></span>
-  <span class="dim-label dim-3d">3D</span>
-</button>
-
-<button class="mapbtn h-toggle" id="btn-heights" data-i18n-title="ttHeights" title="高さを表示">
-  <span class="h-label">#️⃣</span>
-  <span class="h-track"><span class="h-thumb"></span></span>
-</button>
+<div id="low-toggles">
+  <button class="mapbtn h-toggle" id="btn-heights" data-i18n-title="ttHeights" title="高さを表示">
+    <span class="h-label">#️⃣</span>
+    <span class="h-track"><span class="h-thumb"></span></span>
+  </button>
+  <button class="mapbtn dim-toggle" id="btn-3d" data-i18n-title="tt3d" title="2D/3D 切り替え">
+    <span class="dim-label dim-2d">2D</span>
+    <span class="dim-track"><span class="dim-thumb"></span></span>
+    <span class="dim-label dim-3d">3D</span>
+  </button>
+</div>
 
 <script>
 // ═══════════════════════════════════════════
@@ -1008,7 +1040,7 @@ const I18N = {
     scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
     scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
     scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
-    tt3d:'2D/3D 切り替え', ttHeights:'高さを表示',
+    tt3d:'2D/3D 切り替え', ttHeights:'高さを表示', ttPalette:'パレットの折りたたみ',
     empty:'使った絵文字がここに記録されます',
     'cat:📌 履歴':'📌 履歴','cat:🌿 自然':'🌿 自然','cat:🐾 動物':'🐾 動物','cat:🏗 建物':'🏗 建物',
     'cat:🌍 地形':'🌍 地形','cat:✨ 空':'✨ 空','cat:🍎 食べ物':'🍎 食べ物','cat:🚗 乗り物':'🚗 乗り物',
@@ -1028,12 +1060,12 @@ const I18N = {
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
     'toast.scatter':'🎲 {count}個をランダム配置！', 'toast.saved':'💾 セーブしました',
     'ttRoom':'多人数（共有プレイ）',
-    'auth.loginNeeded':'ルーム発行には会員ログインが必要です','auth.loginGitHub':'GitHubでログイン','auth.logout':'ログアウト',
+    'auth.loginNeeded':'ルーム発行には会員ログインが必要です','auth.loginGitHub':'GitHubでログイン','auth.logout':'ログアウト','auth.denied':'⛔ このGitHubアカウントはログインを許可されていません',
     'toast.loggedIn':'✅ ログインしました','toast.loggedOut':'👋 ログアウトしました',
     'toast.roomCreated':'👥 ルームを作成しました（招待URLをコピー）','toast.roomJoined':'👥 共有ルームに参加しました',
-    'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました',
+    'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
     'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ 多人数サーバー未設定です',
-    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出',
+    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出','mp.namePrompt':'共有プレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信',
     'share':'🔗 共有', 'toast.shareCopied':'🔗 共有URLをコピーしました！', 'toast.shareError':'⚠️ 共有データを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
@@ -1071,7 +1103,7 @@ const I18N = {
     scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
     scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
     scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
-    tt3d:'Toggle 2D/3D', ttHeights:'Show heights',
+    tt3d:'Toggle 2D/3D', ttHeights:'Show heights', ttPalette:'Collapse palette',
     empty:'Used emoji are recorded here',
     'cat:📌 履歴':'📌 History','cat:🌿 自然':'🌿 Nature','cat:🐾 動物':'🐾 Animals','cat:🏗 建物':'🏗 Buildings',
     'cat:🌍 地形':'🌍 Terrain','cat:✨ 空':'✨ Sky','cat:🍎 食べ物':'🍎 Food','cat:🚗 乗り物':'🚗 Vehicles',
@@ -1091,12 +1123,12 @@ const I18N = {
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
     'toast.scatter':'🎲 Scattered {count}!', 'toast.saved':'💾 Saved',
     'ttRoom':'Multiplayer (shared play)',
-    'auth.loginNeeded':'Sign in (member) to create a room','auth.loginGitHub':'Sign in with GitHub','auth.logout':'Sign out',
+    'auth.loginNeeded':'Sign in (member) to create a room','auth.loginGitHub':'Sign in with GitHub','auth.logout':'Sign out','auth.denied':'⛔ This GitHub account is not allowed to sign in',
     'toast.loggedIn':'✅ Signed in','toast.loggedOut':'👋 Signed out',
     'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined shared room',
-    'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room',
+    'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
-    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave',
+    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for shared play','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send',
     'share':'🔗 Share', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read shared data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
@@ -3479,6 +3511,13 @@ btnFullscreen.addEventListener('click',()=>{
   resetView();
 });
 
+// 絵文字パレットの折りたたみ（全体）
+document.getElementById('btn-palette').addEventListener('click',e=>{
+  e.stopPropagation();
+  const on=document.body.classList.toggle('palette-collapsed');
+  e.currentTarget.classList.toggle('active', on);
+});
+
 // 3D toggle
 mm.addEventListener('click',e=>{
   const rect=mm.getBoundingClientRect();
@@ -3792,17 +3831,38 @@ document.getElementById('btn-visit-keep').addEventListener('click', e=>{
 });
 
 // ── 多人数（共有プレイ）─ オプトイン。MP_* 未設定なら無効＝オフライン従来動作 ──
-const MP_HTTP = '';   // TODO: デプロイ後に 'https://<api-domain>' を設定
-const MP_WS   = '';   // TODO: デプロイ後に 'wss://<api-domain>' を設定
+const MP_HTTP = 'https://emoji-niwa.fly.dev';   // 多人数APIサーバー（Fly.io）
+const MP_WS   = 'wss://emoji-niwa.fly.dev';     // 同 WebSocket
 const MP_AUTH_KEY = 'emoji-niwa-auth';
+const MP_NAME_KEY = 'emoji-niwa-name';
 let mpActive=false, mpOwner=false, mpWs=null, mpGotSnap=false, mpSeeded=false;
 let mpApplying=false, mpRoomId='', mpPeers=0, mpRetry=0, mpSendT=null, mpOwnerTimer=null;
+let mpMyName='', mpNames=[];
+
+function mpName(){ try{ return localStorage.getItem(MP_NAME_KEY)||''; }catch(_){ return ''; } }
+// 表示名入力フロー（ゲスト・オーナー共通）。キャンセルで null
+function mpAskName(){
+  const v=window.prompt(tr('mp.namePrompt'), mpName());
+  if(v==null) return null;
+  const name=v.trim().slice(0,24);
+  if(!name) return null;
+  try{ localStorage.setItem(MP_NAME_KEY, name); }catch(_){ }
+  return name;
+}
 
 function mpToken(){ try{ return localStorage.getItem(MP_AUTH_KEY)||''; }catch(_){ return ''; } }
 function mpSetToken(t){ try{ localStorage.setItem(MP_AUTH_KEY, t); }catch(_){ } }
 function mpClearToken(){ try{ localStorage.removeItem(MP_AUTH_KEY); }catch(_){ } }
 function mpInviteUrl(){ return location.origin + location.pathname + '#r=' + mpRoomId; }
 
+// 共有プレイメニューを 👥 アイコン列の直下（画面左）に配置
+function mpPlace(){
+  const bar=document.getElementById('mp-bar'), cb=document.getElementById('corner-btns');
+  if(!bar||!cb) return;
+  const r=cb.getBoundingClientRect();
+  bar.style.left=Math.round(r.left)+'px';
+  bar.style.top =Math.round(r.bottom+6)+'px';
+}
 function mpBar(mode){
   const bar=document.getElementById('mp-bar');
   if(!bar) return;
@@ -3816,14 +3876,23 @@ function mpBar(mode){
     mk(tr('auth.loginGitHub'), ()=>{ location.href = MP_HTTP + '/auth/login'; });
     mk('✕', ()=>mpBar('hide'));
   } else {
-    txt.textContent=tr('mp.bar',{room:mpRoomId, n:mpPeers});
+    txt.textContent=tr('mp.bar',{room:mpRoomId, n:mpPeers}) + (mpNames.length ? ' — '+mpNames.join('、') : '');
     mk(tr('mp.copy'), mpCopyInvite);
     mk(tr('mp.leave'), mpLeave);
     if(mpToken()) mk(tr('auth.logout'), mpLogout);
   }
+  mpPlace();
   bar.style.display='block';
 }
-function mpRefreshBar(){ if(mpActive) mpBar('room'); }
+// 人数等の更新は「開いているとき」だけ再描画（折りたたみ中に勝手に開かない）
+function mpRefreshBar(){
+  const bar=document.getElementById('mp-bar');
+  if(mpActive && bar && bar.style.display==='block') mpBar('room');
+}
+window.addEventListener('resize', ()=>{
+  const bar=document.getElementById('mp-bar');
+  if(bar && bar.style.display==='block') mpPlace();
+});
 
 async function mpCopyInvite(){
   const u=mpInviteUrl();
@@ -3860,21 +3929,101 @@ async function mpSend(){
 async function mpOnMsg(ev){
   let m; try{ m=JSON.parse(ev.data); }catch(_){ return; }
   if(m.t==='snap' && typeof m.d==='string'){
+    // 受信スナップ適用で applyState→resetView がカメラを奪うため、
+    // ローカルの視点を保持（初回フレーミングとグリッド変化時のみ再フィット）
+    const first=!mpGotSnap;
+    const _g=GRID,_s=scale,_ox=OX,_oy=OY,_ts=targetScale,_tox=targetOX,_toy=targetOY;
     mpGotSnap=true; mpApplying=true;
     try{ const d=await decodeWorld(m.d); if(d && d.v===SAVE_VERSION) applyState(d); }catch(_){ }
     mpApplying=false;
+    if(!first && GRID===_g){
+      scale=_s; OX=_ox; OY=_oy; targetScale=_ts; targetOX=_tox; targetOY=_toy;
+    }
   } else if(m.t==='role'){
     mpOwner=!!m.owner;
     if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
   } else if(m.t==='peers'){
-    mpPeers=m.n|0; mpRefreshBar();
+    mpPeers=m.n|0; mpNames=Array.isArray(m.names)?m.names:[]; mpRefreshBar();
+  } else if(m.t==='chat'){
+    mpChatAppend(m.name, m.text);
+  } else if(m.t==='full'){
+    // 満員：再接続せず多人数を停止し、自分の世界に留まる
+    mpActive=false;
+    if(mpOwnerTimer){ clearInterval(mpOwnerTimer); mpOwnerTimer=null; }
+    try{ if(mpWs){ mpWs.onclose=null; mpWs.close(); } }catch(_){ }
+    mpWs=null;
+    mpBar('hide'); mpChatShow(false);
+    try{ history.replaceState(null,'',location.pathname); }catch(_){ }
+    showToast(tr('toast.roomFull'));
   }
 }
+// ── 共有プレイ チャット ──────────────────────────────────
+// チャットの高さぶん、下部の 3D/高さ/ミニマップを持ち上げて隠れを防ぐ
+function mpChatLift(){
+  const el=document.getElementById('mp-chat');
+  const h=(el && el.style.display!=='none') ? Math.ceil(el.getBoundingClientRect().height)+6 : 0;
+  document.documentElement.style.setProperty('--mpch', h+'px');
+}
+function mpChatShow(on){
+  const el=document.getElementById('mp-chat');
+  if(!el) return;
+  if(on){
+    el.classList.remove('min','exp');
+    const inp=document.getElementById('mpc-in');
+    if(inp) inp.placeholder=tr('chat.ph');
+    el.style.display='flex';
+  } else { el.style.display='none'; }
+  mpChatLift();
+}
+function mpChatAppend(name, text){
+  const log=document.getElementById('mpc-log');
+  if(!log) return;
+  const near = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+  const line=document.createElement('div');
+  const d=new Date();
+  const ts=document.createElement('span');
+  ts.className='ts';
+  ts.textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+  const nm=document.createElement('span');
+  nm.className='nm';
+  nm.textContent=(name && String(name).trim()) ? name : 'ゲスト';
+  line.appendChild(ts);
+  line.appendChild(nm);
+  line.appendChild(document.createTextNode(String(text==null?'':text)));
+  log.appendChild(line);
+  while(log.childElementCount>200) log.removeChild(log.firstChild);
+  if(near) log.scrollTop=log.scrollHeight;
+}
+function mpChatSend(){
+  const inp=document.getElementById('mpc-in');
+  if(!inp) return;
+  const text=inp.value.trim().slice(0,400);
+  inp.value='';
+  if(!text || !mpActive || !mpWs || mpWs.readyState!==1) return;
+  try{ mpWs.send(JSON.stringify({t:'chat',text})); }catch(_){ }
+}
+(function mpChatWire(){
+  const exp=document.getElementById('mpc-exp'), min=document.getElementById('mpc-min'),
+        snd=document.getElementById('mpc-send'), inp=document.getElementById('mpc-in'),
+        el=document.getElementById('mp-chat');
+  if(!el) return;
+  exp.addEventListener('click',e=>{ e.stopPropagation();
+    el.classList.remove('min'); el.classList.toggle('exp'); mpChatLift(); });
+  min.addEventListener('click',e=>{ e.stopPropagation();
+    el.classList.remove('exp'); el.classList.toggle('min');
+    min.textContent = el.classList.contains('min') ? '▴' : '▾'; mpChatLift(); });
+  snd.addEventListener('click',e=>{ e.stopPropagation(); mpChatSend(); });
+  inp.addEventListener('keydown',e=>{
+    e.stopPropagation();
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); mpChatSend(); }
+  });
+  window.addEventListener('resize', mpChatLift);
+})();
 function mpConnect(){
   if(!MP_WS || !mpRoomId) return;
   let ws; try{ ws=new WebSocket(MP_WS + '/room/' + encodeURIComponent(mpRoomId)); }catch(_){ return; }
   mpWs=ws;
-  ws.onopen=()=>{ mpRetry=0; };
+  ws.onopen=()=>{ mpRetry=0; try{ if(mpMyName) ws.send(JSON.stringify({t:'hello',name:mpMyName})); }catch(_){ } };
   ws.onmessage=mpOnMsg;
   ws.onclose=()=>{
     mpWs=null;
@@ -3885,10 +4034,13 @@ function mpConnect(){
   };
   ws.onerror=()=>{ try{ ws.close(); }catch(_){ } };
 }
-function mpJoin(roomId){
-  mpRoomId=roomId; mpActive=true; mpGotSnap=false; mpSeeded=false;
+function mpJoin(roomId, name){
+  mpRoomId=roomId; mpMyName=name||mpName()||'ゲスト';
+  mpActive=true; mpGotSnap=false; mpSeeded=false;
+  const log=document.getElementById('mpc-log'); if(log) log.textContent='';
+  mpChatShow(true);
   mpConnect();
-  mpBar('room');
+  mpBar('hide');                 // メニューは折りたたみ既定（👥 で展開）
   if(mpOwnerTimer) clearInterval(mpOwnerTimer);
   mpOwnerTimer=setInterval(()=>{ if(mpActive && mpOwner) mpSend(); }, 2500);  // 動物/時間の定期再同期
 }
@@ -3897,16 +4049,22 @@ document.getElementById('btn-room').addEventListener('click', async e=>{
   e.stopPropagation();
   closeAllPopups();
   if(!MP_WS || !MP_HTTP){ showToast(tr('toast.mpUnconfigured')); return; }
-  if(mpActive){ mpCopyInvite(); return; }
+  if(mpActive){
+    const bar=document.getElementById('mp-bar');
+    if(bar && bar.style.display==='block') mpBar('hide'); else mpBar('room');
+    return;
+  }
   const t=mpToken();
   if(!t){ mpBar('login'); return; }
+  const nm=mpAskName();
+  if(nm==null) return;                       // 表示名キャンセル → 発行しない
   try{
     const res=await fetch(MP_HTTP+'/room/new',{method:'POST',headers:{Authorization:'Bearer '+t}});
     if(res.status===401){ mpClearToken(); mpBar('login'); return; }
     if(!res.ok) throw 0;
     const j=await res.json();
     try{ history.replaceState(null,'','#r='+j.id); }catch(_){ location.hash='#r='+j.id; }
-    mpJoin(j.id);
+    mpJoin(j.id, nm);
     showToast(tr('toast.roomCreated'));
     mpCopyInvite();
   }catch(_){ showToast(tr('toast.mpDisconnected')); }
@@ -4640,10 +4798,19 @@ refreshAutosaveUI();
     try{ history.replaceState(null, '', location.pathname); }catch(_){}
     showToast(tr('toast.loggedIn'));
     h = location.hash || '';
+  } else if(h.startsWith('#authdenied')){
+    try{ history.replaceState(null, '', location.pathname); }catch(_){}
+    showToast(tr('auth.denied'));
+    h = location.hash || '';
   }
   if(h.startsWith('#r=')){
+    const nm=mpAskName();
+    if(nm==null){                // 表示名キャンセル → 参加せず自分の世界へ
+      try{ history.replaceState(null,'',location.pathname); }catch(_){ }
+      loadState(); restartAutosave(); return;
+    }
     loadState();                 // 自分の世界をメモリへ（保存は mpActive でガード＝非干渉）
-    mpJoin(h.slice(3));
+    mpJoin(h.slice(3), nm);
     showToast(tr('toast.roomJoined'));
     return;                      // restartAutosave しない＝オートセーブ非干渉
   }
