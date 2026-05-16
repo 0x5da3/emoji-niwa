@@ -93,6 +93,19 @@ pub async fn callback(state: Data, q: web::Query<CallbackQ>) -> HttpResponse {
         },
         Err(e) => return HttpResponse::BadGateway().body(format!("user fetch: {e}")),
     };
+    // Login allowlist: if ALLOWED_LOGINS is set, only those GitHub accounts
+    // may sign in. Disallowed → no member/session created; back with error.
+    if !state.cfg.allowed_logins.is_empty()
+        && !state
+            .cfg
+            .allowed_logins
+            .contains(&user.login.to_lowercase())
+    {
+        let dest = format!("{}/#authdenied=1", state.cfg.app_url);
+        return HttpResponse::Found()
+            .insert_header(("Location", dest))
+            .finish();
+    }
     let uid = format!("gh:{}", user.id);
     state.members.insert(
         uid.clone(),

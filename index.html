@@ -1028,7 +1028,7 @@ const I18N = {
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
     'toast.scatter':'🎲 {count}個をランダム配置！', 'toast.saved':'💾 セーブしました',
     'ttRoom':'多人数（共有プレイ）',
-    'auth.loginNeeded':'ルーム発行には会員ログインが必要です','auth.loginGitHub':'GitHubでログイン','auth.logout':'ログアウト',
+    'auth.loginNeeded':'ルーム発行には会員ログインが必要です','auth.loginGitHub':'GitHubでログイン','auth.logout':'ログアウト','auth.denied':'⛔ このGitHubアカウントはログインを許可されていません',
     'toast.loggedIn':'✅ ログインしました','toast.loggedOut':'👋 ログアウトしました',
     'toast.roomCreated':'👥 ルームを作成しました（招待URLをコピー）','toast.roomJoined':'👥 共有ルームに参加しました',
     'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました',
@@ -1091,7 +1091,7 @@ const I18N = {
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
     'toast.scatter':'🎲 Scattered {count}!', 'toast.saved':'💾 Saved',
     'ttRoom':'Multiplayer (shared play)',
-    'auth.loginNeeded':'Sign in (member) to create a room','auth.loginGitHub':'Sign in with GitHub','auth.logout':'Sign out',
+    'auth.loginNeeded':'Sign in (member) to create a room','auth.loginGitHub':'Sign in with GitHub','auth.logout':'Sign out','auth.denied':'⛔ This GitHub account is not allowed to sign in',
     'toast.loggedIn':'✅ Signed in','toast.loggedOut':'👋 Signed out',
     'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined shared room',
     'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room',
@@ -4631,6 +4631,10 @@ refreshAutosaveUI();
     mpSetToken(decodeURIComponent(h.slice(6)));
     try{ history.replaceState(null, '', location.pathname); }catch(_){}
     showToast(tr('toast.loggedIn'));
+    h = location.hash || '';
+  } else if(h.startsWith('#authdenied')){
+    try{ history.replaceState(null, '', location.pathname); }catch(_){}
+    showToast(tr('auth.denied'));
     h = location.hash || '';
   }
   if(h.startsWith('#r=')){

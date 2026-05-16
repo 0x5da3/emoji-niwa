@@ -34,6 +34,8 @@ impl AppState {
     }
 
     /// Resolve a session token → member uid, pruning if expired.
+    /// Also enforces the login allowlist (defense in depth): a session for a
+    /// member not in `allowed_logins` is rejected and dropped.
     pub fn session_uid(&self, token: &str) -> Option<String> {
         let s = self.sessions.get(token)?;
         if s.exp < now_secs() {
@@ -41,6 +43,19 @@ impl AppState {
             self.sessions.remove(token);
             return None;
         }
-        Some(s.uid.clone())
+        let uid = s.uid.clone();
+        drop(s);
+        if !self.cfg.allowed_logins.is_empty() {
+            let allowed = self
+                .members
+                .get(&uid)
+                .map(|m| self.cfg.allowed_logins.contains(&m.login.to_lowercase()))
+                .unwrap_or(false);
+            if !allowed {
+                self.sessions.remove(token);
+                return None;
+            }
+        }
+        Some(uid)
     }
 }
