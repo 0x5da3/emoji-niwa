@@ -1,6 +1,6 @@
 //! Domain layer: core entities + pure helpers. No web framework deps.
 
-use std::collections::BTreeSet;
+use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -44,7 +44,7 @@ pub enum Bcast {
 pub struct Room {
     pub snap: Mutex<Option<String>>,
     pub tx: broadcast::Sender<Bcast>,
-    pub conns: Mutex<BTreeSet<u64>>,
+    pub conns: Mutex<BTreeMap<u64, String>>, // conn id → display name ("" until hello)
     pub creator_uid: String,
     pub last_active: Mutex<u64>,
 }
@@ -55,7 +55,7 @@ impl Room {
         Arc::new(Room {
             snap: Mutex::new(snap),
             tx,
-            conns: Mutex::new(BTreeSet::new()),
+            conns: Mutex::new(BTreeMap::new()),
             creator_uid,
             last_active: Mutex::new(now_secs()),
         })

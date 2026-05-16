@@ -1033,7 +1033,7 @@ const I18N = {
     'toast.roomCreated':'👥 ルームを作成しました（招待URLをコピー）','toast.roomJoined':'👥 共有ルームに参加しました',
     'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
     'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ 多人数サーバー未設定です',
-    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出',
+    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出','mp.namePrompt':'共有プレイの表示名を入力してください',
     'share':'🔗 共有', 'toast.shareCopied':'🔗 共有URLをコピーしました！', 'toast.shareError':'⚠️ 共有データを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
@@ -1096,7 +1096,7 @@ const I18N = {
     'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined shared room',
     'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
-    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave',
+    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for shared play',
     'share':'🔗 Share', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read shared data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
@@ -3787,8 +3787,21 @@ document.getElementById('btn-visit-keep').addEventListener('click', e=>{
 const MP_HTTP = 'https://emoji-niwa.fly.dev';   // 多人数APIサーバー（Fly.io）
 const MP_WS   = 'wss://emoji-niwa.fly.dev';     // 同 WebSocket
 const MP_AUTH_KEY = 'emoji-niwa-auth';
+const MP_NAME_KEY = 'emoji-niwa-name';
 let mpActive=false, mpOwner=false, mpWs=null, mpGotSnap=false, mpSeeded=false;
 let mpApplying=false, mpRoomId='', mpPeers=0, mpRetry=0, mpSendT=null, mpOwnerTimer=null;
+let mpMyName='', mpNames=[];
+
+function mpName(){ try{ return localStorage.getItem(MP_NAME_KEY)||''; }catch(_){ return ''; } }
+// 表示名入力フロー（ゲスト・オーナー共通）。キャンセルで null
+function mpAskName(){
+  const v=window.prompt(tr('mp.namePrompt'), mpName());
+  if(v==null) return null;
+  const name=v.trim().slice(0,24);
+  if(!name) return null;
+  try{ localStorage.setItem(MP_NAME_KEY, name); }catch(_){ }
+  return name;
+}
 
 function mpToken(){ try{ return localStorage.getItem(MP_AUTH_KEY)||''; }catch(_){ return ''; } }
 function mpSetToken(t){ try{ localStorage.setItem(MP_AUTH_KEY, t); }catch(_){ } }
@@ -3816,7 +3829,7 @@ function mpBar(mode){
     mk(tr('auth.loginGitHub'), ()=>{ location.href = MP_HTTP + '/auth/login'; });
     mk('✕', ()=>mpBar('hide'));
   } else {
-    txt.textContent=tr('mp.bar',{room:mpRoomId, n:mpPeers});
+    txt.textContent=tr('mp.bar',{room:mpRoomId, n:mpPeers}) + (mpNames.length ? ' — '+mpNames.join('、') : '');
     mk(tr('mp.copy'), mpCopyInvite);
     mk(tr('mp.leave'), mpLeave);
     if(mpToken()) mk(tr('auth.logout'), mpLogout);
@@ -3876,7 +3889,7 @@ async function mpOnMsg(ev){
     mpOwner=!!m.owner;
     if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
   } else if(m.t==='peers'){
-    mpPeers=m.n|0; mpRefreshBar();
+    mpPeers=m.n|0; mpNames=Array.isArray(m.names)?m.names:[]; mpRefreshBar();
   } else if(m.t==='full'){
     // 満員：再接続せず多人数を停止し、自分の世界に留まる
     mpActive=false;
@@ -3892,7 +3905,7 @@ function mpConnect(){
   if(!MP_WS || !mpRoomId) return;
   let ws; try{ ws=new WebSocket(MP_WS + '/room/' + encodeURIComponent(mpRoomId)); }catch(_){ return; }
   mpWs=ws;
-  ws.onopen=()=>{ mpRetry=0; };
+  ws.onopen=()=>{ mpRetry=0; try{ if(mpMyName) ws.send(JSON.stringify({t:'hello',name:mpMyName})); }catch(_){ } };
   ws.onmessage=mpOnMsg;
   ws.onclose=()=>{
     mpWs=null;
@@ -3903,8 +3916,9 @@ function mpConnect(){
   };
   ws.onerror=()=>{ try{ ws.close(); }catch(_){ } };
 }
-function mpJoin(roomId){
-  mpRoomId=roomId; mpActive=true; mpGotSnap=false; mpSeeded=false;
+function mpJoin(roomId, name){
+  mpRoomId=roomId; mpMyName=name||mpName()||'ゲスト';
+  mpActive=true; mpGotSnap=false; mpSeeded=false;
   mpConnect();
   mpBar('room');
   if(mpOwnerTimer) clearInterval(mpOwnerTimer);
@@ -3922,13 +3936,15 @@ document.getElementById('btn-room').addEventListener('click', async e=>{
   }
   const t=mpToken();
   if(!t){ mpBar('login'); return; }
+  const nm=mpAskName();
+  if(nm==null) return;                       // 表示名キャンセル → 発行しない
   try{
     const res=await fetch(MP_HTTP+'/room/new',{method:'POST',headers:{Authorization:'Bearer '+t}});
     if(res.status===401){ mpClearToken(); mpBar('login'); return; }
     if(!res.ok) throw 0;
     const j=await res.json();
     try{ history.replaceState(null,'','#r='+j.id); }catch(_){ location.hash='#r='+j.id; }
-    mpJoin(j.id);
+    mpJoin(j.id, nm);
     showToast(tr('toast.roomCreated'));
     mpCopyInvite();
   }catch(_){ showToast(tr('toast.mpDisconnected')); }
@@ -4668,8 +4684,13 @@ refreshAutosaveUI();
     h = location.hash || '';
   }
   if(h.startsWith('#r=')){
+    const nm=mpAskName();
+    if(nm==null){                // 表示名キャンセル → 参加せず自分の世界へ
+      try{ history.replaceState(null,'',location.pathname); }catch(_){ }
+      loadState(); restartAutosave(); return;
+    }
     loadState();                 // 自分の世界をメモリへ（保存は mpActive でガード＝非干渉）
-    mpJoin(h.slice(3));
+    mpJoin(h.slice(3), nm);
     showToast(tr('toast.roomJoined'));
     return;                      // restartAutosave しない＝オートセーブ非干渉
   }

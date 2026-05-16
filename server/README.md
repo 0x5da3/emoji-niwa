@@ -28,8 +28,9 @@ room (`#r=<id>`). Offline play and `#w=` snapshot sharing never touch it.
 | POST   | `/room/new`      | Bearer      | **member-only** — issue a room id         |
 | GET    | `/room/{id}`     | – (WS)      | join/co-edit (must already exist)         |
 
-Wire: C→S `{"t":"snap","d":<encoded>}` · S→C `{"t":"snap","d"}`
-`{"t":"role","owner":bool}` `{"t":"peers","n":int}`.
+Wire: C→S `{"t":"snap","d":<encoded>}` `{"t":"hello","name":str}` ·
+S→C `{"t":"snap","d"}` `{"t":"role","owner":bool}`
+`{"t":"peers","n":int,"names":[str]}` `{"t":"full"}`.
 
 ## Run locally
 
