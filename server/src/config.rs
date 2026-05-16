@@ -12,6 +12,7 @@ pub struct Config {
     pub dev: bool,         // DEV=1 → also allow localhost origins (off in production)
     pub max_snap_bytes: usize, // reject oversize world snapshots (abuse/amplification guard)
     pub allowed_logins: Vec<String>, // GitHub logins (lowercased) allowed to log in; empty = open
+    pub max_room_peers: usize, // max concurrent connections per room (full → rejected)
 }
 
 fn env(key: &str) -> String {
@@ -51,6 +52,12 @@ impl Config {
                 .map(|s| s.trim().to_lowercase())
                 .filter(|s| !s.is_empty())
                 .collect(),
+            // Max concurrent participants per room (incl. creator). Default 8.
+            max_room_peers: std::env::var("MAX_ROOM_PEERS")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .filter(|&n| n >= 1)
+                .unwrap_or(8),
         }
     }
 }

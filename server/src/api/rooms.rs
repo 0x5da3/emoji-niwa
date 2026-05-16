@@ -56,9 +56,22 @@ pub async fn ws(
     let conn_id = state.conn_seq.fetch_add(1, Ordering::Relaxed);
     let mut rx = room.tx.subscribe();
 
-    {
+    // Capacity gate (atomic check-and-insert): reject if the room is full.
+    let full = {
         let mut c = room.conns.lock().unwrap();
-        c.insert(conn_id);
+        if c.len() >= state.cfg.max_room_peers {
+            true
+        } else {
+            c.insert(conn_id);
+            false
+        }
+    };
+    if full {
+        let _ = session
+            .text(serde_json::json!({ "t": "full" }).to_string())
+            .await;
+        let _ = session.close(None).await;
+        return Ok(response);
     }
     room.touch();
 
