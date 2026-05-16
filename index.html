@@ -2946,6 +2946,7 @@ function act(c,r){
         else {
           const ca=Math.max(0,Math.min(ac,GRID-n)), cr=Math.max(0,Math.min(ar,GRID-n));
           if((ca!==ac||cr!==ar) && storeFits(ca,cr,n)){ ac=ca; ar=cr; sz=n; }
+          else return;   // 3×3 が置けない場所では何も置かない（1×1 フォールバックしない）
         }
       }
       const aKey=`${ac},${ar}`;
