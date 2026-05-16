@@ -370,7 +370,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
         <button class="tbtn gen-mode-btn active" id="gen-mode-height" data-i18n="genHilly">⛰ 起伏あり</button>
       </div>
       <div data-i18n="selectMap" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
-      <div id="gen-btns" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px"></div>
+      <div id="gen-btns" style="margin-bottom:8px"></div>
       <button class="tbtn" id="btn-gen-random" data-i18n="genRandom" style="width:100%;padding:8px">🎲 完全ランダム</button>
     </div>
   </div>
@@ -1057,6 +1057,8 @@ const I18N = {
     'map:🌿 草原':'草原','map:🏝 島':'島','map:🏔 山岳':'山岳','map:🏜 砂漠':'砂漠','map:❄️ 雪原':'雪原',
     'map:🌊 群島':'群島','map:🌳 森':'森','map:🌋 火山':'火山','map:🏖 環礁':'環礁','map:🏞 谷':'谷',
     'map:🏙 都市':'都市','map:🏘 街':'街','map:💧 川':'川','map:💦 滝':'滝','map:🌊 海':'海',
+    'map:🗻 雪山':'雪山','map:🌴 アマゾン':'アマゾン','map:🐊 湿地':'湿地','map:🪨 峡谷':'峡谷','map:🌄 高原':'高原',
+    'genGrpGreen':'🌿 みどり','genGrpMtn':'⛰ 山・雪','genGrpArid':'🏜 乾燥・岩','genGrpWater':'🌊 水辺','genGrpBuilt':'🏙 人の場所',
     'solid:🌿 草':'🌿 草','solid:🏜 砂':'🏜 砂','solid:🌊 水':'🌊 水','solid:❄️ 雪':'❄️ 雪',
     'solid:⬛ 岩':'⬛ 岩','solid:🟫 土':'🟫 土','solid:🟪 紫':'🟪 紫','solid:🟥 赤':'🟥 赤',
     'ta:paint':'塗る','ta:up':'高さ+','ta:down':'高さ-',
@@ -1123,6 +1125,8 @@ const I18N = {
     'map:🌿 草原':'Grassland','map:🏝 島':'Island','map:🏔 山岳':'Mountains','map:🏜 砂漠':'Desert','map:❄️ 雪原':'Snowfield',
     'map:🌊 群島':'Archipelago','map:🌳 森':'Forest','map:🌋 火山':'Volcano','map:🏖 環礁':'Atoll','map:🏞 谷':'Valley',
     'map:🏙 都市':'City','map:🏘 街':'Town','map:💧 川':'River','map:💦 滝':'Waterfall','map:🌊 海':'Ocean',
+    'map:🗻 雪山':'Snowy Peaks','map:🌴 アマゾン':'Amazon','map:🐊 湿地':'Wetland','map:🪨 峡谷':'Canyon','map:🌄 高原':'Plateau',
+    'genGrpGreen':'🌿 Green','genGrpMtn':'⛰ Mountain & Snow','genGrpArid':'🏜 Arid & Rock','genGrpWater':'🌊 Water','genGrpBuilt':'🏙 Built',
     'solid:🌿 草':'🌿 Grass','solid:🏜 砂':'🏜 Sand','solid:🌊 水':'🌊 Water','solid:❄️ 雪':'❄️ Snow',
     'solid:⬛ 岩':'⬛ Rock','solid:🟫 土':'🟫 Soil','solid:🟪 紫':'🟪 Purple','solid:🟥 赤':'🟥 Red',
     'ta:paint':'Paint','ta:up':'Height +','ta:down':'Height -',
@@ -3031,6 +3035,103 @@ function genOcean(s){
   return {terrain:t, heights:h};
 }
 
+// NEW: Snowy Peaks — taller than Mountains with a much lower snow line
+function genSnowMountain(s){
+  const n=makeNoise(s), n2=makeNoise(s+99), n3=makeNoise(s+33), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/6,r/6)*0.55 + n2(c/3,r/3)*0.30 + n3(c/12,r/12)*0.15;
+    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.5) * 11));
+  }
+  smoothHeights(h,1);
+  classifyByHeight(t,h,[[9,'snow'],[6,'snow'],[4,'snow'],[2,'dark'],[1,'sand'],[0,'water']]);
+  return {terrain:t, heights:h};
+}
+
+// NEW: Amazon — dense low rainforest split by a meandering river + tributary
+function genAmazon(s){
+  const n=makeNoise(s), n2=makeNoise(s+17), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/8,r/8)*0.5 + n2(c/3,r/3)*0.5;
+    h[`${c},${r}`] = Math.max(1, Math.round((v + 0.45) * 4));
+  }
+  smoothHeights(h,1);
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    t[k] = (h[k] >= 3) ? 'dark' : 'grass';   // 密林=暗緑 / 林床=草
+  }
+  const mid=GRID*0.5;
+  for(let c=0;c<GRID;c++){                    // 蛇行する本流
+    const rr=Math.round(mid + n(c/5,0)*GRID*0.22);
+    for(let w=-2;w<=2;w++){ const r2=rr+w; if(r2<0||r2>=GRID) continue;
+      const k=`${c},${r2}`;
+      if(Math.abs(w)<=1){ t[k]='water'; delete h[k]; } else { t[k]='sand'; h[k]=0; } }
+  }
+  for(let r=0;r<GRID;r++){                    // 支流
+    const cc=Math.round(GRID*0.3 + n2(0,r/5)*GRID*0.15);
+    for(let w=-1;w<=1;w++){ const c2=cc+w; if(c2<0||c2>=GRID) continue;
+      const k=`${c2},${r}`;
+      if(w===0){ t[k]='water'; delete h[k]; } else if(t[k]!=='water'){ t[k]='sand'; h[k]=0; } }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Wetland — very flat marsh with scattered shallow pools and reed banks
+function genWetland(s){
+  const n=makeNoise(s), n2=makeNoise(s+8), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    const w = n(c/3,r/3)*0.6 + n2(c/6,r/6)*0.4;
+    if(w < -0.12){ t[k]='water'; }                       // 浅い水たまり
+    else if(w < 0.05){ t[k]='sand'; h[k]=0; }            // 泥・葦の岸
+    else { t[k]='grass'; h[k]= (w>0.35?1:0); }           // 湿地草（ほぼ平坦）
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Canyon — high rocky mesa carved by a branching canyon (vs. grassy Valley)
+function genCanyon(s){
+  const n=makeNoise(s), n2=makeNoise(s+19), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/7,r/7)*0.4 + n2(c/3,r/3)*0.2;
+    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.65) * 8));
+  }
+  smoothHeights(h,1);
+  const mid=GRID*0.5;
+  for(let c=0;c<GRID;c++){                    // 本谷
+    const rr=Math.round(mid + n(c/6,0)*GRID*0.2);
+    for(let w=-2;w<=2;w++){ const r2=rr+w; if(r2<0||r2>=GRID) continue;
+      const k=`${c},${r2}`;
+      if(Math.abs(w)<=1){ t[k]='water'; delete h[k]; } else { h[k]=1; } }
+  }
+  const fc=GRID*0.55;
+  for(let r=Math.floor(mid);r<GRID;r++){      // 支谷
+    const cc=Math.round(fc + n2(0,r/6)*GRID*0.12);
+    const k=`${cc},${r}`;
+    t[k]='water'; delete h[k];
+  }
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    if(t[k]==='water') continue;
+    t[k] = (h[k]||0) >= 5 ? 'dark' : 'sand'; // 岩のメサ天端 / 砂の斜面
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Plateau — flat grassy tableland with steep cliffs over a low ring
+function genPlateau(s){
+  const n=makeNoise(s), t={}, h={};
+  const cx=GRID/2, cy=GRID/2;
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const dx=(c-cx)/cx, dy=(r-cy)/cy;
+    const d=Math.sqrt(dx*dx+dy*dy);
+    const mesa = d<0.62 ? 6 : (d<0.78 ? 3 : 0);
+    h[`${c},${r}`] = Math.max(0, Math.round(mesa + n(c/5,r/5)*1.2));
+  }
+  smoothHeights(h,1);
+  classifyByHeight(t,h,[[6,'grass'],[4,'dark'],[2,'sand'],[1,'sand'],[0,'water']]);
+  return {terrain:t, heights:h};
+}
+
 const MAP_PRESETS={
   '🌿 草原':genGrassland,
   '🏝 島':genIsland,
@@ -3047,7 +3148,21 @@ const MAP_PRESETS={
   '💧 川':genRiver,
   '💦 滝':genWaterfall,
   '🌊 海':genOcean,
+  '🗻 雪山':genSnowMountain,
+  '🌴 アマゾン':genAmazon,
+  '🐊 湿地':genWetland,
+  '🪨 峡谷':genCanyon,
+  '🌄 高原':genPlateau,
 };
+
+// 種類が増えたのでカテゴリ分けして見やすく表示（全プリセットを過不足なく網羅）
+const MAP_GROUPS=[
+  {key:'genGrpGreen', names:['🌿 草原','🌳 森','🌴 アマゾン','🏞 谷','🌄 高原','🐊 湿地']},
+  {key:'genGrpMtn',   names:['🏔 山岳','🗻 雪山','❄️ 雪原','🌋 火山']},
+  {key:'genGrpArid',  names:['🏜 砂漠','🪨 峡谷']},
+  {key:'genGrpWater', names:['🏝 島','🌊 群島','🏖 環礁','💧 川','💦 滝','🌊 海']},
+  {key:'genGrpBuilt', names:['🏙 都市','🏘 街']},
+];
 
 function applyTerrainMap(result){
   // Accept either {terrain, heights} or legacy plain terrain object
@@ -4503,15 +4618,29 @@ document.getElementById('gen-mode-height').addEventListener('click',e=>{
   if(typeof updateLandSummary==='function') updateLandSummary();
 });
 
-Object.keys(MAP_PRESETS).forEach(name=>{
-  const btn=document.createElement('button');
-  btn.className='tbtn';
-  btn.style.cssText='font-size:9px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1';
-  const parts=name.split(' ');
-  btn.innerHTML=`<span style="font-size:16px">${parts[0]}</span><span style="font-weight:600" data-i18n="map:${name}">${tr('map:'+name)}</span>`;
-  btn.addEventListener('click',()=>{applyGenResult(MAP_PRESETS[name](Math.floor(Math.random()*99999)));genPopup.style.display='none';showToast(tr('toast.genMap',{name:parts[0]+' '+tr('map:'+name)}));});
-  document.getElementById('gen-btns').appendChild(btn);
-});
+(function renderGenGroups(){
+  const host=document.getElementById('gen-btns');
+  const mkBtn=(name)=>{
+    const btn=document.createElement('button');
+    btn.className='tbtn';
+    btn.style.cssText='font-size:9px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1';
+    const parts=name.split(' ');
+    btn.innerHTML=`<span style="font-size:16px">${parts[0]}</span><span style="font-weight:600" data-i18n="map:${name}">${tr('map:'+name)}</span>`;
+    btn.addEventListener('click',()=>{applyGenResult(MAP_PRESETS[name](Math.floor(Math.random()*99999)));genPopup.style.display='none';showToast(tr('toast.genMap',{name:parts[0]+' '+tr('map:'+name)}));});
+    return btn;
+  };
+  MAP_GROUPS.forEach((g,i)=>{
+    const label=document.createElement('div');
+    label.setAttribute('data-i18n', g.key);
+    label.textContent=tr(g.key);
+    label.style.cssText=`font-size:10px;color:rgba(180,220,180,.55);margin:${i?'9px':'0'} 0 5px`;
+    host.appendChild(label);
+    const grid=document.createElement('div');
+    grid.style.cssText='display:grid;grid-template-columns:repeat(5,1fr);gap:5px';
+    g.names.forEach(name=>{ if(MAP_PRESETS[name]) grid.appendChild(mkBtn(name)); });
+    host.appendChild(grid);
+  });
+})();
 document.getElementById('btn-gen-random').addEventListener('click',()=>{
   const fns=Object.values(MAP_PRESETS);applyGenResult(fns[Math.floor(Math.random()*fns.length)](Math.floor(Math.random()*99999)));
   genPopup.style.display='none';showToast(tr('toast.genRandom'));
