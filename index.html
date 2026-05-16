@@ -261,6 +261,10 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
     <div id="autosave-opts" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px"></div>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="fpsLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🎞️ フレームレート</div>
+    <div id="fps-opts" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px"></div>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="langLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🌐 言語 / Language</div>
     <div id="lang-opts" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px">
       <button class="tbtn lang-opt" data-lang="ja">🇯🇵 日本語</button>
@@ -1017,7 +1021,7 @@ const I18N = {
     'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
     settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
-    autosaveInterval:'💾 オートセーブ間隔', langLabel:'🌐 言語 / Language',
+    autosaveInterval:'💾 オートセーブ間隔', fpsLabel:'🎞️ フレームレート', langLabel:'🌐 言語 / Language',
     placementSound:'配置時の効果音',
     's.pon':'🫧 ポンッ','s.koto':'🪵 コトッ','s.poyon':'🟢 ぽよん','s.fuwa':'☁️ ふわっ',
     's.tin':'🔔 ティン','s.pata':'📄 ぱた','s.pofu':'🧸 ぽふ','s.chari':'🪙 ちゃり','s.none':'🚫 なし',
@@ -1051,6 +1055,7 @@ const I18N = {
     'ta:paint':'塗る','ta:up':'高さ+','ta:down':'高さ-',
     'tt:grass':'草','tt:sand':'砂','tt:water':'水','tt:snow':'雪','tt:dark':'岩','tt:custom':'色',
     'as:0':'オフ','as:30000':'30秒','as:60000':'1分','as:180000':'3分','as:300000':'5分',
+    'fps:15':'15','fps:30':'30','fps:60':'60','fps:0':'無制限',
     'toast.clearAll':'🗑 全リセットしました', 'toast.newMap':'🆕 {n}×{n} マップを作成しました',
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
@@ -1066,6 +1071,7 @@ const I18N = {
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
     'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
+    'toast.fpsSet':'🎞️ フレームレート：{label}',
     'toast.langSet':'🌐 言語を日本語にしました',
   },
   en: {
@@ -1080,7 +1086,7 @@ const I18N = {
     'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
     settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
-    autosaveInterval:'💾 Autosave interval', langLabel:'🌐 言語 / Language',
+    autosaveInterval:'💾 Autosave interval', fpsLabel:'🎞️ Frame rate', langLabel:'🌐 言語 / Language',
     placementSound:'Placement sound',
     's.pon':'🫧 Pop','s.koto':'🪵 Knock','s.poyon':'🟢 Boing','s.fuwa':'☁️ Floaty',
     's.tin':'🔔 Ting','s.pata':'📄 Pata','s.pofu':'🧸 Pofu','s.chari':'🪙 Clink','s.none':'🚫 None',
@@ -1114,6 +1120,7 @@ const I18N = {
     'ta:paint':'Paint','ta:up':'Height +','ta:down':'Height -',
     'tt:grass':'Grass','tt:sand':'Sand','tt:water':'Water','tt:snow':'Snow','tt:dark':'Rock','tt:custom':'Color',
     'as:0':'Off','as:30000':'30s','as:60000':'1m','as:180000':'3m','as:300000':'5m',
+    'fps:15':'15','fps:30':'30','fps:60':'60','fps:0':'Unlimited',
     'toast.clearAll':'🗑 Reset everything', 'toast.newMap':'🆕 Created a {n}×{n} map',
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
@@ -1129,6 +1136,7 @@ const I18N = {
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
     'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
+    'toast.fpsSet':'🎞️ Frame rate: {label}',
     'toast.langSet':'🌐 Language set to English',
   },
 };
@@ -4525,6 +4533,8 @@ const AUTOSAVE_PRESETS = [
   {ms:180000, label:'3分'},
   {ms:300000, label:'5分'},
 ];
+const FPS_PRESETS = [15, 30, 60, 0]; // 描画FPS上限候補（0=無制限・電力削減）
+let fpsCap = 30; // 既定30。dt連続なので演算は不変、描画頻度のみ
 let autosaveMs = 60000;
 let autosaveTimerId = null;
 const btnSave = document.getElementById('btn-save');
@@ -4547,6 +4557,11 @@ function restartAutosave(){
 function refreshAutosaveUI(){
   document.querySelectorAll('#autosave-opts .autosave-opt').forEach(b => {
     b.classList.toggle('active', Number(b.dataset.ms) === autosaveMs);
+  });
+}
+function refreshFpsUI(){
+  document.querySelectorAll('#fps-opts .fps-opt').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.v) === fpsCap);
   });
 }
 
@@ -4661,6 +4676,7 @@ function saveState(){
       weatherRandomPool: [...weatherRandomPool],
       fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
       autosaveMs,
+      fpsCap,
       lang,
       lastStoreSize,
     };
@@ -4736,6 +4752,7 @@ function applyState(data){
     if(typeof data.autosaveMs === 'number' && AUTOSAVE_PRESETS.some(p => p.ms === data.autosaveMs)){
       autosaveMs = data.autosaveMs;
     }
+    if(FPS_PRESETS.includes(data.fpsCap)) fpsCap = data.fpsCap;
 
     if(data.lang === 'en' || data.lang === 'ja') lang = data.lang;
     if(data.lastStoreSize === 3 || data.lastStoreSize === 1) lastStoreSize = data.lastStoreSize;
@@ -4759,6 +4776,7 @@ function applyState(data){
     applyWeather(typeof data.weather === 'string' ? data.weather : weather);
     refreshRandomToggle(); refreshWeatherChecks();
     refreshAutosaveUI();
+    refreshFpsUI();
     refreshScatterUI();
     resetView(); // refit camera to the restored grid size
     return true;
@@ -4785,6 +4803,23 @@ AUTOSAVE_PRESETS.forEach(({ms,label}) => {
   document.getElementById('autosave-opts').appendChild(b);
 });
 refreshAutosaveUI();
+
+FPS_PRESETS.forEach(v => {
+  const b = document.createElement('button');
+  b.className = 'tbtn fps-opt';
+  b.dataset.v = v;
+  b.dataset.i18n = 'fps:'+v;
+  b.textContent = tr('fps:'+v);
+  b.addEventListener('click', e => {
+    e.stopPropagation();
+    fpsCap = v;
+    refreshFpsUI();
+    saveState();
+    showToast(tr('toast.fpsSet',{label:tr('fps:'+v)}));
+  });
+  document.getElementById('fps-opts').appendChild(b);
+});
+refreshFpsUI();
 
 // 起動分岐: #auth=（ログイン受領）→ #r=（多人数ルーム）→ #w=（共有閲覧）→ 通常ロード
 (async () => {
@@ -4847,7 +4882,6 @@ applyLang();
 // ═══════════════════════════════════════════
 const DAY_SPEED=0.00008;
 let last=performance.now(), mmTimer=0;
-let fpsCap=30; // 描画フレーム上限（電力削減）。0で無制限。dt連続なので演算は影響なし
 
 function loop(now){
   requestAnimationFrame(loop);
