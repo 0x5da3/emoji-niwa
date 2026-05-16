@@ -566,32 +566,31 @@ const KawaiiSounds = (function(){
       src.connect(lp).connect(ng).connect(getMaster());
       src.start(t); src.stop(t + 0.18);
     },
-    // むしゃむしゃ — soft chewing / mastication (small bites)
+    // むしゃむしゃ — 控えめで上品な咀嚼（こもった柔らかいタップ2回）
     munch(){
       const a = ac(), t0 = a.currentTime;
-      const bites = 3;
+      const bites = 2;
       for(let i = 0; i < bites; i++){
-        const t = t0 + i * (0.085 + Math.random() * 0.03);
-        // Wet crunch: short band-limited noise burst
+        const t = t0 + i * (0.095 + Math.random() * 0.025);
+        // こもったタップ：ローパスノイズのみ（明るいクランチ無し）、低音量
         const src = a.createBufferSource(); src.buffer = noiseBuffer();
-        const bp = a.createBiquadFilter();
-        bp.type = 'bandpass';
-        bp.frequency.value = 850 + Math.random() * 500;
-        bp.Q.value = 1.4;
+        const lp = a.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 460 + Math.random() * 120;
         const ng = a.createGain();
-        env(ng, t, { a: 0.004, d: 0.05 + Math.random() * 0.02, peak: 0.20 });
-        src.connect(bp).connect(ng).connect(getMaster());
-        src.start(t); src.stop(t + 0.1);
-        // Soft jaw thud: low triangle with a quick downward glide
+        env(ng, t, { a: 0.004, d: 0.045 + Math.random() * 0.015, peak: 0.12 });
+        src.connect(lp).connect(ng).connect(getMaster());
+        src.start(t); src.stop(t + 0.09);
+        // ごく弱い柔らかな低音ボディ（噛む重みをほのかに）
         const osc = a.createOscillator();
         const g = a.createGain();
-        osc.type = 'triangle';
-        const f = 120 + Math.random() * 30;
+        osc.type = 'sine';
+        const f = 105 + Math.random() * 20;
         osc.frequency.setValueAtTime(f, t);
-        osc.frequency.exponentialRampToValueAtTime(f * 0.6, t + 0.06);
-        env(g, t, { a: 0.004, d: 0.06, peak: 0.16 });
+        osc.frequency.exponentialRampToValueAtTime(f * 0.7, t + 0.05);
+        env(g, t, { a: 0.004, d: 0.05, peak: 0.08 });
         osc.connect(g).connect(getMaster());
-        osc.start(t); osc.stop(t + 0.12);
+        osc.start(t); osc.stop(t + 0.1);
       }
     },
     // ちゃり — light coin/clink
