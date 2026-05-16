@@ -188,6 +188,7 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
   <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
   <button class="tbtn" id="sound-btn" data-i18n-title="ttSound" title="サウンド">🔇</button>
   <button class="tbtn" id="btn-share" data-i18n-title="share" title="共有">🔗</button>
+  <button class="tbtn" id="btn-room" data-i18n-title="ttRoom" title="多人数">👥</button>
 </div>
 
 <!-- WEATHER POPUP -->
@@ -325,6 +326,10 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
     <button class="tbtn" id="btn-visit-back" data-i18n="visiting.back">↩ 自分の箱庭に戻る</button>
     <button class="tbtn" id="btn-visit-keep" data-i18n="visiting.keep">💾 これを自分のものに</button>
   </div>
+</div>
+<div id="mp-bar" style="display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:48;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(16px);max-width:92vw;text-align:center">
+  <div id="mp-text" style="font-size:12px;color:#a8e063;margin-bottom:8px"></div>
+  <div id="mp-actions" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
 </div>
 
 <div id="gen-popup">
@@ -1022,6 +1027,13 @@ const I18N = {
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
     'toast.scatter':'🎲 {count}個をランダム配置！', 'toast.saved':'💾 セーブしました',
+    'ttRoom':'多人数（共有プレイ）',
+    'auth.loginNeeded':'ルーム発行には会員ログインが必要です','auth.loginGitHub':'GitHubでログイン','auth.logout':'ログアウト',
+    'toast.loggedIn':'✅ ログインしました','toast.loggedOut':'👋 ログアウトしました',
+    'toast.roomCreated':'👥 ルームを作成しました（招待URLをコピー）','toast.roomJoined':'👥 共有ルームに参加しました',
+    'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました',
+    'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ 多人数サーバー未設定です',
+    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出',
     'share':'🔗 共有', 'toast.shareCopied':'🔗 共有URLをコピーしました！', 'toast.shareError':'⚠️ 共有データを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
@@ -1078,6 +1090,13 @@ const I18N = {
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
     'toast.scatter':'🎲 Scattered {count}!', 'toast.saved':'💾 Saved',
+    'ttRoom':'Multiplayer (shared play)',
+    'auth.loginNeeded':'Sign in (member) to create a room','auth.loginGitHub':'Sign in with GitHub','auth.logout':'Sign out',
+    'toast.loggedIn':'✅ Signed in','toast.loggedOut':'👋 Signed out',
+    'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined shared room',
+    'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room',
+    'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
+    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave',
     'share':'🔗 Share', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read shared data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
@@ -3219,6 +3238,7 @@ function act(c,r){
       delete items[anchor];
     }
   }
+  mpTouch();
 }
 
 // ═══════════════════════════════════════════
@@ -3657,6 +3677,7 @@ document.getElementById('btn-undo').addEventListener('click',()=>{
   else if(last.type==='erase'){const it={emoji:last.emoji,bobOffset:Math.random()*Math.PI*2};if(last.size>1)it.size=last.size;items[last.key]=it;}
   else if(last.type==='terrain'){terrain[last.key]=last.old||'grass';}
   else if(last.type==='height'){if(last.old===0)delete heights[last.key];else heights[last.key]=last.old;}
+  mpTouch();
 });
 
 document.getElementById('btn-clear-all').addEventListener('click',()=>{
@@ -3668,6 +3689,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   clearSave();
   document.getElementById('menu-popup').style.display = 'none';
   showToast(tr('toast.clearAll'));
+  mpTouch();
 });
 
 // Sound: master mute + placement sound selection
@@ -3761,6 +3783,127 @@ document.getElementById('btn-visit-keep').addEventListener('click', e=>{
   saveState(); restartAutosave();
 });
 
+// ── 多人数（共有プレイ）─ オプトイン。MP_* 未設定なら無効＝オフライン従来動作 ──
+const MP_HTTP = '';   // TODO: デプロイ後に 'https://<api-domain>' を設定
+const MP_WS   = '';   // TODO: デプロイ後に 'wss://<api-domain>' を設定
+const MP_AUTH_KEY = 'emoji-niwa-auth';
+let mpActive=false, mpOwner=false, mpWs=null, mpGotSnap=false, mpSeeded=false;
+let mpApplying=false, mpRoomId='', mpPeers=0, mpRetry=0, mpSendT=null, mpOwnerTimer=null;
+
+function mpToken(){ try{ return localStorage.getItem(MP_AUTH_KEY)||''; }catch(_){ return ''; } }
+function mpSetToken(t){ try{ localStorage.setItem(MP_AUTH_KEY, t); }catch(_){ } }
+function mpClearToken(){ try{ localStorage.removeItem(MP_AUTH_KEY); }catch(_){ } }
+function mpInviteUrl(){ return location.origin + location.pathname + '#r=' + mpRoomId; }
+
+function mpBar(mode){
+  const bar=document.getElementById('mp-bar');
+  if(!bar) return;
+  if(mode==='hide'){ bar.style.display='none'; return; }
+  const txt=document.getElementById('mp-text'), act=document.getElementById('mp-actions');
+  act.innerHTML='';
+  const mk=(label,fn)=>{ const b=document.createElement('button'); b.className='tbtn';
+    b.textContent=label; b.addEventListener('click',e=>{e.stopPropagation();fn();}); act.appendChild(b); };
+  if(mode==='login'){
+    txt.textContent=tr('auth.loginNeeded');
+    mk(tr('auth.loginGitHub'), ()=>{ location.href = MP_HTTP + '/auth/login'; });
+    mk('✕', ()=>mpBar('hide'));
+  } else {
+    txt.textContent=tr('mp.bar',{room:mpRoomId, n:mpPeers});
+    mk(tr('mp.copy'), mpCopyInvite);
+    mk(tr('mp.leave'), mpLeave);
+    if(mpToken()) mk(tr('auth.logout'), mpLogout);
+  }
+  bar.style.display='block';
+}
+function mpRefreshBar(){ if(mpActive) mpBar('room'); }
+
+async function mpCopyInvite(){
+  const u=mpInviteUrl();
+  try{ await navigator.clipboard.writeText(u); showToast(tr('toast.inviteCopied')); }
+  catch(_){ window.prompt(tr('mp.copy'), u); }
+}
+function mpLeave(){
+  mpActive=false;
+  if(mpOwnerTimer){ clearInterval(mpOwnerTimer); mpOwnerTimer=null; }
+  try{ if(mpWs){ mpWs.onclose=null; mpWs.close(); } }catch(_){}
+  mpWs=null;
+  try{ location.href = location.origin + location.pathname; }
+  catch(_){ try{ location.hash=''; location.reload(); }catch(__){} }
+}
+async function mpLogout(){
+  const t=mpToken();
+  if(t && MP_HTTP){ try{ await fetch(MP_HTTP+'/auth/logout',{method:'POST',headers:{Authorization:'Bearer '+t}}); }catch(_){ } }
+  mpClearToken();
+  showToast(tr('toast.loggedOut'));
+  if(mpActive) mpLeave(); else mpBar('hide');
+}
+
+function mpTouch(){            // ローカル変更→デバウンス送信（mpActive 時のみ）
+  if(!mpActive || mpApplying || mpSendT) return;
+  mpSendT=setTimeout(()=>{ mpSendT=null; mpSend(); }, 320);
+}
+async function mpSend(){
+  if(!mpActive || !mpWs || mpWs.readyState!==1) return;
+  try{
+    const d=await encodeWorld(worldPayload());
+    if(mpWs && mpWs.readyState===1) mpWs.send(JSON.stringify({t:'snap',d}));
+  }catch(_){ }
+}
+async function mpOnMsg(ev){
+  let m; try{ m=JSON.parse(ev.data); }catch(_){ return; }
+  if(m.t==='snap' && typeof m.d==='string'){
+    mpGotSnap=true; mpApplying=true;
+    try{ const d=await decodeWorld(m.d); if(d && d.v===SAVE_VERSION) applyState(d); }catch(_){ }
+    mpApplying=false;
+  } else if(m.t==='role'){
+    mpOwner=!!m.owner;
+    if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
+  } else if(m.t==='peers'){
+    mpPeers=m.n|0; mpRefreshBar();
+  }
+}
+function mpConnect(){
+  if(!MP_WS || !mpRoomId) return;
+  let ws; try{ ws=new WebSocket(MP_WS + '/room/' + encodeURIComponent(mpRoomId)); }catch(_){ return; }
+  mpWs=ws;
+  ws.onopen=()=>{ mpRetry=0; };
+  ws.onmessage=mpOnMsg;
+  ws.onclose=()=>{
+    mpWs=null;
+    if(!mpActive) return;
+    mpRetry=Math.min(mpRetry+1,5);
+    showToast(tr('toast.mpDisconnected'));
+    setTimeout(()=>{ if(mpActive) mpConnect(); }, 800*Math.pow(2,mpRetry-1));
+  };
+  ws.onerror=()=>{ try{ ws.close(); }catch(_){ } };
+}
+function mpJoin(roomId){
+  mpRoomId=roomId; mpActive=true; mpGotSnap=false; mpSeeded=false;
+  mpConnect();
+  mpBar('room');
+  if(mpOwnerTimer) clearInterval(mpOwnerTimer);
+  mpOwnerTimer=setInterval(()=>{ if(mpActive && mpOwner) mpSend(); }, 2500);  // 動物/時間の定期再同期
+}
+
+document.getElementById('btn-room').addEventListener('click', async e=>{
+  e.stopPropagation();
+  closeAllPopups();
+  if(!MP_WS || !MP_HTTP){ showToast(tr('toast.mpUnconfigured')); return; }
+  if(mpActive){ mpCopyInvite(); return; }
+  const t=mpToken();
+  if(!t){ mpBar('login'); return; }
+  try{
+    const res=await fetch(MP_HTTP+'/room/new',{method:'POST',headers:{Authorization:'Bearer '+t}});
+    if(res.status===401){ mpClearToken(); mpBar('login'); return; }
+    if(!res.ok) throw 0;
+    const j=await res.json();
+    try{ history.replaceState(null,'','#r='+j.id); }catch(_){ location.hash='#r='+j.id; }
+    mpJoin(j.id);
+    showToast(tr('toast.roomCreated'));
+    mpCopyInvite();
+  }catch(_){ showToast(tr('toast.mpDisconnected')); }
+});
+
 // 新規マップ
 const nmPopup = document.getElementById('newmap-popup');
 let nmSize = 10;
@@ -3830,6 +3973,7 @@ document.getElementById('nm-create').addEventListener('click',()=>{
   if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
   saveState();
   showToast(tr('toast.newMap',{n:GRID}));
+  mpTouch();
 });
 
 // Clock - time picker
@@ -4203,6 +4347,7 @@ document.getElementById('btn-scatter').addEventListener('click',()=>{
   },i*20));
   closeAllPopups();
   showToast(tr('toast.scatter',{count}));
+  setTimeout(mpTouch, Math.max(0,count)*20+200);   // 段階配置の完了後に同期
 });
 
 // ═══════════════════════════════════════════
@@ -4338,7 +4483,7 @@ async function decodeWorld(str){
 }
 
 function saveState(){
-  if(visiting) return;   // 閲覧モード中は保存しない（オートセーブ非干渉）
+  if(visiting||mpActive) return;   // 閲覧/多人数中は保存しない（オートセーブ非干渉）
   try{
     const data = {
       v: SAVE_VERSION,
@@ -4362,7 +4507,7 @@ function saveState(){
 }
 
 function clearSave(){
-  if(visiting) return;   // 閲覧モード中は他人の世界を見ながら自分のセーブを消さない
+  if(visiting||mpActive) return;   // 閲覧/多人数中は自分のセーブを消さない
   try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
 }
 
@@ -4479,9 +4624,21 @@ AUTOSAVE_PRESETS.forEach(({ms,label}) => {
 });
 refreshAutosaveUI();
 
-// 共有URL（#w=...）があれば閲覧モードで世界を復元し、自分のセーブには一切触れない
+// 起動分岐: #auth=（ログイン受領）→ #r=（多人数ルーム）→ #w=（共有閲覧）→ 通常ロード
 (async () => {
-  const h = location.hash || '';
+  let h = location.hash || '';
+  if(h.startsWith('#auth=')){
+    mpSetToken(decodeURIComponent(h.slice(6)));
+    try{ history.replaceState(null, '', location.pathname); }catch(_){}
+    showToast(tr('toast.loggedIn'));
+    h = location.hash || '';
+  }
+  if(h.startsWith('#r=')){
+    loadState();                 // 自分の世界をメモリへ（保存は mpActive でガード＝非干渉）
+    mpJoin(h.slice(3));
+    showToast(tr('toast.roomJoined'));
+    return;                      // restartAutosave しない＝オートセーブ非干渉
+  }
   if(h.startsWith('#w=')){
     const d = await decodeWorld(h.slice(3));
     if(d && d.v === SAVE_VERSION && applyState(d)){

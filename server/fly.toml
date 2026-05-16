@@ -1,0 +1,27 @@
+# Fly.io app config for the emoji-niwa multiplayer server.
+# Replace <app-name> after `fly launch`. Set secrets (not committed):
+#   fly secrets set GH_CLIENT_ID=... GH_CLIENT_SECRET=... \
+#                    APP_ORIGIN=https://0x5da3.github.io/emoji-niwa \
+#                    PUBLIC_BASE=https://<api-domain>
+app = "emoji-niwa-mp"
+primary_region = "nrt"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  BIND_ADDR = "0.0.0.0:8080"
+  DATA_PATH = "/data/state.json"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+# Persistent volume for room/session snapshots (DATA_PATH).
+# Create once:  fly volumes create niwa_data --size 1 --region nrt
+[[mounts]]
+  source = "niwa_data"
+  destination = "/data"
