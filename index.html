@@ -795,6 +795,28 @@ function playPlaceSound(){
 }
 // 動物・人が食べ物を食べたときの効果音（配置音設定とは独立、ミュート尊重）
 function playEatSound(){ if(muted) return; KawaiiSounds.play('pofu'); }
+// 真夜中FM入店音 B→G — drop-in (no deps)。呼び出し側で muted を尊重する
+let _c;const _a=()=>_c||=new(window.AudioContext||webkitAudioContext)();
+let _m,_w,_v;
+function _bus(){if(_m)return _m;const a=_a();_m=a.createGain();_m.gain.value=.55;
+ const L=a.sampleRate*2.6,ir=a.createBuffer(2,L,a.sampleRate);
+ for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<L;i++){const t=i/a.sampleRate;
+  d[i]=(Math.random()*2-1)*Math.pow(1-i/L,3.2)*(t>.03?1:.25);}}
+ _v=a.createConvolver();_v.buffer=ir;_w=a.createGain();_w.gain.value=.4;
+ const dr=a.createGain();dr.gain.value=1;
+ _m.connect(dr).connect(a.destination);_m.connect(_v).connect(_w).connect(a.destination);return _m;}
+function _bell(f,t,dur,idx,pk){const a=_a();
+ const c=a.createOscillator();c.type='sine';c.frequency.value=f;
+ const m=a.createOscillator();m.type='sine';m.frequency.value=f*2.74;
+ const mg=a.createGain();mg.gain.setValueAtTime(idx,t);
+ mg.gain.exponentialRampToValueAtTime(.5,t+dur*.55);m.connect(mg).connect(c.frequency);
+ const g=a.createGain();g.gain.setValueAtTime(.0001,t);
+ g.gain.exponentialRampToValueAtTime(pk,t+.014);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+ c.connect(g).connect(_bus());m.start(t);c.start(t);m.stop(t+dur+.1);c.stop(t+dur+.1);}
+function playEntranceChime(){const a=_a();if(a.state==='suspended')a.resume();
+ const t=a.currentTime+.05, root=493.88;
+ _bell(root,t,1.70,40,.5);
+ _bell(root*0.7937,t+0.52,1.95,34,.46);}
 // Duration (seconds) of each launch whistle — used to sync shell flight
 const FW_LAUNCH_DUR = { '1': 1.15, '2': 0.75, '3': 1.3, '4': 1.6 };
 // Pick a random launch+boom combo for each firework
@@ -3013,7 +3035,7 @@ function updateAnimals(dt){
         }
         else if(PEOPLE.has(a.emoji)){
           const sk=storeKeyAt(a.tx,a.ty);
-          if(sk){ items[sk].customers=(items[sk].customers||0)+1; delete animals[id]; }
+          if(sk){ items[sk].customers=(items[sk].customers||0)+1; delete animals[id]; if(!muted) playEntranceChime(); }
         }
       }
       else{const step=Math.min(a.speed*dt,dist);a.wx+=dx/dist*step;a.wy+=dy/dist*step;}
