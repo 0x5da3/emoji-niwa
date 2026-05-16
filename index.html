@@ -2934,11 +2934,9 @@ function genValley(s){
     const k=`${c},${r}`;
     if(t[k]==='water') continue;
     const v = h[k] || 0;
-    if(v >= 6) t[k] = 'snow';
-    else if(v >= 4) t[k] = 'dark';
-    else if(v >= 2) t[k] = 'grass';
-    else if(v >= 1) t[k] = 'sand';
-    else t[k] = 'grass';
+    if(v >= 5) t[k] = 'dark';        // 岩がちな尾根筋（雪は使わない＝緑の谷）
+    else if(v >= 1) t[k] = 'grass';  // 緑の斜面・谷底
+    else t[k] = 'sand';              // 川沿いの低い砂地
   }
   return {terrain:t, heights:h};
 }
@@ -3036,7 +3034,7 @@ function genCoast(s){
     const shore = GRID*0.55 + n(c/7,0)*GRID*0.10;     // 波打ち際（うねる）
     const d = r - shore;
     const v = d < 0
-      ? 2 + (-d)*0.45 + n2(c/5,r/5)*1.5                // 内陸ほど高く
+      ? 2 + (-d)*0.40 + n2(c/5,r/5)*1.4                // 内陸ほど高く
       : -0.6 - d*0.5 + n(c/4,r/4)*0.6;                 // 沖ほど深く
     h[k] = Math.round(v);
   }
@@ -3044,8 +3042,8 @@ function genCoast(s){
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
     const k=`${c},${r}`, v=h[k];
     if(v <= 0){ t[k]='water'; delete h[k]; }           // 海
-    else if(v <= 1){ t[k]='sand'; }                    // ビーチ（砂浜）
-    else if(v <= 4){ t[k]='grass'; }                   // 海辺の草地
+    else if(v <= 2){ t[k]='sand'; }                    // ビーチ（砂浜）＝元より広め
+    else if(v <= 6){ t[k]='grass'; }                   // 海辺の草地
     else { t[k]='dark'; }                              // 内陸の丘
   }
   return {terrain:t, heights:h};
