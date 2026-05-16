@@ -1,0 +1,3605 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌿 絵文字箱庭</title>
+<style>
+:root{--panel:rgba(8,16,10,.93);--border:rgba(120,210,130,.18);--accent:#5dba6a;--accent2:#a8e063;--text:rgba(220,255,220,.88);--dim:rgba(180,220,180,.4)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a150b;overflow:hidden;font-family:'Hiragino Kaku Gothic ProN','Helvetica Neue',sans-serif;touch-action:none}
+#cv{display:block;cursor:crosshair}
+#topbar{position:fixed;top:0;left:0;right:0;z-index:30;height:50px;background:var(--panel);border-bottom:1px solid var(--border);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-evenly;gap:4px;padding:0 8px;overflow-x:auto;scrollbar-width:none}
+#topbar::-webkit-scrollbar{display:none}
+#title{font-size:14px;font-weight:700;color:var(--accent2);letter-spacing:.05em;flex:0 0 auto}
+.gap{flex:1}
+.tbtn{padding:5px 10px;border:1px solid var(--border);background:rgba(255,255,255,.05);border-radius:16px;color:var(--text);font-size:11px;cursor:pointer;white-space:nowrap;flex:0 0 auto;transition:background .12s}
+.tbtn:active{background:rgba(93,186,106,.25)}
+.tbtn.locked{opacity:0.4;cursor:not-allowed;pointer-events:none}
+.nm-preset.active,.sc-preset.active{background:rgba(93,186,106,.35) !important;border-color:rgba(168,224,99,.7) !important;color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.acc-section{background:rgba(255,255,255,.03);border:1px solid rgba(120,210,130,.12);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.acc-section:last-child{margin-bottom:0}
+.acc-header{width:100%;display:flex;align-items:center;gap:8px;padding:10px 12px;background:none;border:none;cursor:pointer;color:var(--text);text-align:left;transition:background .12s}
+.acc-header:active{background:rgba(93,186,106,.12)}
+.acc-arrow{display:inline-block;font-size:9px;color:rgba(168,224,99,.7);transition:transform .2s;width:10px;flex:0 0 auto}
+.acc-section.open .acc-arrow{transform:rotate(90deg)}
+.acc-title{flex:1;font-size:12px;font-weight:600;color:#a8e063;letter-spacing:.03em}
+.acc-summary{font-size:10px;color:rgba(180,220,180,.45);flex:0 0 auto}
+.acc-section.open .acc-summary{display:none}
+.acc-content{display:none;padding:0 12px 12px}
+.acc-section.open .acc-content{display:block;padding-top:10px}
+body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #toast{display:none !important}
+body.fullscreen #map-btns{top:auto;bottom:14px;right:14px}
+body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
+.mapbtn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
+
+/* 2D/3D toggle pill */
+.dim-toggle{width:auto;min-width:64px;height:30px;padding:0 6px;display:flex;align-items:center;gap:4px;border-radius:15px;background:var(–panel)}
+.dim-toggle .dim-label{font-size:9px;font-weight:700;letter-spacing:.05em;color:rgba(180,220,180,.4);transition:color .15s}
+.dim-toggle.is-2d .dim-2d{color:#a8e063}
+.dim-toggle.is-3d .dim-3d{color:#a8e063}
+.dim-toggle .dim-track{position:relative;width:22px;height:12px;border-radius:6px;background:rgba(255,255,255,.15);flex:0 0 auto}
+.dim-toggle .dim-thumb{position:absolute;top:1px;left:1px;width:10px;height:10px;border-radius:50%;background:#fff;transition:left .18s,background .18s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.dim-toggle.is-3d .dim-thumb{left:11px;background:#fffce0}
+.dim-toggle.is-3d .dim-track{background:rgba(93,186,106,.6)}
+
+/* Heights ON/OFF toggle (same visual language as 2D/3D switch) */
+.h-toggle{width:auto;min-width:64px;height:30px;padding:0 8px 0 10px;display:flex;align-items:center;gap:6px;border-radius:15px;background:var(–panel)}
+.h-toggle .h-label{font-size:14px;line-height:1}
+.h-toggle .h-track{position:relative;width:22px;height:12px;border-radius:6px;background:rgba(255,255,255,.15);flex:0 0 auto;transition:background .18s}
+.h-toggle .h-thumb{position:absolute;top:1px;left:1px;width:10px;height:10px;border-radius:50%;background:#fff;transition:left .18s,background .18s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.h-toggle.is-on .h-thumb{left:11px;background:#fffce0}
+.h-toggle.is-on .h-track{background:rgba(93,186,106,.6)}
+.h-toggle.disabled{opacity:.4;cursor:not-allowed}
+.h-toggle.disabled .h-track{background:rgba(255,255,255,.08)}
+
+/* Toggle switch row */
+.fx-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:8px 10px;border:1px solid var(–border);background:rgba(255,255,255,.04);border-radius:10px;color:var(–text);font-size:12px;cursor:pointer;transition:background .12s;text-align:left}
+.fx-toggle:active{background:rgba(93,186,106,.12)}
+.fx-toggle.locked{opacity:0.4;pointer-events:none}
+.fx-toggle-label{flex:1}
+.fx-toggle-switch{position:relative;width:34px;height:18px;border-radius:9px;background:rgba(255,255,255,.12);flex:0 0 auto;transition:background .15s}
+.fx-toggle-switch::after{content:’’;position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s,background .15s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.fx-toggle.on .fx-toggle-switch{background:rgba(93,186,106,.7)}
+.fx-toggle.on .fx-toggle-switch::after{left:18px;background:#fffce0}
+.fx-time-msg{font-size:10px;color:rgba(180,220,180,.45);margin:-3px 0 6px 0;text-align:left;font-style:italic}
+.gen-mode-btn{padding:7px 10px;font-size:12px}
+.gen-mode-btn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.sc-src-btn{padding:7px 6px;font-size:11px}
+.sc-src-btn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.sound-opt{padding:6px 4px;font-size:10px;line-height:1.2}
+.sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+#minimap{position:fixed;left:10px;bottom:215px;z-index:27;border:1px solid var(–border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
+#minimap.visible{display:block}
+#btn-3d.dim-toggle{position:fixed;right:10px;bottom:215px;z-index:27}
+#btn-heights{position:fixed;right:10px;bottom:255px;z-index:27}
+#modebar{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:29;display:flex;background:var(–panel);border:1px solid var(–border);border-radius:20px;overflow:hidden}
+.mbtn{padding:5px 13px;font-size:11px;color:var(–dim);background:none;border:none;cursor:pointer;transition:all .12s}
+.mbtn.active{background:rgba(93,186,106,.25);color:var(–accent2)}
+#cattabs{display:flex;gap:4px;padding:0 0 6px;overflow-x:auto;scrollbar-width:none}
+#cattabs::-webkit-scrollbar{display:none}
+.cattab{flex:0 0 auto;padding:3px 10px;font-size:11px;border:1px solid var(–border);border-radius:12px;background:rgba(255,255,255,.04);color:var(–dim);cursor:pointer;transition:all .12s}
+.cattab.active{background:rgba(93,186,106,.22);color:var(–accent2);border-color:var(–accent)}
+#palette-wrap{position:fixed;bottom:0;left:0;right:0;z-index:28;background:var(–panel);border-top:1px solid var(–border);backdrop-filter:blur(14px);padding:6px 8px 14px}
+#palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;grid-auto-rows:42px;height:136px;overflow-y:auto;align-content:start;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:rgba(168,224,99,.4) transparent;-webkit-overflow-scrolling:touch}
+#palette .ebtn{scroll-snap-align:start}
+#palette::-webkit-scrollbar{width:5px}
+#palette::-webkit-scrollbar-thumb{background:rgba(168,224,99,.35);border-radius:3px}
+#palette::-webkit-scrollbar-track{background:transparent}
+.ebtn{flex:0 0 auto;width:42px;height:42px;font-size:24px;border:2px solid transparent;border-radius:10px;background:rgba(255,255,255,.06);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;outline:none}
+.ebtn.active{border-color:var(–accent);background:rgba(93,186,106,.35);box-shadow:0 0 0 1px rgba(168,224,99,.4),inset 0 0 0 1px rgba(168,224,99,.3)}
+.ebtn:active{opacity:.7}
+
+/* Rainbow glow for 🏪 button */
+.ebtn-rainbow{position:relative;isolation:isolate;animation:ebtn-rainbow-pulse 2.4s ease-in-out infinite}
+.ebtn-rainbow::before{content:””;position:absolute;inset:-3px;border-radius:12px;background:conic-gradient(from 0deg,#ff5050,#ff9030,#ffd040,#50d050,#3090ff,#7050d0,#a040c0,#ff5050);filter:blur(6px);opacity:.7;z-index:-1;animation:ebtn-rainbow-spin 3s linear infinite}
+.ebtn-rainbow.active::before{opacity:.9;filter:blur(7px)}
+@keyframes ebtn-rainbow-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes ebtn-rainbow-pulse{0%,100%{box-shadow:0 0 8px rgba(255,180,255,.35)}50%{box-shadow:0 0 14px rgba(255,180,255,.55)}}
+/* Decoration effects for palette buttons (matches placed-emoji fx) */
+/* ✨ sparkle — gold star glow */
+.ebtn-fx-sparkle{position:relative;isolation:isolate;animation:fx-sparkle-pulse 2s ease-in-out infinite}
+.ebtn-fx-sparkle::before{content:””;position:absolute;inset:-2px;border-radius:11px;background:conic-gradient(from 0deg,#ffe680,#fff7d6,#ffd040,#ffffff,#ffe680);filter:blur(5px);opacity:.6;z-index:-1;animation:ebtn-rainbow-spin 4s linear infinite}
+.ebtn-fx-sparkle::after{content:“✨”;position:absolute;top:-4px;right:-3px;font-size:11px;z-index:1;animation:fx-sparkle-twinkle 1.4s ease-in-out infinite;pointer-events:none}
+.ebtn-fx-sparkle.active::before{opacity:.85;filter:blur(6px)}
+@keyframes fx-sparkle-pulse{0%,100%{box-shadow:0 0 7px rgba(255,235,150,.4)}50%{box-shadow:0 0 13px rgba(255,245,210,.65)}}
+@keyframes fx-sparkle-twinkle{0%,100%{opacity:.4;transform:scale(.8) rotate(0deg)}50%{opacity:1;transform:scale(1.15) rotate(20deg)}}
+/* ❄️ snow — cool blue, falling flake marker */
+.ebtn-fx-snow{position:relative;isolation:isolate;animation:fx-snow-pulse 2.4s ease-in-out infinite}
+.ebtn-fx-snow::before{content:””;position:absolute;inset:-2px;border-radius:11px;background:radial-gradient(circle at 50% 30%,rgba(210,230,255,.7),rgba(170,200,255,.25) 60%,transparent 75%);filter:blur(4px);opacity:.7;z-index:-1}
+.ebtn-fx-snow::after{content:“❄️”;position:absolute;top:-5px;right:-3px;font-size:10px;z-index:1;animation:fx-snow-fall 2.6s linear infinite;pointer-events:none}
+@keyframes fx-snow-pulse{0%,100%{box-shadow:0 0 6px rgba(190,215,255,.35)}50%{box-shadow:0 0 12px rgba(210,230,255,.6)}}
+@keyframes fx-snow-fall{0%{opacity:0;transform:translateY(-4px) rotate(0deg)}25%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translateY(6px) rotate(120deg)}}
+/* 🕯️ glow — warm flicker */
+.ebtn-fx-glow{position:relative;isolation:isolate;animation:fx-glow-flicker 1.3s ease-in-out infinite}
+.ebtn-fx-glow::before{content:””;position:absolute;inset:-2px;border-radius:11px;background:radial-gradient(circle,rgba(255,200,120,.65),rgba(255,160,70,.2) 65%,transparent 78%);filter:blur(5px);opacity:.75;z-index:-1;animation:fx-glow-breathe 1.7s ease-in-out infinite}
+@keyframes fx-glow-flicker{0%,100%{box-shadow:0 0 7px rgba(255,190,110,.45)}45%{box-shadow:0 0 11px rgba(255,210,150,.6)}70%{box-shadow:0 0 8px rgba(255,190,110,.5)}}
+@keyframes fx-glow-breathe{0%,100%{opacity:.6;filter:blur(5px)}50%{opacity:.85;filter:blur(6px)}}
+/* 🎄 tree — multi-color LED */
+.ebtn-fx-tree{position:relative;isolation:isolate}
+.ebtn-fx-tree::before{content:””;position:absolute;inset:-2px;border-radius:11px;background:conic-gradient(from 0deg,#ff5050,#ffd24d,#5ab4ff,#78e678,#ff8cdc,#ff5050);filter:blur(5px);opacity:.55;z-index:-1;animation:ebtn-rainbow-spin 2.5s linear infinite}
+.ebtn-fx-tree::after{content:“💡”;position:absolute;top:-5px;right:-3px;font-size:10px;z-index:1;animation:fx-tree-blink 0.9s steps(1) infinite;pointer-events:none}
+.ebtn-fx-tree.active::before{opacity:.8}
+@keyframes fx-tree-blink{0%{opacity:1}50%{opacity:.25}100%{opacity:1}}
+/* Event section header inside palette */
+#palette.sectioned{scroll-snap-type:y proximity}
+#palette.sectioned .ebtn{width:auto;min-width:42px;justify-self:stretch}
+.pal-section{grid-column:1/-1;grid-row:auto;height:42px;box-sizing:border-box;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:var(–accent2);padding:0 4px;letter-spacing:.04em;scroll-snap-align:start}
+.pal-section::before,.pal-section::after{content:””;flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(168,224,99,.3),transparent)}
+#terrain-palette{display:none;flex-direction:column;gap:6px;padding-top:2px}
+#terrain-palette .tp-row-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+#terrain-palette .tp-row-types{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.tp-btn{padding:8px 4px;font-size:11px;border:1px solid var(–border);background:rgba(255,255,255,.05);border-radius:10px;color:var(–text);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1;transition:all .12s}
+.tp-btn:active{background:rgba(93,186,106,.25)}
+.tp-btn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.tp-btn .tp-icon{font-size:18px}
+.tp-btn .tp-label{font-weight:600}
+.tp-swatch{display:block;width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,.2)}
+.tp-btn-custom{cursor:pointer}
+.tp-custom-input{appearance:none;-webkit-appearance:none;width:18px;height:18px;border:1px solid rgba(255,255,255,.25);border-radius:4px;padding:0;background:transparent;cursor:pointer}
+.tp-custom-input::-webkit-color-swatch-wrapper{padding:0}
+.tp-custom-input::-webkit-color-swatch{border:none;border-radius:3px}
+.tp-custom-input::-moz-color-swatch{border:none;border-radius:3px}
+
+/* Weather option checkbox (random pool selector) */
+.weather-opt{position:relative;padding-left:24px !important;text-align:left}
+.w-check{position:absolute;left:6px;top:50%;transform:translateY(-50%);width:14px;height:14px;border:1.5px solid rgba(168,224,99,.4);border-radius:50%;background:transparent;display:none;align-items:center;justify-content:center;transition:all .12s}
+#weather-popup.random-on .w-check{display:flex}
+.weather-opt.checked .w-check{background:rgba(93,186,106,.7);border-color:rgba(168,224,99,.9)}
+.weather-opt.checked .w-check::after{content:””;width:6px;height:6px;border-radius:50%;background:#fff}
+#toast{position:fixed;top:98px;left:50%;transform:translateX(-50%);background:rgba(93,186,106,.88);color:#fff;font-size:12px;padding:6px 16px;border-radius:20px;pointer-events:none;z-index:50;opacity:0;transition:opacity .3s}
+#gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
+#map-btns{position:fixed;right:10px;top:60px;z-index:27;display:flex;flex-direction:column;gap:6px}
+.mapbtn{width:36px;height:36px;border:1px solid var(–border);background:var(–panel);border-radius:8px;color:var(–text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s}
+.mapbtn:active{background:rgba(93,186,106,.3)}
+</style>
+
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="topbar">
+  <button class="tbtn" id="clock-display">☀️ 12:00</button>
+  <button class="tbtn" id="weather-btn">☀️ 天気</button>
+  <button class="tbtn" id="btn-menu">⚙️</button>
+  <button class="tbtn" id="sound-btn">🔇</button>
+  <button class="tbtn" id="btn-undo">↩</button>
+  <button class="tbtn" id="btn-gen">🎲 生成</button>
+  <button class="tbtn" id="btn-effects">✨ 演出</button>
+</div>
+
+<!-- WEATHER POPUP -->
+
+<div id="weather-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:280px;max-height:80vh;overflow-y:auto">
+  <!-- Random toggle -->
+  <button class="h-toggle" id="weather-random-toggle" style="width:100%;justify-content:space-between;padding:8px 12px;height:36px;margin-bottom:10px">
+    <span style="font-size:12px;font-weight:600;color:var(--accent2)">🎲 ランダム切替</span>
+    <span class="h-track"><span class="h-thumb"></span></span>
+  </button>
+  <div id="weather-random-hint" style="font-size:10px;color:rgba(180,220,180,.5);margin:-6px 2px 8px;display:none">候補から30〜60秒ごとに切替（タップで候補を選択）</div>
+  <div style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:10px;text-align:center">天気を選択</div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">
+    <button class="tbtn weather-opt" data-weather="clear"><span class="w-check"></span>☀️ 晴れ</button>
+    <button class="tbtn weather-opt" data-weather="rain"><span class="w-check"></span>🌧 雨</button>
+    <button class="tbtn weather-opt" data-weather="snow"><span class="w-check"></span>❄️ 雪</button>
+    <button class="tbtn weather-opt" data-weather="thunder"><span class="w-check"></span>⛈ 雷雨</button>
+    <button class="tbtn weather-opt" data-weather="hail"><span class="w-check"></span>🧊 雹</button>
+    <button class="tbtn weather-opt" data-weather="sandstorm"><span class="w-check"></span>🏜 砂嵐</button>
+    <button class="tbtn weather-opt" data-weather="sakura"><span class="w-check"></span>🌸 桜吹雪</button>
+    <button class="tbtn weather-opt" data-weather="leaves"><span class="w-check"></span>🍂 紅葉</button>
+  </div>
+</div>
+
+<!-- TIME POPUP -->
+
+<div id="time-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw">
+  <div style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:6px;text-align:center">時刻を選択</div>
+  <div id="time-display-big" style="font-size:24px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">☀️ 12:00</div>
+  <input type="range" id="time-slider" min="0" max="1439" value="720" step="10" style="width:100%;accent-color:#5dba6a;margin-bottom:10px">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px">
+    <button class="tbtn time-preset" data-min="0">🌃 00</button>
+    <button class="tbtn time-preset" data-min="360">🌅 06</button>
+    <button class="tbtn time-preset" data-min="540">☀️ 09</button>
+    <button class="tbtn time-preset" data-min="720">🌞 12</button>
+    <button class="tbtn time-preset" data-min="900">🌤 15</button>
+    <button class="tbtn time-preset" data-min="1080">🌇 18</button>
+    <button class="tbtn time-preset" data-min="1260">🌙 21</button>
+    <button class="tbtn time-preset" data-min="1380">✨ 23</button>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);padding-top:10px;text-align:center">
+    <button class="tbtn" id="time-toggle-pause">⏸ 時間を止める</button>
+  </div>
+</div>
+
+<!-- SETTINGS MENU POPUP -->
+
+<div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <button class="tbtn" id="btn-newmap">🆕 新規マップ</button>
+    <button class="tbtn" id="btn-clear-all">🗑 全リセット</button>
+  </div>
+</div>
+
+<!-- SOUND POPUP -->
+
+<div id="sound-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px;max-height:80vh;overflow-y:auto">
+  <!-- Mute toggle -->
+  <button class="h-toggle" id="mute-toggle" style="width:100%;justify-content:space-between;padding:8px 12px;height:36px;margin-bottom:10px">
+    <span style="font-size:12px;font-weight:600;color:var(--accent2)" id="mute-toggle-label">🔇 ミュート中</span>
+    <span class="h-track"><span class="h-thumb"></span></span>
+  </button>
+  <div style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:10px;text-align:center">配置時の効果音</div>
+  <div id="sound-options" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+    <button class="tbtn sound-opt active" data-sound="pon">🫧 ポンッ</button>
+    <button class="tbtn sound-opt" data-sound="koto">🪵 コトッ</button>
+    <button class="tbtn sound-opt" data-sound="poyon">🟢 ぽよん</button>
+    <button class="tbtn sound-opt" data-sound="fuwa">☁️ ふわっ</button>
+    <button class="tbtn sound-opt" data-sound="tin">🔔 ティン</button>
+    <button class="tbtn sound-opt" data-sound="pata">📄 ぱた</button>
+    <button class="tbtn sound-opt" data-sound="pofu">🧸 ぽふ</button>
+    <button class="tbtn sound-opt" data-sound="chari">🪙 ちゃり</button>
+    <button class="tbtn sound-opt" data-sound="none">🚫 なし</button>
+  </div>
+</div>
+
+<!-- EFFECTS POPUP -->
+
+<div id="fx-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:12px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw;max-height:80vh;overflow-y:auto">
+  <div id="fx-night-label" style="font-size:11px;color:rgba(180,220,180,.5);margin-bottom:6px">🌙 夜の演出</div>
+  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+    <button class="fx-toggle fx-night" id="fx-aurora"><span class="fx-toggle-label">🌌 オーロラ</span><span class="fx-toggle-switch"></span></button>
+    <button class="fx-toggle fx-night" id="fx-fireworks"><span class="fx-toggle-label">🎆 花火 <span style="font-size:9px;opacity:.7;margin-left:2px">🎵</span></span><span class="fx-toggle-switch"></span></button>
+  </div>
+  <div id="fx-day-label" style="font-size:11px;color:rgba(180,220,180,.5);margin-bottom:6px">☀️ 昼の演出</div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <button class="fx-toggle fx-day" id="fx-bubbles"><span class="fx-toggle-label">🫧 シャボン玉 <span style="font-size:9px;opacity:.7;margin-left:2px">👆🎵</span></span><span class="fx-toggle-switch"></span></button>
+    <button class="fx-toggle fx-day" id="fx-mist"><span class="fx-toggle-label">🌫 朝霧</span><span class="fx-toggle-switch"></span></button>
+  </div>
+</div>
+
+<!-- NEW MAP POPUP -->
+
+<div id="newmap-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:16px;padding:16px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto">
+  <div style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:14px">🆕 新規マップを作成</div>
+  <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.03);border:1px solid rgba(120,210,130,.12);border-radius:12px;padding:12px;margin-bottom:14px">
+    <canvas id="nm-preview" width="100" height="100" style="background:#1a2a1d;border-radius:6px;display:block"></canvas>
+    <div style="flex:1">
+      <div id="nm-size" style="font-size:28px;font-weight:800;color:#a8e063;line-height:1">10×10</div>
+      <div id="nm-cells" style="font-size:11px;color:rgba(180,220,180,.55);margin-top:4px">100 マス</div>
+      <div id="nm-label" style="font-size:11px;color:rgba(180,220,180,.4);margin-top:2px">🌾 小さめ</div>
+    </div>
+  </div>
+  <input type="range" id="nm-slider" min="5" max="50" value="10" step="1" style="width:100%;accent-color:#5dba6a;margin-bottom:14px">
+  <div style="font-size:10px;color:rgba(180,220,180,.5);margin-bottom:6px">プリセット</div>
+  <div id="nm-presets" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:16px"></div>
+  <div style="display:flex;gap:8px;border-top:1px solid rgba(120,210,130,.12);padding-top:12px">
+    <button class="tbtn" id="nm-cancel" style="flex:1;padding:9px">キャンセル</button>
+    <button class="tbtn" id="nm-create" style="flex:2;padding:9px;background:rgba(93,186,106,.45);border-color:rgba(168,224,99,.6);color:#fff;font-weight:700">✨ 作成する</button>
+  </div>
+</div>
+
+<div id="modebar">
+  <button class="mbtn active" id="mode-place">✏️ 配置</button>
+  <button class="mbtn" id="mode-terrain">🎨 地形</button>
+  <button class="mbtn" id="mode-erase">🧹 消去</button>
+</div>
+
+<div id="toast"></div>
+
+<div id="gen-popup">
+  <div class="acc-section open">
+    <button class="acc-header" data-acc="land">
+      <span class="acc-arrow">▶</span>
+      <span class="acc-title">🗺 土地の生成</span>
+      <span class="acc-summary" id="acc-summary-land">平らな地形</span>
+    </button>
+    <div class="acc-content">
+      <div style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">地形のタイプ</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+        <button class="tbtn gen-mode-btn" id="gen-mode-flat">⬜ 平らな地形</button>
+        <button class="tbtn gen-mode-btn active" id="gen-mode-height">⛰ 起伏あり</button>
+      </div>
+      <div style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
+      <div id="gen-btns" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px"></div>
+      <button class="tbtn" id="btn-gen-random" style="width:100%;padding:8px">🎲 完全ランダム</button>
+    </div>
+  </div>
+
+  <div class="acc-section">
+    <button class="acc-header" data-acc="solid">
+      <span class="acc-arrow">▶</span>
+      <span class="acc-title">🎨 単色で塗りつぶす</span>
+      <span class="acc-summary">8色＋カスタム</span>
+    </button>
+    <div class="acc-content">
+      <div id="solid-presets" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px"></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="color" id="color-picker" value="#4a8a3a" style="width:32px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0">
+        <span style="font-size:11px;color:rgba(180,220,180,.5);flex:1">カスタム色</span>
+        <button class="tbtn" id="btn-solid-custom">塗る</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="acc-section">
+    <button class="acc-header" data-acc="scatter">
+      <span class="acc-arrow">▶</span>
+      <span class="acc-title">🎲 ランダム配置</span>
+      <span class="acc-summary" id="acc-summary-scatter">20個</span>
+    </button>
+    <div class="acc-content">
+      <div style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">どこから絵文字を選ぶ？</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+        <button class="tbtn sc-src-btn active" id="sc-src-all">🗂 全カテゴリ</button>
+        <button class="tbtn sc-src-btn" id="sc-src-recent">📌 履歴から</button>
+      </div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+        <span id="sc-count" style="font-size:22px;font-weight:800;color:#a8e063">20</span>
+        <span id="sc-info" style="font-size:10px;color:rgba(180,220,180,.5)">マップの 20%</span>
+      </div>
+      <input type="range" id="sc-slider" min="1" max="100" value="20" step="1" style="width:100%;accent-color:#5dba6a;margin-bottom:8px">
+      <div id="sc-presets" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px"></div>
+      <button class="tbtn" id="btn-scatter" style="width:100%;padding:9px;background:rgba(93,186,106,.45);border-color:rgba(168,224,99,.6);color:#fff;font-weight:700">🎲 ランダム配置</button>
+    </div>
+  </div>
+</div>
+
+<div id="palette-wrap">
+  <div id="cattabs"></div>
+  <div id="palette"></div>
+  <div id="terrain-palette"></div>
+</div>
+<canvas id="minimap" width="80" height="80"></canvas>
+
+<div id="map-btns">
+  <button class="mapbtn" id="btn-zoom-in">＋</button>
+  <button class="mapbtn" id="btn-zoom-out">－</button>
+  <button class="mapbtn" id="btn-reset-view">⊡</button>
+  <button class="mapbtn" id="btn-minimap">🗺</button>
+  <button class="mapbtn" id="btn-fullscreen">⛶</button>
+</div>
+
+<button class="mapbtn dim-toggle" id="btn-3d" title="2D/3D 切り替え">
+  <span class="dim-label dim-2d">2D</span>
+  <span class="dim-track"><span class="dim-thumb"></span></span>
+  <span class="dim-label dim-3d">3D</span>
+</button>
+
+<button class="mapbtn h-toggle" id="btn-heights" title="高さを表示">
+  <span class="h-label">#️⃣</span>
+  <span class="h-track"><span class="h-thumb"></span></span>
+</button>
+
+<script>
+// ═══════════════════════════════════════════
+// KAWAII SOUNDS (drop-in)
+// ═══════════════════════════════════════════
+const KawaiiSounds = (function(){
+  let ctx, master, _noise;
+  function ac(){ return ctx ||= new (window.AudioContext || window.webkitAudioContext)(); }
+  function getMaster(){
+    if(master) return master;
+    const a = ac();
+    const g = a.createGain();
+    g.gain.value = 0.85;
+    g.connect(a.destination);
+    master = g;
+    return g;
+  }
+  function noiseBuffer(){
+    if(_noise) return _noise;
+    const a = ac();
+    const len = a.sampleRate * 1.0;
+    const buf = a.createBuffer(1, len, a.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    _noise = buf;
+    return buf;
+  }
+  function env(node, t0, { a = 0.005, d = 0.15, peak = 0.6 } = {}){
+    const g = node.gain;
+    g.cancelScheduledValues(t0);
+    g.setValueAtTime(0.0001, t0);
+    g.exponentialRampToValueAtTime(peak, t0 + a);
+    g.exponentialRampToValueAtTime(0.0001, t0 + a + d);
+  }
+  const sounds = {
+    pon(){
+      const a = ac(), t = a.currentTime;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(420, t);
+      osc.frequency.exponentialRampToValueAtTime(880, t + 0.08);
+      env(g, t, { a: 0.004, d: 0.18, peak: 0.55 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 0.25);
+      const click = a.createBufferSource();
+      click.buffer = noiseBuffer();
+      const cg = a.createGain();
+      const bp = a.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 4;
+      env(cg, t, { a: 0.001, d: 0.04, peak: 0.18 });
+      click.connect(bp).connect(cg).connect(getMaster());
+      click.start(t); click.stop(t + 0.1);
+    },
+    koto(){
+      const a = ac(), t = a.currentTime;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(220, t);
+      osc.frequency.exponentialRampToValueAtTime(110, t + 0.09);
+      env(g, t, { a: 0.002, d: 0.12, peak: 0.7 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 0.2);
+      const src = a.createBufferSource(); src.buffer = noiseBuffer();
+      const hp = a.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1200;
+      const cg = a.createGain();
+      env(cg, t, { a: 0.001, d: 0.05, peak: 0.22 });
+      src.connect(hp).connect(cg).connect(getMaster());
+      src.start(t); src.stop(t + 0.08);
+    },
+    poyon(){
+      const a = ac(), t = a.currentTime;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(330, t);
+      osc.frequency.exponentialRampToValueAtTime(740, t + 0.09);
+      osc.frequency.exponentialRampToValueAtTime(440, t + 0.28);
+      env(g, t, { a: 0.005, d: 0.32, peak: 0.55 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 0.4);
+    },
+    fuwa(){
+      const a = ac(), t = a.currentTime;
+      const src = a.createBufferSource(); src.buffer = noiseBuffer();
+      const lp = a.createBiquadFilter(); lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(800, t);
+      lp.frequency.exponentialRampToValueAtTime(2200, t + 0.25);
+      const ng = a.createGain();
+      env(ng, t, { a: 0.04, d: 0.4, peak: 0.18 });
+      src.connect(lp).connect(ng).connect(getMaster());
+      src.start(t); src.stop(t + 0.5);
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, t);
+      osc.frequency.exponentialRampToValueAtTime(660, t + 0.3);
+      env(g, t, { a: 0.03, d: 0.35, peak: 0.25 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 0.45);
+    },
+    // ティン — small cute bell
+    tin(){
+      const a = ac(), t = a.currentTime;
+      // Main bell tone
+      const osc1 = a.createOscillator();
+      const g1 = a.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(1320, t);
+      env(g1, t, { a: 0.002, d: 0.35, peak: 0.4 });
+      osc1.connect(g1).connect(getMaster());
+      osc1.start(t); osc1.stop(t + 0.5);
+      // Sparkle overtone
+      const osc2 = a.createOscillator();
+      const g2 = a.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(2640, t);
+      env(g2, t, { a: 0.001, d: 0.18, peak: 0.18 });
+      osc2.connect(g2).connect(getMaster());
+      osc2.start(t); osc2.stop(t + 0.25);
+    },
+    // ぱた — paper-fall, light tap
+    pata(){
+      const a = ac(), t = a.currentTime;
+      // Soft body thud
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(180, t);
+      osc.frequency.exponentialRampToValueAtTime(140, t + 0.07);
+      env(g, t, { a: 0.002, d: 0.10, peak: 0.45 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 0.15);
+      // Tiny paper rustle (filtered noise)
+      const src = a.createBufferSource(); src.buffer = noiseBuffer();
+      const bp = a.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 1.2;
+      const ng = a.createGain();
+      env(ng, t, { a: 0.001, d: 0.06, peak: 0.14 });
+      src.connect(bp).connect(ng).connect(getMaster());
+      src.start(t); src.stop(t + 0.1);
+    },
+    // ぽふ — soft cushion landing
+    pofu(){
+      const a = ac(), t = a.currentTime;
+      // Warm low body
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(160, t);
+      osc.frequency.exponentialRampToValueAtTime(95, t + 0.12);
+      env(g, t, { a: 0.005, d: 0.18, peak: 0.55 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 0.25);
+      // Soft cushion air
+      const src = a.createBufferSource(); src.buffer = noiseBuffer();
+      const lp = a.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 700;
+      const ng = a.createGain();
+      env(ng, t, { a: 0.005, d: 0.12, peak: 0.20 });
+      src.connect(lp).connect(ng).connect(getMaster());
+      src.start(t); src.stop(t + 0.18);
+    },
+    // ちゃり — light coin/clink
+    chari(){
+      const a = ac(), t = a.currentTime;
+      // Two-tone metallic ping
+      const osc1 = a.createOscillator();
+      const g1 = a.createGain();
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(880, t);
+      env(g1, t, { a: 0.001, d: 0.14, peak: 0.35 });
+      osc1.connect(g1).connect(getMaster());
+      osc1.start(t); osc1.stop(t + 0.2);
+      const osc2 = a.createOscillator();
+      const g2 = a.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(1320, t + 0.015);
+      env(g2, t + 0.015, { a: 0.001, d: 0.12, peak: 0.28 });
+      osc2.connect(g2).connect(getMaster());
+      osc2.start(t + 0.015); osc2.stop(t + 0.2);
+      // Short metallic shimmer
+      const src = a.createBufferSource(); src.buffer = noiseBuffer();
+      const hp = a.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 3000;
+      const ng = a.createGain();
+      env(ng, t, { a: 0.001, d: 0.05, peak: 0.12 });
+      src.connect(hp).connect(ng).connect(getMaster());
+      src.start(t); src.stop(t + 0.08);
+    },
+    // ── Firework launch: 4 variants (all 遠くでかすか style) ──
+    // Soft, distant, muffled 笛 whistle. Doppler pitch-fall, lowpass
+    // for distance haze, gentle volume. Variations differ in distance
+    // feel and duration. #3 is the original reference, kept as-is.
+    // 1: やや近めの遠花火 (closer-ish distant — ヒューゥ↘)
+    fwLaunch1(){
+      const a = ac(), t = a.currentTime;
+      const dur = 1.15;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1350, t);
+      osc.frequency.exponentialRampToValueAtTime(1600, t + 0.15);
+      osc.frequency.exponentialRampToValueAtTime(760, t + dur);
+      const bp = a.createBiquadFilter();
+      bp.type = 'bandpass'; bp.Q.value = 7;
+      bp.frequency.setValueAtTime(1500, t);
+      bp.frequency.exponentialRampToValueAtTime(800, t + dur);
+      const lp = a.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 2400;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.11, t + 0.18);
+      g.gain.exponentialRampToValueAtTime(0.03, t + dur);
+      osc.connect(bp).connect(lp).connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + dur + 0.05);
+    },
+    // 2: 短く遠い (short distant — ヒュッ↘)
+    fwLaunch2(){
+      const a = ac(), t = a.currentTime;
+      const dur = 0.75;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1300, t);
+      osc.frequency.exponentialRampToValueAtTime(1500, t + 0.1);
+      osc.frequency.exponentialRampToValueAtTime(800, t + dur);
+      const bp = a.createBiquadFilter();
+      bp.type = 'bandpass'; bp.Q.value = 7;
+      bp.frequency.setValueAtTime(1450, t);
+      bp.frequency.exponentialRampToValueAtTime(850, t + dur);
+      const lp = a.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 2100;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.10, t + 0.12);
+      g.gain.exponentialRampToValueAtTime(0.028, t + dur);
+      osc.connect(bp).connect(lp).connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + dur + 0.05);
+    },
+    // 3: 遠くでかすか (original distant reference — keep as-is)
+    fwLaunch3(){
+      const a = ac(), t = a.currentTime;
+      const dur = 1.3;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1200, t);
+      osc.frequency.exponentialRampToValueAtTime(1450, t + 0.15);
+      osc.frequency.exponentialRampToValueAtTime(680, t + dur);
+      const bp = a.createBiquadFilter();
+      bp.type = 'bandpass'; bp.Q.value = 7;
+      bp.frequency.setValueAtTime(1350, t);
+      bp.frequency.exponentialRampToValueAtTime(720, t + dur);
+      const lp = a.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 2000;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.09, t + 0.2);
+      g.gain.exponentialRampToValueAtTime(0.025, t + dur);
+      osc.connect(bp).connect(lp).connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + dur + 0.05);
+    },
+    // 4: とても遠い余韻 (very distant, long haze — ヒュ〜ゥ↘)
+    fwLaunch4(){
+      const a = ac(), t = a.currentTime;
+      const dur = 1.6;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1050, t);
+      osc.frequency.exponentialRampToValueAtTime(1250, t + 0.2);
+      osc.frequency.exponentialRampToValueAtTime(560, t + dur);
+      const bp = a.createBiquadFilter();
+      bp.type = 'bandpass'; bp.Q.value = 8;
+      bp.frequency.setValueAtTime(1200, t);
+      bp.frequency.exponentialRampToValueAtTime(600, t + dur);
+      const lp = a.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 1600;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.07, t + 0.25);
+      g.gain.exponentialRampToValueAtTime(0.02, t + dur);
+      osc.connect(bp).connect(lp).connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + dur + 0.05);
+    },
+    // ── Firework explosion: 3 variants (low, no sparkle) ──
+    // 1: deep punchy burst (低く重い破裂)
+    fwBoom1(){
+      const a = ac(), t = a.currentTime;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(110, t);
+      osc.frequency.exponentialRampToValueAtTime(38, t + 0.32);
+      env(g, t, { a: 0.002, d: 0.42, peak: 1.0 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 0.55);
+      // Body burst (low filtered noise)
+      const burst = a.createBufferSource(); burst.buffer = noiseBuffer();
+      const lp = a.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 700;
+      const bg = a.createGain();
+      env(bg, t, { a: 0.001, d: 0.3, peak: 0.7 });
+      burst.connect(lp).connect(bg).connect(getMaster());
+      burst.start(t); burst.stop(t + 0.35);
+    },
+    // 2: heavy double thud (ズドンと重い二段破裂)
+    fwBoom2(){
+      const a = ac(), t = a.currentTime;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(95, t);
+      osc.frequency.exponentialRampToValueAtTime(35, t + 0.4);
+      env(g, t, { a: 0.002, d: 0.5, peak: 0.95 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 0.65);
+      // First crack
+      const burst = a.createBufferSource(); burst.buffer = noiseBuffer();
+      const lp = a.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 600;
+      const bg = a.createGain();
+      env(bg, t, { a: 0.001, d: 0.22, peak: 0.65 });
+      burst.connect(lp).connect(bg).connect(getMaster());
+      burst.start(t); burst.stop(t + 0.28);
+      // Second softer rumble (delayed)
+      const osc2 = a.createOscillator();
+      const g2 = a.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(75, t + 0.12);
+      osc2.frequency.exponentialRampToValueAtTime(40, t + 0.4);
+      env(g2, t + 0.12, { a: 0.005, d: 0.35, peak: 0.45 });
+      osc2.connect(g2).connect(getMaster());
+      osc2.start(t + 0.12); osc2.stop(t + 0.55);
+    },
+    // 3: distant low boom (遠くで低く響く)
+    fwBoom3(){
+      const a = ac(), t = a.currentTime;
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(65, t);
+      osc.frequency.exponentialRampToValueAtTime(32, t + 0.55);
+      env(g, t, { a: 0.04, d: 0.8, peak: 0.75 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 1.0);
+      const burst = a.createBufferSource(); burst.buffer = noiseBuffer();
+      const lp = a.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 280;
+      const bg = a.createGain();
+      env(bg, t, { a: 0.04, d: 0.65, peak: 0.45 });
+      burst.connect(lp).connect(bg).connect(getMaster());
+      burst.start(t); burst.stop(t + 0.75);
+    },
+    // Bubble pop — quick wet pop
+    bubblePop(){
+      const a = ac(), t = a.currentTime;
+      // High pitch quick rise
+      const osc = a.createOscillator();
+      const g = a.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(700, t);
+      osc.frequency.exponentialRampToValueAtTime(1500, t + 0.04);
+      env(g, t, { a: 0.002, d: 0.08, peak: 0.4 });
+      osc.connect(g).connect(getMaster());
+      osc.start(t); osc.stop(t + 0.12);
+      // Tiny splash click
+      const src = a.createBufferSource(); src.buffer = noiseBuffer();
+      const bp = a.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 3500; bp.Q.value = 3;
+      const ng = a.createGain();
+      env(ng, t, { a: 0.001, d: 0.05, peak: 0.18 });
+      src.connect(bp).connect(ng).connect(getMaster());
+      src.start(t); src.stop(t + 0.08);
+    },
+  };
+  return {
+    play(name){
+      if(!sounds[name]) return;
+      if(ac().state === 'suspended') ac().resume();
+      sounds[name]();
+    },
+    setVolume(v){ getMaster().gain.value = v; },
+  };
+})();
+
+let muted = true; // master mute (controls all sound)
+let selectedSound = 'pon'; // placement sound type
+function playPlaceSound(){
+  if(muted) return;
+  if(selectedSound === 'none') return;
+  KawaiiSounds.play(selectedSound);
+}
+// Duration (seconds) of each launch whistle — used to sync shell flight
+const FW_LAUNCH_DUR = { '1': 1.15, '2': 0.75, '3': 1.3, '4': 1.6 };
+// Pick a random launch+boom combo for each firework
+function pickFireworkSounds(){
+  const launch = String(1 + Math.floor(Math.random() * 4)); // 1..4
+  const boom = String(1 + Math.floor(Math.random() * 3));    // 1..3
+  return { launch, boom, dur: FW_LAUNCH_DUR[launch] || 1.15 };
+}
+function playFireworkLaunch(which){
+  if(muted) return;
+  KawaiiSounds.play('fwLaunch' + which);
+}
+function playFireworkBoom(which){
+  if(muted) return;
+  KawaiiSounds.play('fwBoom' + which);
+}
+
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+let GRID = 10;
+const TILE_W = 40, TILE_H = 40; // square tiles
+
+const CATEGORIES = {
+  '📌 履歴':    [],
+  '🌿 自然':  ['🌳','🌲','🌴','🌵','🎋','🪴','🌸','🌺','🌻','🌼','🌷','🌹','💐','🍀','☘️','🍄','🍄‍🟫','🌿','🎍','🪷','🌾','🪻','🪺','🪹','🌱','🌰','🌽','🍁','🍂','🍃','🌸','🪻','🌼','🪨','🪵','🌊','🐚','🪸','🌴','🎄','🌲','🍇','🍓','🌶️','🪶','🌬️','💮','🏵️'],
+  '🐾 動物':  ['🦋','🐸','🐇','🦊','🐿️','🐝','🦔','🐟','🐠','🐡','🦈','🐬','🐳','🐋','🐙','🦑','🦞','🦀','🐚','🐌','🐛','🐞','🐜','🕷','🦂','🐈','🐈‍⬛','🐕','🐩','🐦','🐦‍⬛','🦅','🦆','🦢','🦉','🦇','🐺','🦝','🐻','🐼','🦌','🐢','🐍','🦎','🐊','🦖','🦕','🐉','🐲','🐅','🐆','🦓','🦍','🦧','🐘','🦣','🦏','🦛','🐪','🐫','🦒','🦘','🦬','🐂','🐃','🐄','🐎','🐖','🐏','🐑','🐐','🦙','🦃','🐔','🐓','🐣','🐤','🐥','🕊️','🦜','🦚','🦩','🦤','🪶','🐀','🐁','🐹','🐰','🦫','🦦','🦥','🐨','🐾','🦡','🦨','🐗','🐴','🦄','🐝','🪲','🐢','🦭','🐳','🦦','🐧','🐻‍❄️','🦮','🐕‍🦺','🐈','🐇','🦔','🦇','🦋','🐛','🪱','🦗','🪳','🪰','🪟'],
+  '🏗 建物':  ['🏠','🏡','🏚','🛖','🏘️','🏢','🏬','🏣','🏤','🏥','🏦','🏨','🏪','🏫','🏩','💒','⛪','🕌','🕍','🛕','🕋','⛩️','🏯','🏰','🗼','🗽','🏛','🏟','🎡','🎢','🎠','🎪','🏖','🏝','🏜','⛺','⛲','🌉','🛤','🛣','🏗','🏭','🏚️','🗿','⛱️','🏙️','🌆','🌇','🌃','🌌','🌁','🏞️','🚏','🚦','🚥','🏧','🛗','🪜','🚪','🪟','🛋️','🚧','🏁','🚩','🎌','🏴','🏳️'],
+  '🌍 地形':  ['🪨','💧','🌊','🏔️','⛰','🗻','🌋','🏜️','🏝️','🏖','❄️','🌁','🏞','🛤','🏕️','⛺','🏟️','🪵','🌅','🌄','🏘️','🛣️','🌉','🏜️','🪨','⛲','🗺️','🧭','🏞️','🌍','🌎','🌏','🗾'],
+  '✨ 空':    ['⭐','🌟','🌙','🌛','🌜','🌚','🌝','🌗','🌖','🌘','🌑','🌒','🌓','🌔','🌕','☀️','🌞','☁️','⛅','🌤','🌥','🌦','🌧','⛈','🌩','🌨','🌪','🌫','🌬','🌈','💫','🌠','☄️','🔥','💧','💨','❄️','🌟','✨','⚡','🌡️','🪐','🌌','🛰️','🚀','🎆','🎇','🌃','🌅','🌄','🌇','🌆','☃️','⛄','🌂','☔','🪁','🎈'],
+  '🍎 食べ物':['🍎','🍏','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🧀','🥚','🍳','🥞','🧇','🥓','🍗','🍖','🌭','🍔','🍟','🍕','🥪','🌮','🌯','🍱','🍙','🍘','🍚','🍜','🍝','🍣','🍤','🍦','🍩','🍪','🎂','🍰','🧁','🍫','🍬','🍭','🍯','🥛','☕','🍵','🧃','🥤','🍶','🍺','🍷','🫛','🫘','🫚','🥗','🥘','🫕','🍲','🥫','🧈','🧂','🍛','🥟','🥠','🥡','🦪','🍢','🍡','🍧','🍨','🥧','🍮','🍿','🍩','🥨','🥐','🍪','🥃','🍸','🍹','🍾','🧉','🧋','🫗','🥂','🍽️','🍴','🥄','🔪','🧆','🥩','🍐','🍋‍🟩','🫒'],
+  '🚗 乗り物':['🚗','🚕','🚙','🚐','🛻','🚚','🚛','🚜','🏎','🚓','🚑','🚒','🛴','🚲','🛵','🏍','🛺','🚂','🚃','🚄','🚅','🚆','🚇','🚈','🚉','🚊','🚝','🚞','🚋','🚎','✈️','🛩','🛫','🛬','🪂','🚁','🚀','🛸','⛵','🛶','🚤','🛥','🛳','⛴','🚢','⚓','🛟','🚄','🚅','🛹','🛼','🦽','🦼','🩼','🛞','🚏','⛽','🚧','🚨','🚥','🚦','🗺️','🛰️','🚠','🚡','🚟','🚃','🎢','🎡','🎠','🏟️','🪝','🛎️','🧳'],
+  '🧑 人':    ['👶','🧒','👦','👧','🧑','👨','👩','🧓','👴','👵','🧔','👮','🕵️','💂','👷','🤴','👸','👳','👲','🧕','🤵','👰','🤰','🤱','👼','🎅','🤶','🧙','🧚','🧛','🧜','🧝','🧞','🧟','🧌','🦸','🦹','🥷','🕴️','🚶','🧎','🏃','💃','🕺','🤸','🤼','🤽','🤾','🏌️','🏇','🧘','🏄','🚣','🏊','⛷','🏂','🚴','🚵','🤹','🧗','👨‍🍳','👩‍🍳','👨‍🌾','👩‍🌾','👨‍🎨','👩‍🎨','👨‍🚀','👩‍🚀','👨‍🚒','👩‍🚒','👨‍⚕️','👩‍⚕️','👨‍🏫','👩‍🏫','👨‍🎓','👩‍🎓','👨‍🎤','👩‍🎤','👨‍💻','👩‍💻','👨‍🔧','👩‍🔧','👨‍🔬','👩‍🔬','👨‍✈️','👩‍✈️','👨‍⚖️','👩‍⚖️','👨‍👩‍👧','👨‍👩‍👦','👨‍👨‍👦','👩‍👩‍👧','👫','👬','👭','💑','💏','🙋','🙆','🙅','🤦','🤷','🙇','💆','💇','🤝','👋','👏','🙌','🙏','💪','🧑‍🎄','🧑‍🍳','🧑‍🌾','🧑‍🏭','🧑‍💼','🧑‍🔬','🧑‍🎨','🧑‍🚒','🧑‍✈️','🧑‍🚀','🧑‍⚖️','🧑‍🦰','🧑‍🦱','🧑‍🦳','🧑‍🦲','👯','🧖','🧗','🤺','🏋️','⛹️','🤾','🏌️','🧑‍🦽','🧑‍🦼','🧑‍🤝‍🧑','👨‍👦','👩‍👧','👪','🫂','🤱','🫃','🫄','🙋‍♂️','🙋‍♀️','💁','🙎','🙍','🤳','💅','👀','👁️','🦻','👃','👅','👂'],
+  '🎪 その他':['💎','🎪','🎠','🎭','🎨','🎯','🎲','🪄','🔮','🧲','🪬','🧸','🎁','🎈','🎀','🎊','🎉','🪅','🎂','🎏','🎐','🪔','🏮','🎃','💀','👻','👽','🤖','💫','💥','💢','💯','💤','🛎','🔔','🔮','🪬','🧿','🪩','♟️','🎰','🎳','🎮','🕹️','🧩','🪀','🎱','🃏','🀄','🎴','🎟️','🎫','🪆','🖼️','🧵','🪡','🧶','🪢','💍','💄','👑','🎩','🎓','🧢','🪖','⛑️','📿','💼','🎒','👜','👛','👝','🛍️','🪮','🪥','🧼','🛁','🚿','🪒','🔑','🗝️','🔨','🪓','⛏️','🛠️','🗡️','⚔️','🏹','🛡️','🔧','🪛','🔩','⚙️','🧰','🧲','⚗️','🧪','🧫','🧬','🔬','🔭','📡','💡','🔦','🕯️','🪧','🎀','🪄'],
+  '🎄 イベント':['🎄','🎅','🤶','🧑‍🎄','🦌','⛄','☃️','❄️','🎁','🔔','🕯️','🌟','✨','🎀','🍪','🥛','🧦','🛷','🌨️','⛪','🎍','🎑','🧧','🏮','🎏','🎐','🪔','🍷','🥂','🍾','💝','💐','🌹','🍫','🍰','🎂','🦃','🍂','🍁','🎃','👻','🦇','🕷️','🕸️','💀','🧙','🧛','🍬','🍭','🐰','🥚','🌷','🎈','🎓','💍','👰','🤵','💒','🎉','🎊','🎆','🎇'],
+};
+// イベントカテゴリのセクション分け（表示用）
+const EVENT_SECTIONS = [
+  {title:'🎄 クリスマス', emojis:['🎄','🎅','🤶','🧑‍🎄','🦌','⛄','☃️','❄️','🎁','🔔','🕯️','🌟','✨','🎀','🍪','🥛','🧦','🛷','🌨️','⛪']},
+  {title:'🎍 お正月',     emojis:['🎍','🎑','🧧','🏮','🎏','🎐','🪔','🍊','🌅','🐉','🎴','🪅']},
+  {title:'💝 バレンタイン',emojis:['💝','💐','🌹','🍫','🍰','🎂','💌','💕','💗','🌷']},
+  {title:'🎃 ハロウィン',  emojis:['🎃','👻','🦇','🕷️','🕸️','💀','🧙','🧛','🍬','🍭','🧟','🦴']},
+  {title:'🐰 イースター',  emojis:['🐰','🥚','🌷','🐣','🌸','🧺']},
+  {title:'🎉 お祝い',      emojis:['🎉','🎊','🎆','🎇','🥂','🍾','🍷','🎈','🎓','💍','👰','🤵','💒','🎂']},
+];
+// 絵文字ごとの装飾エフェクトタイプ（性質に合わせて適材適所）
+//  'sparkle' = 金色の星の輝き / 'snow' = 雪が舞う / 'glow' = 暖かい灯り
+//  'tree' = ツリーの多色LED / 未登録 = 演出なし
+const EMOJI_FX = {
+  '🌟':'sparkle', '✨':'sparkle', '🎀':'sparkle', '🎁':'sparkle', '🔔':'sparkle',
+  '❄️':'snow', '☃️':'snow', '⛄':'snow', '🌨️':'snow', '🛷':'snow',
+  '🕯️':'glow', '🍪':'glow', '🥛':'glow',
+  '🎄':'tree',
+  // 🎅 🤶 🧑‍🎄 🦌 ⛪ 🧦 は演出なし（人物・動物・建物・小物）
+};
+function fxType(e){ return EMOJI_FX[e] || null; }
+const ANIMALS = new Set(['🦋','🐸','🐇','🦊','🐿️','🐝','🦔','🐟','🐠','🐡','🦞','🦀','🐌','🐛','🐞','🐜','🐈','🐈‍⬛','🐕','🐩','🐦','🐦‍⬛','🦆','🦉','🦝','🦌','🐢','🐍','🦎','🚶','🏃','💃','🕺','🤸','🧑','👶','🐉']);
+
+const TERRAIN_COLORS = {
+  grass:['#4a7a3a','#3d6d30'], sand:['#c8a050','#b89040'],
+  water:['#2a7aaa','#1a6a9a'], snow:['#ddeeff','#cce0f5'],
+  dark: ['#444038','#38342c'],
+};
+const TERRAIN_TYPES  = ['grass','sand','water','snow','dark'];
+const TERRAIN_LABELS = {grass:'🌿 草',sand:'🏜 砂',water:'🌊 水',snow:'❄️ 雪',dark:'⬛ 岩'};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const terrain = {};   // "c,r" → type string
+const items   = {};   // "c,r" → {emoji, bobOffset}
+const heights = {};   // "c,r" → integer 0..N
+const animals = {};   // id → animal
+let animalId  = 0;
+let history   = [];
+let selEmoji  = null;
+let selTerrain= 'grass';
+let mode      = 'place';
+// Initialize time of day from the user's current local clock
+let timeOfDay = (function(){
+  const now = new Date();
+  return (now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds()) / 86400;
+})();
+let dayPaused = false;
+let weather   = 'clear';
+let animT     = 0;
+let hoverCell = null;
+let drawMode  = '3d'; // '2d' | '3d'
+let moonScreenPos = null; // {x, y, r} or null when moon not visible
+let sunScreenPos = null;  // {x, y, r} or null when sun not visible
+let showHeights = true; // toggle for 2D height number overlay (default ON in 2D)
+let heightsTouched = false; // user has manually toggled at least once
+
+// ═══════════════════════════════════════════
+// NOISE (for terrain gen)
+// ═══════════════════════════════════════════
+function mulberry32(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};}
+function makeNoise(seed){
+  const rng=mulberry32(seed),p=Array.from({length:256},(_,i)=>i);
+  for(let i=255;i>0;i--){const j=Math.floor(rng()*(i+1));[p[i],p[j]]=[p[j],p[i]];}
+  const pp=[...p,...p],fade=t=>t*t*t*(t*(t*6-15)+10),lerp=(a,b,t)=>a+(b-a)*t,grad=(h,x,y)=>{h&=3;return((h&1)?-x:x)+((h&2)?-y:y);};
+  return(x,y)=>{const X=Math.floor(x)&255,Y=Math.floor(y)&255;x-=Math.floor(x);y-=Math.floor(y);const u=fade(x),v=fade(y),a=pp[X]+Y,b=pp[X+1]+Y;return lerp(lerp(grad(pp[a],x,y),grad(pp[b],x-1,y),u),lerp(grad(pp[a+1],x,y-1),grad(pp[b+1],x-1,y-1),u),v);};
+}
+
+// ═══════════════════════════════════════════
+// ISO PROJECTION
+// ═══════════════════════════════════════════
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let OX = 0, OY = 0; // origin offset (panning)
+let scale = 1;
+
+function resizeCanvas(){
+  cv.width  = window.innerWidth;
+  cv.height = window.innerHeight;
+  OX = cv.width  / 2 - (GRID * TILE_W / 2) * scale;
+  OY = cv.height / 2 - (GRID * TILE_H / 2) * scale + 30;
+}
+resizeCanvas();
+
+let rotation = 0;
+
+// Tile dimensions
+const TW2 = 40, TH2 = 40;   // 2D square
+const TW3 = 52, TH3 = 26;   // 3D isometric
+
+function getTileDims(){ return drawMode==='3d' ? {TW:TW3,TH:TH3} : {TW:TW2,TH:TH2}; }
+
+// grid (c,r) → screen top-left (or iso-top) pixel
+function isoToScreen(c, r){
+  const {TW,TH} = getTileDims();
+  let rc=c, rr=r;
+  switch(rotation&3){
+    case 1: rc=GRID-1-r; rr=c;        break;
+    case 2: rc=GRID-1-c; rr=GRID-1-r; break;
+    case 3: rc=r;        rr=GRID-1-c; break;
+  }
+  if(drawMode==='3d'){
+    return {
+      x: OX + (rc - rr) * (TW/2) * scale,
+      y: OY + (rc + rr) * (TH/2) * scale,
+    };
+  }
+  return {
+    x: OX + rc * TW * scale,
+    y: OY + rr * TH * scale,
+  };
+}
+
+// screen pixel → grid cell
+function screenToIso(sx, sy){
+  const {TW,TH} = getTileDims();
+  let rc, rr;
+  if(drawMode==='3d'){
+    const rx=sx-OX, ry=sy-OY;
+    const tw=(TW/2)*scale, th=(TH/2)*scale;
+    rc = Math.floor((rx/tw + ry/th)/2);
+    rr = Math.floor((ry/th - rx/tw)/2);
+  } else {
+    rc = Math.floor((sx-OX)/(TW*scale));
+    rr = Math.floor((sy-OY)/(TH*scale));
+  }
+  let c=rc, r=rr;
+  switch(rotation&3){
+    case 1: c=rr;        r=GRID-1-rc; break;
+    case 2: c=GRID-1-rc; r=GRID-1-rr; break;
+    case 3: c=GRID-1-rr; r=rc;        break;
+  }
+  return {c, r};
+}
+
+// ═══════════════════════════════════════════
+// EMOJI TEXTURE CACHE (offscreen canvas)
+// ═══════════════════════════════════════════
+const emojiCache = {};
+function getEmojiImg(emoji, size=48){
+  const key = emoji + size;
+  if(emojiCache[key]) return emojiCache[key];
+  const oc = document.createElement('canvas');
+  oc.width = oc.height = size;
+  const octx = oc.getContext('2d');
+  octx.font = `${Math.floor(size * 0.75)}px serif`;
+  octx.textAlign = 'center'; octx.textBaseline = 'middle';
+  octx.fillText(emoji, size/2, size/2 + 2);
+  emojiCache[key] = oc;
+  return oc;
+}
+
+// Rainbow glow for 🏪
+function drawRainbowGlow(cx, cy, size){
+  const t = animT;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  // 7 layered colored halos rotating in hue
+  const colors = [
+    [255, 80, 80],
+    [255, 160, 60],
+    [255, 235, 80],
+    [120, 220, 100],
+    [80, 180, 240],
+    [120, 120, 240],
+    [200, 100, 230],
+  ];
+  for(let i = 0; i < colors.length; i++){
+    const phase = t * 1.2 + i * (Math.PI * 2 / colors.length);
+    const radius = size * (0.55 + Math.sin(phase) * 0.08);
+    const ox = cx + Math.cos(phase) * size * 0.12;
+    const oy = cy + Math.sin(phase) * size * 0.08;
+    const [r, g, b] = colors[i];
+    const grd = ctx.createRadialGradient(ox, oy, 0, ox, oy, radius);
+    grd.addColorStop(0,   `rgba(${r},${g},${b},0.55)`);
+    grd.addColorStop(0.5, `rgba(${r},${g},${b},0.20)`);
+    grd.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(ox, oy, radius, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Twinkling sparkle for placed Christmas emojis
+function drawSparkle(cx, cy, size){
+  const t = animT;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  // Soft warm halo
+  const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, size*0.6);
+  const pulse = 0.18 + Math.sin(t*2.4)*0.06;
+  halo.addColorStop(0,   `rgba(255,245,210,${pulse})`);
+  halo.addColorStop(0.6, `rgba(255,235,170,${pulse*0.5})`);
+  halo.addColorStop(1,   'rgba(255,235,170,0)');
+  ctx.fillStyle = halo;
+  ctx.beginPath(); ctx.arc(cx, cy, size*0.6, 0, Math.PI*2); ctx.fill();
+  // Orbiting twinkles (4-point stars)
+  const N = 5;
+  for(let i = 0; i < N; i++){
+    const phase = t * 1.6 + i * (Math.PI * 2 / N);
+    const dist = size * (0.42 + Math.sin(t*3 + i)*0.06);
+    const sx = cx + Math.cos(phase) * dist;
+    const sy = cy + Math.sin(phase) * dist * 0.85;
+    const tw = 0.5 + Math.sin(t*5 + i*1.7) * 0.5; // 0..1 twinkle
+    const r = size * (0.05 + tw * 0.06);
+    const cols = ['255,255,255','255,235,150','180,235,160','255,210,210'];
+    const col = cols[i % cols.length];
+    ctx.fillStyle = `rgba(${col},${0.5 + tw*0.5})`;
+    // 4-point star via two crossed thin rhombi
+    ctx.beginPath();
+    ctx.moveTo(sx, sy - r*2.2);
+    ctx.lineTo(sx + r*0.5, sy);
+    ctx.lineTo(sx, sy + r*2.2);
+    ctx.lineTo(sx - r*0.5, sy);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(sx - r*2.2, sy);
+    ctx.lineTo(sx, sy + r*0.5);
+    ctx.lineTo(sx + r*2.2, sy);
+    ctx.lineTo(sx, sy - r*0.5);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ❄️ Gentle falling snow around the emoji
+function drawSnowFx(cx, cy, size){
+  const t = animT;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  // Cool bluish halo
+  const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, size*0.55);
+  const pulse = 0.12 + Math.sin(t*1.8)*0.04;
+  halo.addColorStop(0,   `rgba(200,225,255,${pulse})`);
+  halo.addColorStop(0.6, `rgba(180,210,255,${pulse*0.5})`);
+  halo.addColorStop(1,   'rgba(180,210,255,0)');
+  ctx.fillStyle = halo;
+  ctx.beginPath(); ctx.arc(cx, cy, size*0.55, 0, Math.PI*2); ctx.fill();
+  // Falling flakes (deterministic per index, looping)
+  const N = 7;
+  for(let i = 0; i < N; i++){
+    const seed = i * 1.7;
+    const fall = ((t * (0.35 + (i%3)*0.08) + i*0.5) % 1); // 0..1 down
+    const fx = cx + Math.sin(t*1.2 + seed) * size*0.4 + (i - N/2) * size*0.06;
+    const fy = cy - size*0.5 + fall * size;
+    const fade = Math.sin(fall * Math.PI); // fade in/out at ends
+    const r = size * 0.045 * (0.7 + (i%2)*0.4);
+    ctx.fillStyle = `rgba(255,255,255,${0.7*fade})`;
+    ctx.beginPath(); ctx.arc(fx, fy, r, 0, Math.PI*2); ctx.fill();
+    // tiny cross sparkle on bigger flakes
+    if(i%2===0){
+      ctx.strokeStyle = `rgba(220,240,255,${0.5*fade})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(fx-r*2, fy); ctx.lineTo(fx+r*2, fy);
+      ctx.moveTo(fx, fy-r*2); ctx.lineTo(fx, fy+r*2);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+// 🕯️ Warm flickering candle/cozy glow
+function drawGlowFx(cx, cy, size){
+  const t = animT;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  // Flicker = sum of a couple of sines for organic feel
+  const flick = 0.5 + Math.sin(t*9)*0.18 + Math.sin(t*5.3+1)*0.12;
+  const r = size * (0.55 + flick*0.12);
+  const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  grd.addColorStop(0,   `rgba(255,210,130,${0.30*flick + 0.12})`);
+  grd.addColorStop(0.45,`rgba(255,170,80,${0.16*flick})`);
+  grd.addColorStop(1,   'rgba(255,150,60,0)');
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+  // Inner bright core
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, size*0.22);
+  core.addColorStop(0, `rgba(255,240,200,${0.35*flick})`);
+  core.addColorStop(1, 'rgba(255,240,200,0)');
+  ctx.fillStyle = core;
+  ctx.beginPath(); ctx.arc(cx, cy, size*0.22, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// 🎄 Multi-color twinkling tree lights
+function drawTreeFx(cx, cy, size){
+  const t = animT;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  // Faint green ambient
+  const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, size*0.6);
+  halo.addColorStop(0,   'rgba(120,220,140,0.10)');
+  halo.addColorStop(1,   'rgba(120,220,140,0)');
+  ctx.fillStyle = halo;
+  ctx.beginPath(); ctx.arc(cx, cy, size*0.6, 0, Math.PI*2); ctx.fill();
+  // LED bulbs around a triangle-ish outline
+  const cols = ['255,80,80','255,210,80','90,180,255','120,230,120','255,140,220'];
+  const N = 9;
+  for(let i = 0; i < N; i++){
+    const fr = i / N;
+    // zig-zag down the tree silhouette
+    const yy = cy - size*0.42 + fr * size*0.8;
+    const spread = (1 - fr) * size*0.38; // wider at bottom
+    const xx = cx + Math.sin(fr * Math.PI * 3) * spread;
+    const blink = 0.5 + Math.sin(t*6 + i*1.3) * 0.5; // 0..1 each at own phase
+    const col = cols[i % cols.length];
+    const r = size * 0.05 * (0.6 + blink*0.7);
+    const g = ctx.createRadialGradient(xx, yy, 0, xx, yy, r*2.4);
+    g.addColorStop(0, `rgba(${col},${0.8*blink})`);
+    g.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(xx, yy, r*2.4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = `rgba(255,255,255,${0.7*blink})`;
+    ctx.beginPath(); ctx.arc(xx, yy, r*0.6, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Dispatch the right decoration effect for a placed emoji
+function drawEmojiFx(emoji, cx, cy, size){
+  const fx = fxType(emoji);
+  if(fx === 'sparkle') drawSparkle(cx, cy, size);
+  else if(fx === 'snow') drawSnowFx(cx, cy, size);
+  else if(fx === 'glow') drawGlowFx(cx, cy, size);
+  else if(fx === 'tree') drawTreeFx(cx, cy, size);
+}
+
+// ═══════════════════════════════════════════
+// DRAW
+// ═══════════════════════════════════════════
+// Sky colors based on time
+const SKIES = [
+  {t:0,   sky:'#050510', fog:.7},
+  {t:.22, sky:'#0a0a20', fog:.6},
+  {t:.27, sky:'#c0512a', fog:.3},
+  {t:.32, sky:'#87ceeb', fog:.0},
+  {t:.5,  sky:'#4488cc', fog:.0},
+  {t:.68, sky:'#87ceeb', fog:.0},
+  {t:.73, sky:'#c05020', fog:.3},
+  {t:.78, sky:'#0a0a20', fog:.6},
+  {t:1,   sky:'#050510', fog:.7},
+];
+function lerpHex(a,b,t){
+  const ah=a.replace('#',''),bh=b.replace('#','');
+  const lerp=(x,y,t)=>Math.round(parseInt(x,16)+(parseInt(y,16)-parseInt(x,16))*t).toString(16).padStart(2,'0');
+  return '#'+lerp(ah.slice(0,2),bh.slice(0,2),t)+lerp(ah.slice(2,4),bh.slice(2,4),t)+lerp(ah.slice(4,6),bh.slice(4,6),t);
+}
+function getSky(){
+  let a=SKIES[SKIES.length-1],b=SKIES[0];
+  for(let i=0;i<SKIES.length-1;i++)if(timeOfDay>=SKIES[i].t&&timeOfDay<=SKIES[i+1].t){a=SKIES[i];b=SKIES[i+1];break;}
+  const f=(timeOfDay-a.t)/Math.max(b.t-a.t,.0001);
+  return {sky:lerpHex(a.sky,b.sky,f), fog:a.fog+(b.fog-a.fog)*f};
+}
+
+// ambient darkness overlay (0=day 1=night)
+function getAmbient(){ return getSky().fog; }
+
+function drawTile(c, r){
+  const {x,y} = isoToScreen(c, r);
+  const {TW,TH} = getTileDims();
+  const tw = TW * scale, th = TH * scale;
+  const type = terrain[`${c},${r}`] || 'grass';
+  const isHover = hoverCell && hoverCell.c===c && hoverCell.r===r;
+
+  let col0, col1;
+  if(type === 'water'){
+    col0 = '#3a9ed8';
+    col1 = '#2a8ec8';
+  } else {
+    const cc = TERRAIN_COLORS[type] || TERRAIN_COLORS.grass;
+    col0 = cc[0]; col1 = cc[1];
+  }
+  const hCol = isHover ? (mode==='erase'?'#ff6666':mode==='terrain'?'#ffcc44':col0) : col0;
+  const hCol1 = isHover ? hCol : col1;
+
+  if(drawMode === '3d'){
+    const depth = th * 0.5;
+    const h = heights[`${c},${r}`] || 0;
+    const lift = h * depth;
+    // Top face (lifted up by `lift`)
+    const ty = y - lift;
+    ctx.beginPath();
+    ctx.moveTo(x,        ty);
+    ctx.lineTo(x+tw/2,   ty+th/2);
+    ctx.lineTo(x,        ty+th);
+    ctx.lineTo(x-tw/2,   ty+th/2);
+    ctx.closePath();
+    ctx.fillStyle = hCol;
+    ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.08)'; ctx.lineWidth=.5; ctx.stroke();
+
+    // Left face — extends from top down by (depth + lift)
+    const totalDepth = depth + lift;
+    ctx.beginPath();
+    ctx.moveTo(x-tw/2, ty+th/2);
+    ctx.lineTo(x,      ty+th);
+    ctx.lineTo(x,      ty+th+totalDepth);
+    ctx.lineTo(x-tw/2, ty+th/2+totalDepth);
+    ctx.closePath();
+    ctx.fillStyle = lerpHex(hCol1,'#000000',.18); ctx.fill(); ctx.stroke();
+
+    // Right face
+    ctx.beginPath();
+    ctx.moveTo(x+tw/2, ty+th/2);
+    ctx.lineTo(x,      ty+th);
+    ctx.lineTo(x,      ty+th+totalDepth);
+    ctx.lineTo(x+tw/2, ty+th/2+totalDepth);
+    ctx.closePath();
+    ctx.fillStyle = lerpHex(hCol1,'#000000',.32); ctx.fill(); ctx.stroke();
+
+  } else {
+    // 2D square (solid color, no checker)
+    ctx.fillStyle = hCol;
+    ctx.fillRect(x, y, tw, th);
+    ctx.strokeStyle='rgba(0,0,0,0.06)'; ctx.lineWidth=1;
+    ctx.strokeRect(Math.round(x)+.5, Math.round(y)+.5, Math.round(tw)-1, Math.round(th)-1);
+  }
+}
+
+// ── Rainbow ─────────────────────────────────────────────
+let rainbowOn = false;
+let rainbowProgress = 0; // 0..1, fades in/out
+function updateRainbow(dt){
+  const target = rainbowOn ? 1 : 0;
+  // Approach target with eased rate (slower fade = more elegant)
+  const speed = 0.6; // full fade takes ~1.7s
+  if(rainbowProgress < target){
+    rainbowProgress = Math.min(target, rainbowProgress + dt * speed);
+  } else if(rainbowProgress > target){
+    rainbowProgress = Math.max(target, rainbowProgress - dt * speed);
+  }
+}
+function drawRainbow(){
+  if(rainbowProgress <= 0) return;
+  // Only show during day
+  let dayAlpha = 0;
+  if(timeOfDay >= 0.27 && timeOfDay <= 0.73){
+    if(timeOfDay < 0.35) dayAlpha = (timeOfDay - 0.27) / 0.08;
+    else if(timeOfDay > 0.65) dayAlpha = (0.73 - timeOfDay) / 0.08;
+    else dayAlpha = 1;
+  }
+  if(dayAlpha <= 0) return;
+
+  const W = cv.width, H = cv.height;
+  const cx = W * 0.5, cy = H * 0.85;
+  const radius = Math.max(W, H) * 0.7;
+  const colors = ['#ff5050','#ff9030','#ffd040','#50d050','#3090ff','#7050d0','#a040c0'];
+
+  // Sweep from left horizon (PI) toward right horizon (2*PI)
+  // rainbowProgress 0..1 controls how far the arc has drawn
+  const fullSweep = Math.PI; // half circle
+  const sweep = fullSweep * rainbowProgress;
+  // Alpha also eases with progress for a soft fade-in
+  const fade = rainbowProgress;
+
+  ctx.save();
+  ctx.lineWidth = 8;
+  ctx.lineCap = 'butt';
+  for(let i = 0; i < colors.length; i++){
+    const alphaByte = Math.floor(0x60 * dayAlpha * fade);
+    ctx.strokeStyle = colors[i] + alphaByte.toString(16).padStart(2,'0');
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius - i * 9, Math.PI, Math.PI + sweep);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ── Fireworks (enhanced) ────────────────────────────────
+const fireworks = [];
+const fwSparks  = []; // detached sparks with trails
+const fwShells  = []; // rising launch shells
+
+function spawnFirework(){
+  const W = cv.width, H = cv.height;
+  // Launch from bottom — shell rises to target
+  const targetX = W * (0.15 + Math.random() * 0.7);
+  const targetY = H * (0.12 + Math.random() * 0.25);
+  const startX = targetX + (-30 + Math.random() * 60);
+  const startY = H + 20;
+  const palette = [
+    ['#ff4060','#ffc0d0'],['#ffd040','#fff8b0'],['#40ff90','#b0ffd0'],
+    ['#4090ff','#b0d8ff'],['#c040ff','#e8b0ff'],['#ffffff','#fff8e0'],
+    ['#ff8040','#ffd0a0'],['#40ffff','#b0ffff'],['#ff40ff','#ffb0ff'],
+  ];
+  const cols = palette[Math.floor(Math.random() * palette.length)];
+  const shape = Math.random();
+  let shapeType;
+  if(shape < 0.25)      shapeType = 'ring';
+  else if(shape < 0.45) shapeType = 'chrysanthemum';  // 2-stage with bigger
+  else if(shape < 0.65) shapeType = 'palm';            // few large drooping
+  else if(shape < 0.85) shapeType = 'willow';          // long-lasting drooping
+  else                   shapeType = 'burst';
+  const fwSnd = pickFireworkSounds();
+  fwShells.push({
+    x: startX, y: startY,
+    tx: targetX, ty: targetY,
+    vx: (targetX - startX) * 0.6,
+    vy: -(startY - targetY) * 1.5,
+    life: 0,
+    color: cols[0], glow: cols[1],
+    shape: shapeType,
+    trail: [],
+    // Random launch+boom combo, remembered on the shell so the
+    // explosion matches the launch and stays in sync with flight time.
+    boomSound: fwSnd.boom,
+    flightTime: muted ? null : fwSnd.dur,
+  });
+  // Launch whistle (if not muted)
+  playFireworkLaunch(fwSnd.launch);
+}
+
+function explodeFirework(shell){
+  const {tx:x, ty:y, color, glow, shape} = shell;
+  // Boom sound (random combo chosen at launch, if not muted)
+  playFireworkBoom(shell.boomSound || String(1 + Math.floor(Math.random()*3)));
+  let count, baseSpeed, gravity, life, special;
+  switch(shape){
+    case 'ring':
+      count = 70; baseSpeed = 170; gravity = 50; life = 2.0; break;
+    case 'chrysanthemum':
+      count = 110; baseSpeed = 200; gravity = 70; life = 2.5; break;
+    case 'palm':
+      count = 40; baseSpeed = 230; gravity = 110; life = 2.2; break;
+    case 'willow':
+      count = 90; baseSpeed = 130; gravity = 120; life = 3.5; break;
+    default:
+      count = 100; baseSpeed = 60; gravity = 80; life = 2.0;
+  }
+  for(let i = 0; i < count; i++){
+    const ang = (i / count) * Math.PI * 2 + Math.random() * 0.04;
+    const sp = shape === 'ring'
+      ? baseSpeed + Math.random() * 15
+      : baseSpeed * (0.4 + Math.random() * 0.6);
+    fwSparks.push({
+      x, y,
+      vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      life: 0, maxLife: life + Math.random() * 0.5,
+      gravity,
+      trail: [],
+      trailMax: shape === 'willow' ? 18 : 8,
+      color, glow,
+      twinklePhase: Math.random() * Math.PI * 2,
+      isWillow: shape === 'willow',
+    });
+  }
+  // Launch flash
+  fireworks.push({x, y, t: 0, color, big: shape === 'chrysanthemum'});
+}
+
+function updateFireworks(dt){
+  // Rising shells
+  for(let i = fwShells.length - 1; i >= 0; i--){
+    const s = fwShells[i];
+    s.life += dt;
+    if(s.flightTime != null){
+      // Sound-synced flight: interpolate position over flightTime,
+      // explode exactly when the launch whistle finishes.
+      if(s.sx0 == null){ s.sx0 = s.x; s.sy0 = s.y; }
+      const p = Math.min(1, s.life / s.flightTime);
+      const ep = 1 - Math.pow(1 - p, 2); // ease-out (decelerate near apex)
+      s.x = s.sx0 + (s.tx - s.sx0) * ep;
+      s.y = s.sy0 + (s.ty - s.sy0) * ep;
+      s.trail.unshift({x: s.x, y: s.y});
+      if(s.trail.length > 10) s.trail.pop();
+      if(s.life >= s.flightTime){
+        explodeFirework(s);
+        fwShells.splice(i, 1);
+      }
+    } else {
+      // Physics-based flight (muted)
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      s.vy += 80 * dt;
+      s.trail.unshift({x: s.x, y: s.y});
+      if(s.trail.length > 10) s.trail.pop();
+      if(s.y <= s.ty || s.vy >= 0){
+        explodeFirework(s);
+        fwShells.splice(i, 1);
+      }
+    }
+  }
+  // Flash
+  for(let i = fireworks.length - 1; i >= 0; i--){
+    fireworks[i].t += dt;
+    if(fireworks[i].t > 0.3) fireworks.splice(i,1);
+  }
+  // Sparks
+  for(let i = fwSparks.length - 1; i >= 0; i--){
+    const s = fwSparks[i];
+    s.life += dt;
+    s.x += s.vx * dt;
+    s.y += s.vy * dt;
+    s.vy += s.gravity * dt;
+    s.vx *= 0.975; s.vy *= 0.975;
+    s.trail.unshift({x: s.x, y: s.y});
+    if(s.trail.length > s.trailMax) s.trail.pop();
+    if(s.life >= s.maxLife) fwSparks.splice(i, 1);
+  }
+}
+
+function drawFireworks(){
+  // Rising shells with trail
+  for(const s of fwShells){
+    for(let i = 1; i < s.trail.length; i++){
+      const p = s.trail[i];
+      const a = (1 - i / s.trail.length) * 0.6;
+      ctx.fillStyle = `rgba(${hexToRgb(s.glow)},${a})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 2 - i * 0.15, 0, Math.PI*2); ctx.fill();
+    }
+    // Head spark
+    ctx.fillStyle = `rgba(${hexToRgb(s.color)},.95)`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, 2.5, 0, Math.PI*2); ctx.fill();
+  }
+  // Launch flash
+  for(const f of fireworks){
+    const a = Math.max(0, 1 - f.t / 0.3);
+    const r = (f.big ? 80 : 50) + f.t * 220;
+    const grd = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+    grd.addColorStop(0, `rgba(${hexToRgb(f.color)},${a * 0.55})`);
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, Math.PI*2); ctx.fill();
+  }
+  // Sparks
+  for(const s of fwSparks){
+    const t = s.life / s.maxLife;
+    if(t >= 1) continue;
+    const a = Math.pow(1 - t, 1.3);
+    const twinkle = 0.7 + Math.sin(animT * 18 + s.twinklePhase) * 0.3;
+
+    // Tail line
+    if(s.trail.length > 1){
+      const head = s.trail[0], tail = s.trail[s.trail.length-1];
+      const grd = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+      grd.addColorStop(0, `rgba(${hexToRgb(s.glow)},0)`);
+      grd.addColorStop(1, `rgba(${hexToRgb(s.glow)},${a * 0.45})`);
+      ctx.strokeStyle = grd;
+      ctx.lineWidth = 1.6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(tail.x, tail.y);
+      ctx.lineTo(head.x, head.y);
+      ctx.stroke();
+    }
+    // Glow
+    const gr = 8;
+    const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gr);
+    g.addColorStop(0, `rgba(${hexToRgb(s.glow)},${a * twinkle * 0.7})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(s.x, s.y, gr, 0, Math.PI*2); ctx.fill();
+    // Core
+    ctx.fillStyle = `rgba(255,255,255,${a * twinkle})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, 1.4, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+// ── Bubbles (day) ───────────────────────────────────────
+let bubblesOn = false;
+const bubbles = [];
+const bubblePops = []; // {x, y, particles:[{x,y,vx,vy,life,maxLife,size}]}
+function updateBubbles(dt){
+  if(bubblesOn && bubbles.length < 30 && Math.random() < 0.15){
+    bubbles.push({
+      x: Math.random() * cv.width,
+      y: cv.height + 10,
+      vy: -(15 + Math.random() * 25),
+      vx: -10 + Math.random() * 20,
+      sway: Math.random() * Math.PI * 2,
+      size: 12 + Math.random() * 28,
+      life: 0,
+    });
+  }
+  for(let i = bubbles.length - 1; i >= 0; i--){
+    const b = bubbles[i];
+    b.life += dt;
+    b.sway += dt * 1.5;
+    b.x += b.vx * dt + Math.sin(b.sway) * 0.6;
+    b.y += b.vy * dt;
+    if(b.y < -30 || b.life > 12) bubbles.splice(i, 1);
+  }
+  // Update pop particles
+  for(let i = bubblePops.length - 1; i >= 0; i--){
+    const pop = bubblePops[i];
+    let allDead = true;
+    for(const p of pop.particles){
+      p.life += dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 80 * dt; // gravity
+      p.vx *= 0.96; p.vy *= 0.96;
+      if(p.life < p.maxLife) allDead = false;
+    }
+    if(allDead) bubblePops.splice(i, 1);
+  }
+}
+function popBubble(b){
+  const particles = [];
+  const count = 8 + Math.floor(Math.random()*5);
+  for(let i = 0; i < count; i++){
+    const ang = (i / count) * Math.PI * 2 + Math.random() * 0.3;
+    const sp = 40 + Math.random() * 50;
+    particles.push({
+      x: b.x, y: b.y,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp,
+      life: 0, maxLife: 0.4 + Math.random() * 0.3,
+      size: 1.5 + Math.random() * 2,
+    });
+  }
+  bubblePops.push({x: b.x, y: b.y, r: b.size, t: 0, particles});
+  if(!muted) KawaiiSounds.play('bubblePop');
+}
+function tryBubbleTap(sx, sy){
+  // Iterate from newest (drawn last/topmost) to oldest
+  for(let i = bubbles.length - 1; i >= 0; i--){
+    const b = bubbles[i];
+    const dx = sx - b.x, dy = sy - b.y;
+    if(dx*dx + dy*dy <= b.size * b.size){
+      popBubble(b);
+      bubbles.splice(i, 1);
+      return true;
+    }
+  }
+  return false;
+}
+function drawBubbles(){
+  for(const b of bubbles){
+    const grd = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.size);
+    grd.addColorStop(0,   'rgba(255,255,255,0)');
+    grd.addColorStop(0.7, 'rgba(180,220,255,0.15)');
+    grd.addColorStop(1,   'rgba(255,255,255,0.55)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,200,220,0.5)';
+    ctx.beginPath(); ctx.arc(b.x - b.size*0.3, b.y - b.size*0.3, b.size*0.15, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.beginPath(); ctx.arc(b.x - b.size*0.35, b.y - b.size*0.35, b.size*0.08, 0, Math.PI*2); ctx.fill();
+  }
+  // Pop splashes
+  for(const pop of bubblePops){
+    for(const p of pop.particles){
+      const fade = Math.max(0, 1 - p.life / p.maxLife);
+      if(fade <= 0) continue;
+      ctx.fillStyle = `rgba(200,225,255,${fade * 0.85})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = `rgba(255,255,255,${fade})`;
+      ctx.beginPath(); ctx.arc(p.x - p.size*0.3, p.y - p.size*0.3, p.size*0.4, 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+// ── Morning Mist (day) ──────────────────────────────────
+let mistOn = false;
+const mistPatches = [];
+function initMist(){
+  mistPatches.length = 0;
+  // Pre-populate so it's already there when toggled on
+  for(let i = 0; i < 14; i++){
+    mistPatches.push({
+      x: Math.random() * cv.width,
+      y: cv.height * (0.55 + Math.random() * 0.35),
+      vx: 6 + Math.random() * 8,
+      size: 80 + Math.random() * 120,
+      opacity: 0.15 + Math.random() * 0.15,
+      phase: Math.random() * Math.PI * 2,
+    });
+  }
+}
+function updateMist(dt){
+  if(!mistOn) return;
+  for(const m of mistPatches){
+    m.x += m.vx * dt;
+    m.phase += dt * 0.3;
+    if(m.x - m.size > cv.width){
+      m.x = -m.size;
+      m.y = cv.height * (0.55 + Math.random() * 0.35);
+    }
+  }
+}
+function drawMist(){
+  if(!mistOn || mistPatches.length === 0) return;
+  // Only show during day with morning-bias (stronger 0.27-0.45)
+  let dayAlpha = 0;
+  if(timeOfDay >= 0.27 && timeOfDay <= 0.73){
+    if(timeOfDay < 0.32) dayAlpha = (timeOfDay - 0.27) / 0.05;
+    else if(timeOfDay > 0.68) dayAlpha = (0.73 - timeOfDay) / 0.05;
+    else dayAlpha = 1;
+    // Bias: thicker in morning, thinner after noon
+    if(timeOfDay < 0.5) dayAlpha *= 1.0;
+    else dayAlpha *= 0.7;
+  }
+  if(dayAlpha <= 0) return;
+
+  ctx.save();
+  for(const m of mistPatches){
+    const breathe = Math.sin(m.phase) * 0.15 + 1;
+    const r = m.size * breathe;
+    const op = m.opacity * dayAlpha * breathe;
+    const grd = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, r);
+    grd.addColorStop(0,   `rgba(240,245,250,${op})`);
+    grd.addColorStop(0.6, `rgba(240,245,250,${op * 0.4})`);
+    grd.addColorStop(1,   `rgba(240,245,250,0)`);
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.ellipse(m.x, m.y, r, r * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ── Aurora ──────────────────────────────────────────────
+let auroraOn = false;
+function drawAurora(){
+  if(!auroraOn) return;
+  // Only visible at night
+  let nightAlpha = 0;
+  if(timeOfDay < 0.27)      nightAlpha = Math.min(1, (0.27 - timeOfDay) * 8);
+  else if(timeOfDay > 0.73) nightAlpha = Math.min(1, (timeOfDay - 0.73) * 8);
+  if(nightAlpha <= 0) return;
+
+  const W = cv.width, H = cv.height;
+  const bandsCount = 3;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+
+  for(let b = 0; b < bandsCount; b++){
+    const phase = animT * 0.3 + b * 1.7;
+    const baseY = H * (0.12 + b * 0.06);
+    const amplitude = H * 0.08;
+    const segments = 40;
+
+    // Draw one curtain as a vertical gradient ribbon
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.5);
+    // top wavy edge
+    for(let i = 0; i <= segments; i++){
+      const x = (i / segments) * W;
+      const wave = Math.sin(x * 0.005 + phase) * amplitude
+                 + Math.sin(x * 0.013 + phase * 1.6) * amplitude * 0.4;
+      ctx.lineTo(x, baseY + wave);
+    }
+    // bottom (flat baseline)
+    ctx.lineTo(W, H * 0.55);
+    ctx.lineTo(0, H * 0.55);
+    ctx.closePath();
+
+    // Gradient: top fades from green to violet, bottom transparent
+    const grd = ctx.createLinearGradient(0, baseY - amplitude, 0, H * 0.55);
+    const greens = ['rgba(80,255,180,', 'rgba(120,200,255,', 'rgba(180,120,255,'];
+    const top = greens[b % greens.length];
+    grd.addColorStop(0,    top + (0.38 * nightAlpha) + ')');
+    grd.addColorStop(0.4,  top + (0.18 * nightAlpha) + ')');
+    grd.addColorStop(1,    top + '0)');
+    ctx.fillStyle = grd;
+    ctx.fill();
+  }
+
+  // Shimmer streaks
+  for(let s = 0; s < 18; s++){
+    const seed = s * 53 + 11;
+    const x = ((seed * 7919) % 100000) / 100000 * W;
+    const localShift = Math.sin(animT * 1.2 + s) * 30;
+    const y1 = H * 0.10 + ((seed * 31) % 60);
+    const y2 = H * 0.50 + ((seed * 17) % 30);
+    const grd = ctx.createLinearGradient(x, y1, x + localShift, y2);
+    grd.addColorStop(0, `rgba(180,255,220,${0.25 * nightAlpha})`);
+    grd.addColorStop(1, `rgba(180,255,220,0)`);
+    ctx.strokeStyle = grd;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x, y1);
+    ctx.lineTo(x + localShift, y2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+// ── Meteor Shower ───────────────────────────────────────
+const meteors = [];
+function spawnMeteor(){
+  // Random start position (upper screen, slight bias to top)
+  const startX = Math.random() * cv.width * 1.3 - cv.width * 0.15;
+  const startY = Math.random() * cv.height * 0.4 - cv.height * 0.1;
+  const angle  = Math.PI * 0.18 + Math.random() * Math.PI * 0.12; // 32°〜54° downward
+  const speed  = 700 + Math.random() * 600;
+  // Weighted palette: ~50% colorless white-ish, ~50% colored
+  const colored = [
+    ['#fff8e0','#ffd070'], // warm gold
+    ['#e0f0ff','#80b0ff'], // cool blue
+    ['#ffe0ff','#ff80c0'], // pink
+    ['#e0ffe0','#80ffb0'], // green
+  ];
+  const whiteish = [
+    ['#ffffff','#ffffff'], // pure white
+    ['#fafaff','#e0e0f0'], // cool white
+    ['#fffaf0','#f0e8d8'], // warm white
+    ['#f5f5f5','#cccccc'], // neutral gray-white
+  ];
+  const c = Math.random() < 0.5
+    ? whiteish[Math.floor(Math.random() * whiteish.length)]
+    : colored[Math.floor(Math.random() * colored.length)];
+  meteors.push({
+    x: startX, y: startY,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    life: 0, maxLife: 1.0 + Math.random() * 0.8,
+    size: 1.8 + Math.random() * 1.5,
+    trail: [],
+    coreColor: c[0],
+    tailColor: c[1],
+  });
+}
+
+function updateMeteors(dt){
+  for(let i = meteors.length - 1; i >= 0; i--){
+    const m = meteors[i];
+    m.life += dt;
+    m.x += m.vx * dt;
+    m.y += m.vy * dt;
+    m.trail.unshift({x: m.x, y: m.y});
+    if(m.trail.length > 22) m.trail.pop();
+    if(m.life > m.maxLife || m.x > cv.width + 100 || m.y > cv.height + 100){
+      meteors.splice(i, 1);
+    }
+  }
+}
+
+function drawMeteors(){
+  for(const m of meteors){
+    const fade = Math.min(1, m.life / 0.15) * Math.max(0, 1 - (m.life - m.maxLife * 0.6) / (m.maxLife * 0.4));
+
+    // Thin tail line
+    if(m.trail.length > 1){
+      const head = m.trail[0];
+      const tail = m.trail[m.trail.length - 1];
+      const grd = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+      grd.addColorStop(0, `rgba(${hexToRgb(m.tailColor)},0)`);
+      grd.addColorStop(1, `rgba(${hexToRgb(m.tailColor)},${fade * 0.6})`);
+      ctx.strokeStyle = grd;
+      ctx.lineWidth = m.size * 0.8;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(tail.x, tail.y);
+      ctx.lineTo(head.x, head.y);
+      ctx.stroke();
+    }
+
+    // Soft glow around head
+    const gradR = m.size * 4;
+    const grd = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, gradR);
+    grd.addColorStop(0, `rgba(${hexToRgb(m.coreColor)},${fade * 0.6})`);
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(m.x, m.y, gradR, 0, Math.PI * 2); ctx.fill();
+
+    // Bright core
+    ctx.fillStyle = `rgba(255,255,255,${fade})`;
+    ctx.beginPath(); ctx.arc(m.x, m.y, m.size * 0.7, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+// ── Clouds ──────────────────────────────────────────────
+// Cloud visual state — smoothly interpolated toward weather target
+let cloudFade = { count: 3, r:255, g:255, b:255, opacity: 0.7 };
+function getCloudTarget(){
+  const w = weather;
+  return {
+    count:
+      w === 'thunder' ? 14 :
+      w === 'rain'    ? 12 :
+      w === 'snow'    ? 9  :
+      w === 'hail'    ? 11 :
+      w === 'sandstorm' ? 2 :
+      w === 'sakura' || w === 'leaves' ? 5 :
+      3,
+    r: w === 'thunder' ? 120 : w === 'rain' ? 180 : w === 'hail' ? 170 : w === 'sandstorm' ? 210 : w === 'snow' ? 220 : 255,
+    g: w === 'thunder' ? 120 : w === 'rain' ? 180 : w === 'hail' ? 180 : w === 'sandstorm' ? 180 : w === 'snow' ? 225 : 255,
+    b: w === 'thunder' ? 140 : w === 'rain' ? 190 : w === 'hail' ? 200 : w === 'sandstorm' ? 120 : w === 'snow' ? 235 : 255,
+    opacity: w === 'clear' ? 0.7 : 0.85,
+  };
+}
+function updateCloudFade(dt){
+  const t = getCloudTarget();
+  // Slow approach: ~4s to reach target
+  const rate = 0.25;
+  const step = (a, b) => a + (b - a) * Math.min(1, dt * rate * 6);
+  cloudFade.count   = step(cloudFade.count,   t.count);
+  cloudFade.r       = step(cloudFade.r,       t.r);
+  cloudFade.g       = step(cloudFade.g,       t.g);
+  cloudFade.b       = step(cloudFade.b,       t.b);
+  cloudFade.opacity = step(cloudFade.opacity, t.opacity);
+}
+
+function drawClouds(){
+  const W = cv.width, H = cv.height;
+  let dayAlpha = 0;
+  if(timeOfDay >= 0.22 && timeOfDay <= 0.78){
+    if(timeOfDay < 0.32) dayAlpha = (timeOfDay - 0.22) / 0.10;
+    else if(timeOfDay > 0.68) dayAlpha = (0.78 - timeOfDay) / 0.10;
+    else dayAlpha = 1;
+  }
+  if(dayAlpha <= 0) return;
+
+  // Always loop through max clouds (14), but each cloud's alpha
+  // depends on whether it's within the current "count" budget.
+  // This lets clouds fade in/out individually instead of popping.
+  const MAX_CLOUDS = 14;
+  const visibleCount = cloudFade.count;
+  const baseColor = `${Math.round(cloudFade.r)},${Math.round(cloudFade.g)},${Math.round(cloudFade.b)}`;
+
+  for(let i = 0; i < MAX_CLOUDS; i++){
+    // Each cloud has a fractional position in the visibility queue.
+    // If i < visibleCount, fully visible.
+    // If i > visibleCount, invisible.
+    // If i is between visibleCount-1 and visibleCount, fade.
+    const cloudAlpha = Math.max(0, Math.min(1, visibleCount - i));
+    if(cloudAlpha <= 0.005) continue;
+
+    const seed = i * 73 + 17;
+    const baseY = ((seed * 7919) % 100000) / 100000 * H * 0.45 + 20;
+    const speed = 4 + ((seed * 31) % 20);
+    const size  = 12 + ((seed * 53) % 70);
+    const totalW = W + size * 4;
+    const x = ((animT * speed + (seed * 211) % 1000) % totalW) - size * 2;
+
+    const alpha = cloudFade.opacity * dayAlpha * cloudAlpha;
+    ctx.fillStyle = `rgba(${baseColor},${alpha})`;
+    ctx.beginPath();
+    ctx.arc(x,             baseY,           size * 0.6, 0, Math.PI*2);
+    ctx.arc(x + size * .6, baseY - size*.15, size * 0.7, 0, Math.PI*2);
+    ctx.arc(x + size * 1.2, baseY,           size * 0.55,0, Math.PI*2);
+    ctx.arc(x + size * .4, baseY + size*.2, size * 0.5, 0, Math.PI*2);
+    ctx.arc(x + size * 1.0, baseY + size*.18,size * 0.45,0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+// ── Sun & Moon ────────────────────────────────────────
+function drawCelestial(){
+  const W = cv.width, H = cv.height;
+  // Sun: visible during 0.25 (sunrise) → 0.75 (sunset)
+  // Moon: visible during night (0.78 → 0.22)
+  // Both follow an arc across the sky
+
+  function drawBody(progress, color, glow, size, isSun){
+    if(progress < 0 || progress > 1) return;
+    const cx = W * progress;
+    const peakY = H * 0.15;
+    const horizonY = H * 0.55;
+    const arc = Math.sin(progress * Math.PI);
+    const cy = horizonY - (horizonY - peakY) * arc;
+
+    if(isSun){
+      // Glow halo
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 3.5);
+      grad.addColorStop(0, glow);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(cx, cy, size * 3.5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(cx, cy, size, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // Moon: render glow + crescent body to offscreen, then composite
+      const pad = size * 4;
+      const oc = document.createElement('canvas');
+      oc.width = pad * 2; oc.height = pad * 2;
+      const octx = oc.getContext('2d');
+      const ocx = pad, ocy = pad;
+
+      // Glow
+      const grad = octx.createRadialGradient(ocx, ocy, 0, ocx, ocy, size * 3.5);
+      grad.addColorStop(0, glow);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      octx.fillStyle = grad;
+      octx.beginPath(); octx.arc(ocx, ocy, size * 3.5, 0, Math.PI * 2); octx.fill();
+
+      // Body
+      octx.fillStyle = color;
+      octx.beginPath(); octx.arc(ocx, ocy, size, 0, Math.PI * 2); octx.fill();
+
+      // Bite out crescent from body only
+      octx.save();
+      octx.beginPath();
+      octx.arc(ocx, ocy, size, 0, Math.PI*2);
+      octx.clip();
+      octx.globalCompositeOperation = 'destination-out';
+      const offset = size * 0.45;
+      octx.beginPath();
+      octx.arc(ocx + offset, ocy - offset*0.2, size, 0, Math.PI*2);
+      octx.fill();
+      octx.restore();
+
+      // Composite onto main canvas
+      ctx.drawImage(oc, cx - pad, cy - pad);
+    }
+  }
+
+  // Sun: 0.25 (left horizon) → 0.5 (peak) → 0.75 (right horizon)
+  if(timeOfDay >= 0.22 && timeOfDay <= 0.78){
+    const p = (timeOfDay - 0.22) / 0.56;
+    const horizon = Math.abs(p - 0.5) * 2;
+    const sunColor = lerpHex('#fff8d0', '#ff8030', horizon);
+    drawBody(p, sunColor, 'rgba(255,200,100,0.35)', 30, true);
+    // Save sun screen position for click detection
+    const peakY = H * 0.15, horizonY = H * 0.55;
+    const arc = Math.sin(p * Math.PI);
+    sunScreenPos = { x: W * p, y: horizonY - (horizonY - peakY) * arc, r: 30 };
+  } else {
+    sunScreenPos = null;
+  }
+
+  // Moon: 0.78 → 1.0 → 0.0 → 0.22 (wraps)
+  let mp = -1;
+  if(timeOfDay >= 0.78) mp = (timeOfDay - 0.78) / 0.44;
+  else if(timeOfDay <= 0.22) mp = (timeOfDay + 0.22) / 0.44;
+  if(mp >= 0 && mp <= 1){
+    drawBody(mp, '#f0f0e0', 'rgba(200,210,255,0.25)', 22, false);
+    // Save moon screen position for click detection
+    const peakY = H * 0.15, horizonY = H * 0.55;
+    const arc = Math.sin(mp * Math.PI);
+    moonScreenPos = { x: W * mp, y: horizonY - (horizonY - peakY) * arc, r: 22 };
+  } else {
+    moonScreenPos = null;
+  }
+
+  // Starry night sky
+  if(timeOfDay < 0.27 || timeOfDay > 0.73){
+    const opacity = timeOfDay < 0.27 ? Math.min(1, (0.27 - timeOfDay) * 8) : Math.min(1, (timeOfDay - 0.73) * 8);
+
+    // Star field — varied sizes and warm colors
+    for(let i = 0; i < 180; i++){
+      const sx = ((i * 9301 + 49297) % 233280) / 233280 * W;
+      const sy = ((i * 17321 + 31337) % 100000) / 100000 * H * 0.62;
+      const sz = ((i * 7919) % 100) / 100; // 0..1 size category
+      const tw = 0.5 + Math.sin(animT * 1.8 + i * 0.7) * 0.4 + 0.5; // twinkle 0..1.4
+
+      let size, color;
+      if(sz > 0.95){
+        // Bright "stars" with cross spike
+        size = 2.2;
+        color = `rgba(255,250,220,${opacity * tw})`;
+        ctx.fillStyle = color;
+        ctx.fillRect(sx - size/2, sy - size/2, size, size);
+        // 4-point spike
+        ctx.fillStyle = `rgba(255,250,220,${opacity * tw * 0.6})`;
+        ctx.fillRect(sx - 4, sy - 0.5, 8, 1);
+        ctx.fillRect(sx - 0.5, sy - 4, 1, 8);
+      } else if(sz > 0.7){
+        size = 1.5;
+        // Faint blue or warm tint
+        color = i % 3 === 0 ? `rgba(180,200,255,${opacity * tw * 0.85})`
+              : i % 3 === 1 ? `rgba(255,230,200,${opacity * tw * 0.85})`
+                            : `rgba(255,255,255,${opacity * tw * 0.85})`;
+        ctx.fillStyle = color;
+        ctx.fillRect(sx, sy, size, size);
+      } else {
+        // Faint background stars
+        size = 1;
+        ctx.fillStyle = `rgba(255,255,255,${opacity * tw * 0.5})`;
+        ctx.fillRect(sx, sy, size, size);
+      }
+    }
+
+    // Occasional shooting star — deterministic by 5-second buckets
+    const shootBucket = Math.floor(animT / 8);
+    const shootRng = ((shootBucket * 16807) % 100000) / 100000;
+    if(shootRng > 0.55){
+      const phase = (animT % 8) / 8; // 0..1 across the bucket window
+      if(phase > 0.1 && phase < 0.3){
+        const t = (phase - 0.1) / 0.2; // 0..1 lifetime
+        const startX = ((shootBucket * 7919) % 100000) / 100000 * W * 0.6;
+        const startY = ((shootBucket * 12347) % 100000) / 100000 * H * 0.3;
+        const len = 120;
+        const dx = startX + t * 200;
+        const dy = startY + t * 80;
+        const alpha = Math.sin(t * Math.PI) * opacity;
+        const grd = ctx.createLinearGradient(dx - len, dy - len*0.4, dx, dy);
+        grd.addColorStop(0, 'rgba(255,255,255,0)');
+        grd.addColorStop(1, `rgba(255,255,255,${alpha})`);
+        ctx.strokeStyle = grd;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(dx - len, dy - len*0.4); ctx.lineTo(dx, dy); ctx.stroke();
+      }
+    }
+  }
+}
+
+function render(){
+  const {sky, fog} = getSky();
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,cv.width,cv.height);
+
+  // ── Sun & Moon ─────────────────────────────────────
+  drawCelestial();
+
+  // ── Aurora ─────────────────────────────────────────
+  drawAurora();
+
+  // ── Rainbow ────────────────────────────────────────
+  drawRainbow();
+
+  // ── Clouds ─────────────────────────────────────────
+  drawClouds();
+
+  // ── Bubbles ────────────────────────────────────────
+  drawBubbles();
+
+  // ── Meteors ────────────────────────────────────────
+  drawMeteors();
+
+  // ── Fireworks ──────────────────────────────────────
+  drawFireworks();
+
+  // ── Mist ───────────────────────────────────────────
+  drawMist();
+
+  const {TW,TH} = getTileDims();
+  const eSize = Math.max(16, Math.floor(TW * scale * 0.82));
+
+  if(drawMode==='3d'){
+    const depth = TH * scale * 0.5;
+    // Iso back-to-front order
+    for(let sum=0;sum<GRID*2-1;sum++){
+      for(let c=0;c<=sum;c++){
+        const r=sum-c;
+        if(c<0||c>=GRID||r<0||r>=GRID) continue;
+        drawTile(c,r);
+        const key=`${c},${r}`;
+        if(items[key]){
+          const {x,y}=isoToScreen(c,r);
+          const lift = (heights[key]||0) * depth;
+          const bob=Math.sin(animT*1.4+items[key].bobOffset)*2*scale;
+          const img=getEmojiImg(items[key].emoji,eSize);
+          if(items[key].emoji === '🏪') drawRainbowGlow(x, y-eSize*0.1+bob-lift, eSize);
+          else drawEmojiFx(items[key].emoji, x, y-eSize*0.1+bob-lift, eSize);
+          ctx.drawImage(img, x-eSize/2, y-eSize*0.6+bob-lift, eSize, eSize);
+        }
+      }
+    }
+    // Animals in 3D
+    for(const a of Object.values(animals)){
+      const ac=Math.floor(a.wx), ar=Math.floor(a.wy);
+      const {x,y}=isoToScreen(ac,ar);
+      const lift = (heights[`${ac},${ar}`]||0) * depth;
+      const hop=a.moving?Math.abs(Math.sin(animT*6+a.id))*(6*scale):0;
+      const img=getEmojiImg(a.emoji,eSize);
+      ctx.save();
+      if(a.flip){ctx.translate(x,0);ctx.scale(-1,1);ctx.drawImage(img,-eSize/2,y-eSize*0.7-hop-lift,eSize,eSize);}
+      else{ctx.drawImage(img,x-eSize/2,y-eSize*0.7-hop-lift,eSize,eSize);}
+      ctx.restore();
+    }
+  } else {
+    // 2D top-down order
+    for(let r=0;r<GRID;r++) for(let c=0;c<GRID;c++) drawTile(c,r);
+    // Height number overlay (only on empty tiles)
+    if(showHeights){
+      const fontSize = Math.max(10, Math.floor(TW*scale*0.32));
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for(let r=0;r<GRID;r++) for(let c=0;c<GRID;c++){
+        const key=`${c},${r}`;
+        if(items[key]) continue;
+        const h = heights[key] || 0;
+        const {x,y} = isoToScreen(c,r);
+        const tw=TW*scale, th=TH*scale;
+        // Subtle shadow for readability
+        ctx.fillStyle = 'rgba(0,0,0,.55)';
+        ctx.fillText(h, x+tw/2+1, y+th/2+1);
+        ctx.fillStyle = 'rgba(255,255,255,.85)';
+        ctx.fillText(h, x+tw/2, y+th/2);
+      }
+    }
+    for(let r=0;r<GRID;r++) for(let c=0;c<GRID;c++){
+      const key=`${c},${r}`;
+      if(!items[key]) continue;
+      const {x,y}=isoToScreen(c,r);
+      const tw=TW*scale,th=TH*scale;
+      const bob=Math.sin(animT*1.4+items[key].bobOffset)*2*scale;
+      const img=getEmojiImg(items[key].emoji,eSize);
+      if(items[key].emoji === '🏪') drawRainbowGlow(x+tw/2, y+th/2+bob, eSize);
+      else drawEmojiFx(items[key].emoji, x+tw/2, y+th/2+bob, eSize);
+      ctx.drawImage(img, x+tw/2-eSize/2, y+th/2-eSize/2+bob, eSize, eSize);
+    }
+    for(const a of Object.values(animals)){
+      const {x,y}=isoToScreen(Math.floor(a.wx),Math.floor(a.wy));
+      const tw=TW*scale,th=TH*scale;
+      const hop=a.moving?Math.abs(Math.sin(animT*6+a.id))*(4*scale):0;
+      const img=getEmojiImg(a.emoji,eSize);
+      const ax=x+tw/2+(a.wx-Math.floor(a.wx))*tw;
+      const ay=y+th/2+(a.wy-Math.floor(a.wy))*th;
+      ctx.save();
+      if(a.flip){ctx.translate(ax,0);ctx.scale(-1,1);ctx.drawImage(img,-eSize/2,ay-eSize/2-hop,eSize,eSize);}
+      else{ctx.drawImage(img,ax-eSize/2,ay-eSize/2-hop,eSize,eSize);}
+      ctx.restore();
+    }
+  }
+
+  if(fog>0){ ctx.fillStyle=`rgba(0,0,30,${fog*0.65})`; ctx.fillRect(0,0,cv.width,cv.height); }
+
+  // Thunder flash (overlay during thunder weather)
+  if(weather==='thunder' && thunderFlash > 0){
+    ctx.fillStyle = `rgba(255,255,255,${thunderFlash * 0.6})`;
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    if(thunderBolt){
+      ctx.strokeStyle = `rgba(255,255,200,${thunderFlash})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(thunderBolt[0].x, thunderBolt[0].y);
+      for(let i=1;i<thunderBolt.length;i++) ctx.lineTo(thunderBolt[i].x, thunderBolt[i].y);
+      ctx.stroke();
+    }
+  }
+
+  if(weather!=='clear'){
+    for(const p of particles){
+      p.x+=p.vx; p.y+=p.vy;
+      p.rot = (p.rot||0) + (p.rotSpeed||0);
+      if(p.y>cv.height + 20){p.y=-20;p.x=Math.random()*cv.width;}
+      if(p.x>cv.width + 20){p.x=-20;}
+      if(p.x<-20){p.x=cv.width + 20;}
+      ctx.save();
+      if(weather==='rain' || weather==='thunder'){
+        ctx.strokeStyle=`rgba(180,220,255,${p.op})`;
+        ctx.lineWidth=p.size*.5;
+        ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+p.vx*4,p.y+p.vy*4);ctx.stroke();
+      } else if(weather==='snow'){
+        ctx.fillStyle=`rgba(255,255,255,${p.op})`;
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size/2,0,Math.PI*2);ctx.fill();
+      } else if(weather==='hail'){
+        ctx.fillStyle=`rgba(220,235,255,${p.op})`;
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size/2,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle=`rgba(255,255,255,${p.op*0.6})`;
+        ctx.beginPath();ctx.arc(p.x-p.size*.2,p.y-p.size*.2,p.size/5,0,Math.PI*2);ctx.fill();
+      } else if(weather==='sandstorm'){
+        ctx.fillStyle=`rgba(210,170,90,${p.op*0.7})`;
+        ctx.fillRect(p.x, p.y, p.size*2, p.size*0.3);
+      } else if(weather==='sakura' || weather==='leaves'){
+        const emoji = p.emoji;
+        const img = getEmojiImg(emoji, Math.floor(p.size));
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = p.op;
+        ctx.drawImage(img, -p.size/2, -p.size/2, p.size, p.size);
+      }
+      ctx.restore();
+    }
+  }
+}
+
+// Weather particles
+const particles = [];
+let thunderFlash = 0;
+let thunderTimer = 0;
+let thunderBolt = null;
+
+function initWeather(type){
+  particles.length=0;
+  thunderFlash = 0; thunderTimer = 0; thunderBolt = null;
+  if(type==='clear') return;
+
+  const config = {
+    rain:      {count:100, vy:[6,11],  vx:[-0.5,0.5], size:[1,1.5],   op:[0.3,0.8]},
+    thunder:   {count:140, vy:[7,13],  vx:[-1,1],     size:[1,2],     op:[0.4,0.9]},
+    snow:      {count:60,  vy:[1.2,2.7],vx:[-0.3,0.3],size:[2,5],     op:[0.3,0.8]},
+    hail:      {count:80,  vy:[8,14],  vx:[-0.3,0.3], size:[3,6],     op:[0.6,0.95]},
+    sandstorm: {count:120, vy:[-0.5,0.5],vx:[5,12],   size:[3,7],     op:[0.3,0.7]},
+    sakura:    {count:50,  vy:[0.6,1.5],vx:[-1,1],    size:[14,22],   op:[0.7,1],   emojis:['🌸','🌺']},
+    leaves:    {count:40,  vy:[0.5,1.2],vx:[-1.5,1.5],size:[14,22],   op:[0.7,1],   emojis:['🍂','🍁','🍃']},
+  };
+  const c = config[type];
+  if(!c) return;
+
+  for(let i = 0; i < c.count; i++){
+    const p = {
+      x: Math.random()*cv.width,
+      y: Math.random()*cv.height,
+      vy: c.vy[0] + Math.random()*(c.vy[1]-c.vy[0]),
+      vx: c.vx[0] + Math.random()*(c.vx[1]-c.vx[0]),
+      size: c.size[0] + Math.random()*(c.size[1]-c.size[0]),
+      op:   c.op[0]  + Math.random()*(c.op[1]-c.op[0]),
+    };
+    if(c.emojis){
+      p.emoji = c.emojis[Math.floor(Math.random()*c.emojis.length)];
+      p.rot = Math.random() * Math.PI * 2;
+      p.rotSpeed = -0.03 + Math.random() * 0.06;
+    }
+    particles.push(p);
+  }
+}
+
+function makeThunderBolt(){
+  const x = Math.random() * cv.width;
+  const pts = [{x, y: 0}];
+  let cy = 0;
+  while(cy < cv.height * 0.6){
+    cy += 30 + Math.random() * 50;
+    pts.push({x: pts[pts.length-1].x + (-40 + Math.random()*80), y: cy});
+  }
+  return pts;
+}
+
+function updateThunder(dt){
+  if(weather !== 'thunder') return;
+  thunderFlash = Math.max(0, thunderFlash - dt * 4);
+  thunderTimer -= dt;
+  if(thunderTimer <= 0){
+    thunderFlash = 0.9;
+    thunderBolt = makeThunderBolt();
+    thunderTimer = 3 + Math.random() * 5;
+  }
+}
+
+
+
+// ═══════════════════════════════════════════
+// MINIMAP
+// ═══════════════════════════════════════════
+const mm = document.getElementById('minimap');
+const mctx = mm.getContext('2d');
+function drawMinimap(){
+  mctx.clearRect(0,0,80,80);
+  const cs = 80/GRID;
+  for(let r=0;r<GRID;r++) for(let c=0;c<GRID;c++){
+    const t=terrain[`${c},${r}`]||'grass';
+    mctx.fillStyle=(TERRAIN_COLORS[t]||TERRAIN_COLORS.grass)[0];
+    mctx.fillRect(c*cs,r*cs,cs,cs);
+  }
+  for(const[k,v] of Object.entries(items)){
+    const[c,r]=k.split(',').map(Number);
+    mctx.font=`${cs*1.5}px serif`;
+    mctx.textAlign='center';mctx.textBaseline='middle';
+    mctx.fillText(v.emoji,(c+.5)*cs,(r+.5)*cs);
+  }
+  for(const a of Object.values(animals)){
+    mctx.fillStyle='#ff6';
+    mctx.beginPath();mctx.arc((a.wx+.5)*cs,(a.wy+.5)*cs,2,0,Math.PI*2);mctx.fill();
+  }
+}
+
+// TERRAIN GENERATION
+
+// Helper: smooth a height map by averaging neighbors
+function smoothHeights(h, passes=1){
+  for(let p=0;p<passes;p++){
+    const nh={};
+    for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+      let sum=0, cnt=0;
+      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+        const nr=r+dr, nc=c+dc;
+        if(nr<0||nr>=GRID||nc<0||nc>=GRID) continue;
+        const v = h[`${nc},${nr}`];
+        if(v===undefined) continue;
+        sum+=v; cnt++;
+      }
+      if(cnt>0) nh[`${c},${r}`] = Math.round(sum/cnt);
+    }
+    Object.assign(h, nh);
+  }
+}
+
+// Helper: carve a river along a winding path
+function carveRiver(t, seed, startSide){
+  const rng = mulberry32(seed);
+  let x, y, dx, dy;
+  if(startSide === 'top'){ x = Math.floor(rng()*GRID); y = 0; dx = 0; dy = 1; }
+  else if(startSide === 'left'){ x = 0; y = Math.floor(rng()*GRID); dx = 1; dy = 0; }
+  else if(startSide === 'right'){ x = GRID-1; y = Math.floor(rng()*GRID); dx = -1; dy = 0; }
+  else { x = Math.floor(rng()*GRID); y = GRID-1; dx = 0; dy = -1; }
+  for(let step=0; step<GRID*2; step++){
+    if(x<0||x>=GRID||y<0||y>=GRID) break;
+    t[`${Math.floor(x)},${Math.floor(y)}`] = 'water';
+    // Random wobble
+    if(rng()<0.35){
+      if(dx===0){ x += (rng()<0.5?-1:1); }
+      else { y += (rng()<0.5?-1:1); }
+    }
+    x += dx; y += dy;
+  }
+}
+
+// Classify terrain by elevation thresholds
+function classifyByHeight(t, h, profile){
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const key=`${c},${r}`;
+    const v = h[key] ?? 0;
+    let type = 'water';
+    for(const [thresh, tname] of profile){
+      if(v >= thresh){ type = tname; break; }
+    }
+    t[key] = type;
+    if(type === 'water') delete h[key];
+  }
+}
+
+function genGrassland(s){
+  const n=makeNoise(s),n2=makeNoise(s+1),t={},h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/9, r/9)*0.55 + n2(c/4, r/4)*0.30 + n2(c/2, r/2)*0.15;
+    const eleva = (v + 0.4) * 6;
+    h[`${c},${r}`] = Math.max(0, Math.round(eleva));
+  }
+  smoothHeights(h, 1);
+  // Add a winding stream
+  if(Math.random() < 0.7) carveRiver(t, s+11, ['top','bottom','left','right'][Math.floor(Math.random()*4)]);
+  // Classify by height
+  classifyByHeight(t, h, [[6,'dark'],[3,'grass'],[2,'grass'],[1,'sand'],[0,'water']]);
+  // Re-overlay river (water takes precedence)
+  if(Math.random() < 0.7) carveRiver(t, s+11, ['top','bottom','left','right'][Math.floor(Math.random()*4)]);
+  // Heights below ground level get cleared
+  for(const k in h) if(t[k]==='water') delete h[k];
+  return {terrain:t, heights:h};
+}
+
+function genIsland(s){
+  const n=makeNoise(s), n2=makeNoise(s+1), t={}, h={};
+  const cx = GRID/2, cy = GRID/2;
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const dx=(c-cx)/cx, dy=(r-cy)/cy;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    const noise = n(c/7, r/7)*0.4 + n2(c/3, r/3)*0.2;
+    const v = noise - dist*1.15 + 0.4;
+    h[`${c},${r}`] = Math.max(0, Math.round(v * 8));
+  }
+  smoothHeights(h, 1);
+  classifyByHeight(t, h, [[6,'dark'],[3,'grass'],[2,'grass'],[1,'sand'],[0,'water']]);
+  return {terrain:t, heights:h};
+}
+
+function genMountain(s){
+  const n=makeNoise(s), n2=makeNoise(s+99), n3=makeNoise(s+33), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/6, r/6)*0.55 + n2(c/3, r/3)*0.30 + n3(c/12, r/12)*0.15;
+    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.35) * 10));
+  }
+  smoothHeights(h, 1);
+  classifyByHeight(t, h, [[8,'snow'],[6,'snow'],[4,'dark'],[2,'grass'],[1,'sand'],[0,'water']]);
+  return {terrain:t, heights:h};
+}
+
+function genDesert(s){
+  const n=makeNoise(s), n2=makeNoise(s+7), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    // Dune-like ridges using directional noise
+    const dune = Math.sin((c + n2(c/8,r/8)*6) * 0.7) * 0.3;
+    const v = n(c/9, r/9)*0.5 + n2(c/4, r/4)*0.25 + dune;
+    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.4) * 5));
+  }
+  smoothHeights(h, 1);
+  classifyByHeight(t, h, [[4,'dark'],[1,'sand'],[0,'sand']]);
+  // Rare oasis spot
+  if(Math.random() < 0.4){
+    const ox = 2 + Math.floor(Math.random()*(GRID-4));
+    const oy = 2 + Math.floor(Math.random()*(GRID-4));
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      const cc=ox+dc, rr=oy+dr;
+      if(cc<0||cc>=GRID||rr<0||rr>=GRID) continue;
+      const d = Math.abs(dc)+Math.abs(dr);
+      const k=`${cc},${rr}`;
+      if(d===0) t[k]='water';
+      else if(d===1) t[k]='grass';
+      delete h[k];
+    }
+  }
+  return {terrain:t, heights:h};
+}
+
+function genSnow(s){
+  const n=makeNoise(s), n2=makeNoise(s+5), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/7, r/7)*0.7 + n2(c/3, r/3)*0.3;
+    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.3) * 7));
+  }
+  smoothHeights(h, 2);
+  classifyByHeight(t, h, [[6,'dark'],[2,'snow'],[1,'snow'],[0,'water']]);
+  return {terrain:t, heights:h};
+}
+
+function genArchipelago(s){
+  const n=makeNoise(s), n2=makeNoise(s+42), n3=makeNoise(s+123), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/4, r/4)*0.55 + n2(c/2.2, r/2.2)*0.30 + n3(c/8, r/8)*0.15;
+    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.15) * 6));
+  }
+  smoothHeights(h, 1);
+  classifyByHeight(t, h, [[5,'dark'],[2,'grass'],[1,'sand'],[0,'water']]);
+  return {terrain:t, heights:h};
+}
+
+// NEW: Forest — dense rolling green with rare clearings
+function genForest(s){
+  const n=makeNoise(s), n2=makeNoise(s+13), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/7, r/7)*0.55 + n2(c/3, r/3)*0.45;
+    h[`${c},${r}`] = Math.max(1, Math.round((v + 0.5) * 5));
+  }
+  smoothHeights(h, 1);
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    const v = h[k];
+    if(v >= 4) t[k] = 'dark';
+    else t[k] = 'grass';
+  }
+  // Occasional water pond
+  if(Math.random() < 0.6){
+    const px = 2 + Math.floor(Math.random()*(GRID-4));
+    const py = 2 + Math.floor(Math.random()*(GRID-4));
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      if(Math.random() < 0.65){
+        const k=`${px+dc},${py+dr}`;
+        if(t[k]) { t[k] = 'water'; delete h[k]; }
+      }
+    }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Volcano — central peak with sloping lava-stone
+function genVolcano(s){
+  const n=makeNoise(s), t={}, h={};
+  const cx = GRID/2, cy = GRID/2;
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const dx=(c-cx)/cx, dy=(r-cy)/cy;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    const cone = Math.max(0, 1 - dist*1.1);
+    const noise = n(c/5, r/5)*0.25;
+    const v = cone * 9 + noise;
+    h[`${c},${r}`] = Math.max(0, Math.round(v));
+  }
+  smoothHeights(h, 1);
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    const v = h[k];
+    if(v >= 7) t[k] = 'dark';
+    else if(v >= 4) t[k] = 'dark';
+    else if(v >= 2) t[k] = 'grass';
+    else if(v >= 1) t[k] = 'sand';
+    else { t[k] = 'water'; delete h[k]; }
+  }
+  // Crater at peak (water/lava pool)
+  const peakKey = `${Math.floor(cx)},${Math.floor(cy)}`;
+  t[peakKey] = 'water';
+  delete h[peakKey];
+  return {terrain:t, heights:h};
+}
+
+// NEW: Atoll — ring-shaped reef
+function genAtoll(s){
+  const n=makeNoise(s), t={}, h={};
+  const cx = GRID/2, cy = GRID/2;
+  const ringR = GRID*0.32;
+  const ringW = GRID*0.14;
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const dx=(c-cx), dy=(r-cy);
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    const ringDist = Math.abs(dist - ringR);
+    const noise = n(c/4, r/4)*0.5;
+    let v;
+    if(ringDist < ringW){
+      v = (1 - ringDist/ringW) * 4 + noise;
+    } else {
+      v = -1 + noise;
+    }
+    h[`${c},${r}`] = Math.max(0, Math.round(v));
+  }
+  smoothHeights(h, 1);
+  classifyByHeight(t, h, [[3,'grass'],[1,'sand'],[0,'water']]);
+  return {terrain:t, heights:h};
+}
+
+// NEW: Valley — river through twin mountain ridges
+function genValley(s){
+  const n=makeNoise(s), n2=makeNoise(s+22), t={}, h={};
+  const mid = GRID/2;
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const distFromMid = Math.abs(r - mid + n(c/4,0)*2);
+    const ridge = Math.max(0, (distFromMid - 1.5) * 1.5);
+    const noise = n2(c/5, r/5)*0.3;
+    const v = ridge + noise;
+    h[`${c},${r}`] = Math.max(0, Math.round(v));
+  }
+  smoothHeights(h, 1);
+  // Carve river along center
+  for(let c=0;c<GRID;c++){
+    const wobble = Math.round(n(c/5, 0)*1.5);
+    const rr = Math.max(0, Math.min(GRID-1, Math.floor(mid + wobble)));
+    t[`${c},${rr}`] = 'water';
+    delete h[`${c},${rr}`];
+  }
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    if(t[k]==='water') continue;
+    const v = h[k] || 0;
+    if(v >= 6) t[k] = 'snow';
+    else if(v >= 4) t[k] = 'dark';
+    else if(v >= 2) t[k] = 'grass';
+    else if(v >= 1) t[k] = 'sand';
+    else t[k] = 'grass';
+  }
+  return {terrain:t, heights:h};
+}
+
+const MAP_PRESETS={
+  '🌿 草原':genGrassland,
+  '🏝 島':genIsland,
+  '🏔 山岳':genMountain,
+  '🏜 砂漠':genDesert,
+  '❄️ 雪原':genSnow,
+  '🌊 群島':genArchipelago,
+  '🌳 森':genForest,
+  '🌋 火山':genVolcano,
+  '🏖 環礁':genAtoll,
+  '🏞 谷':genValley,
+};
+
+function applyTerrainMap(result){
+  // Accept either {terrain, heights} or legacy plain terrain object
+  const tmap = result.terrain || result;
+  const hmap = result.heights || {};
+  for(const k in terrain)delete terrain[k];
+  for(const k in heights)delete heights[k];
+  Object.assign(terrain, tmap);
+  Object.assign(heights, hmap);
+}
+
+// ═══════════════════════════════════════════
+// ANIMAL SYSTEM
+// ═══════════════════════════════════════════
+function spawnAnimal(emoji,c,r){
+  if(c<0||c>=GRID||r<0||r>=GRID) return;
+  const id=animalId++;
+  animals[id]={id,emoji,wx:c,wy:r,tx:c,ty:r,moving:false,flip:false,speed:.6+Math.random()*.8,waitTimer:.5+Math.random()*2,excited:0};
+  history.push({type:'animal',id,c,r,emoji});
+}
+function removeAnimal(id){delete animals[id];}
+function updateAnimals(dt){
+  for(const id in animals){
+    const a=animals[id];
+    if(!a.moving){
+      a.waitTimer-=dt;
+      if(a.waitTimer<=0){
+        for(let attempt=0;attempt<10;attempt++){
+          const dc=Math.round((Math.random()-.5)*6), dr=Math.round((Math.random()-.5)*6);
+          const nc=Math.floor(a.wx)+dc, nr=Math.floor(a.wy)+dr;
+          if(nc<0||nc>=GRID||nr<0||nr>=GRID) continue;
+          if(items[`${nc},${nr}`]) continue;
+          a.tx=nc; a.ty=nr; a.moving=true;
+          a.flip=(a.tx<a.wx);
+          break;
+        }
+        a.waitTimer=.8+Math.random()*2.5;
+      }
+    } else {
+      const dx=a.tx-a.wx, dy=a.ty-a.wy, dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<.05){a.wx=a.tx;a.wy=a.ty;a.moving=false;}
+      else{const step=Math.min(a.speed*dt,dist);a.wx+=dx/dist*step;a.wy+=dy/dist*step;}
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+// PLACE / ERASE
+// ═══════════════════════════════════════════
+let lastKey=null;
+const RECENT_MAX = 50;
+function pushToRecent(emoji){
+  const recent = CATEGORIES['📌 履歴'];
+  const idx = recent.indexOf(emoji);
+  if(idx >= 0) recent.splice(idx, 1);
+  recent.unshift(emoji);
+  if(recent.length > RECENT_MAX) recent.length = RECENT_MAX;
+  if(selCat === '📌 履歴') buildPalette();
+  // Re-enable recent source button if scatter UI is built
+  if(typeof refreshScatterUI === 'function') refreshScatterUI();
+}
+
+function act(c,r){
+  if(c<0||c>=GRID||r<0||r>=GRID) return;
+  const key=`${c},${r}`;
+  if(key===lastKey) return;
+  lastKey=key;
+  if(mode==='place'){
+    if(!selEmoji || typeof selEmoji !== 'string') return;
+    if(ANIMALS.has(selEmoji)){
+      spawnAnimal(selEmoji,c,r);
+      pushToRecent(selEmoji);
+      playPlaceSound();
+    }
+    else {
+      if(items[key]) return;
+      items[key]={emoji:selEmoji, bobOffset:Math.random()*Math.PI*2};
+      history.push({type:'place',key,c,r,emoji:selEmoji});
+      pushToRecent(selEmoji);
+      playPlaceSound();
+    }
+  } else if(mode==='terrain'){
+    if(terrainAction==='paint'){
+      const old=terrain[key]||'grass';
+      if(old===selTerrain) return;
+      terrain[key]=selTerrain;
+      history.push({type:'terrain',key,c,r,old,terrain:selTerrain});
+    } else if(terrainAction==='up'){
+      const oldH=heights[key]||0;
+      if(oldH>=8) return;
+      heights[key]=oldH+1;
+      history.push({type:'height',key,c,r,old:oldH,new:heights[key]});
+    } else if(terrainAction==='down'){
+      const oldH=heights[key]||0;
+      if(oldH<=0) return;
+      heights[key]=oldH-1;
+      if(heights[key]===0) delete heights[key];
+      history.push({type:'height',key,c,r,old:oldH,new:oldH-1});
+    }
+  } else {
+    if(items[key]){ history.push({type:'erase',key,c,r,emoji:items[key].emoji}); delete items[key]; }
+  }
+}
+
+// ═══════════════════════════════════════════
+// INPUT
+// ═══════════════════════════════════════════
+let panning=false, panStart={x:0,y:0}, panOrigin={x:0,y:0};
+let placing=false;
+let pinch0=null, pinchScale0=1, pinchOrigin={x:0,y:0};
+let touchDownPos=null; // for tap detection
+const TAP_THRESHOLD = 8; // px movement to distinguish tap vs drag
+
+// Smooth zoom target
+let targetScale=1, targetOX=0, targetOY=0;
+function syncTargets(){ targetScale=scale; targetOX=OX; targetOY=OY; }
+syncTargets();
+
+// fit map on first load (called after resetView is defined below)
+window.addEventListener('load', resetView);
+
+function zoomToward(mx, my, newScale){
+  newScale = Math.max(.3, Math.min(3.5, newScale));
+  targetOX = mx - (mx - targetOX) * (newScale / targetScale);
+  targetOY = my - (my - targetOY) * (newScale / targetScale);
+  targetScale = newScale;
+}
+
+// Mouse (PC): place on mousedown + drag as before
+// Moon tap → meteor shower burst
+function hitMoon(sx, sy){
+  if(!moonScreenPos) return false;
+  const dx = sx - moonScreenPos.x, dy = sy - moonScreenPos.y;
+  return (dx*dx + dy*dy) <= (moonScreenPos.r * 1.8) ** 2;
+}
+function tryMoonTap(sx, sy){
+  if(!hitMoon(sx, sy)) return false;
+  // Burst of meteors
+  const total = 18 + Math.floor(Math.random() * 12);
+  for(let i = 0; i < total; i++){
+    setTimeout(spawnMeteor, i * (60 + Math.random() * 140));
+  }
+  return true;
+}
+
+// Sun tap → only when raining: fade rain out, then rainbow appears
+function hitSun(sx, sy){
+  if(!sunScreenPos) return false;
+  const dx = sx - sunScreenPos.x, dy = sy - sunScreenPos.y;
+  return (dx*dx + dy*dy) <= (sunScreenPos.r * 1.5) ** 2;
+}
+let rainFading = false; // true while rain is stopping after sun tap
+function trySunTap(sx, sy){
+  if(!hitSun(sx, sy)) return false;
+  // Only works during rain or thunder; ignore silently otherwise
+  if(weather !== 'rain' && weather !== 'thunder') return true;
+  if(rainFading) return true; // already in progress
+  rainFading = true;
+  return true;
+}
+function updateRainFade(dt){
+  if(!rainFading) return;
+  // Fade out particles gradually
+  const fadeSpeed = 0.5; // ~2s to vanish
+  let allGone = true;
+  for(const p of particles){
+    p.op = Math.max(0, p.op - fadeSpeed * dt);
+    if(p.op > 0.01) allGone = false;
+  }
+  // When all particles invisible: clear weather and start rainbow
+  if(allGone || particles.length === 0){
+    weather = 'clear';
+    initWeather('clear');
+    document.getElementById('weather-btn').textContent = '☀️ 晴';
+    rainFading = false;
+    rainbowOn = true;
+  }
+}
+
+cv.addEventListener('mousedown',e=>{
+  if(e.button===1||e.button===2){panning=true;panStart={x:e.clientX,y:e.clientY};panOrigin={x:targetOX,y:targetOY};return;}
+  if(tryBubbleTap(e.clientX, e.clientY)) return;
+  if(tryMoonTap(e.clientX, e.clientY)) return;
+  if(trySunTap(e.clientX, e.clientY)) return;
+  placing=true; lastKey=null;
+  const {c,r}=screenToIso(e.clientX,e.clientY); act(c,r);
+});
+cv.addEventListener('mousemove',e=>{
+  const {c,r}=screenToIso(e.clientX,e.clientY);
+  hoverCell=(c>=0&&c<GRID&&r>=0&&r<GRID)?{c,r}:null;
+  if(panning){targetOX=panOrigin.x+(e.clientX-panStart.x);targetOY=panOrigin.y+(e.clientY-panStart.y);return;}
+  if(placing) act(c,r);
+});
+cv.addEventListener('mouseup',e=>{if(e.button===1||e.button===2)panning=false;placing=false;lastKey=null;});
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('wheel',e=>{
+  // wheel disabled - use +/- buttons
+},{passive:true});
+
+// Touch: place only on touchend if tap (not drag), pan/pinch with 2 fingers
+cv.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  if(e.touches.length===2){
+    // 2-finger pan only (no pinch zoom)
+    panStart={x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2};
+    panOrigin={x:targetOX,y:targetOY};
+    panning=true; touchDownPos=null; return;
+  }
+  touchDownPos={x:e.touches[0].clientX, y:e.touches[0].clientY};
+  panning=false;
+},{passive:false});
+
+cv.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===2&&panning){
+    const cx=(e.touches[0].clientX+e.touches[1].clientX)/2;
+    const cy=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    targetOX=panOrigin.x+(cx-panStart.x);
+    targetOY=panOrigin.y+(cy-panStart.y);
+    return;
+  }
+  if(!touchDownPos) return;
+  const dx=e.touches[0].clientX-touchDownPos.x, dy=e.touches[0].clientY-touchDownPos.y;
+  if(Math.sqrt(dx*dx+dy*dy) > TAP_THRESHOLD){
+    if(!panning){
+      panning=true;
+      panStart={x:touchDownPos.x, y:touchDownPos.y};
+      panOrigin={x:targetOX, y:targetOY};
+    }
+    targetOX=panOrigin.x+(e.touches[0].clientX-panStart.x);
+    targetOY=panOrigin.y+(e.touches[0].clientY-panStart.y);
+  }
+},{passive:false});
+
+cv.addEventListener('touchend',e=>{
+  e.preventDefault();
+  if(touchDownPos && !panning){
+    if(tryBubbleTap(touchDownPos.x, touchDownPos.y) || tryMoonTap(touchDownPos.x, touchDownPos.y) || trySunTap(touchDownPos.x, touchDownPos.y)){
+      touchDownPos=null; panning=false; pinch0=null; lastKey=null;
+      return;
+    }
+    const {c,r}=screenToIso(touchDownPos.x, touchDownPos.y);
+    lastKey=null;
+    act(c,r);
+  }
+  touchDownPos=null; panning=false; pinch0=null; lastKey=null;
+},{passive:false});
+
+// 2D/3D toggle
+function refreshDimToggle(){
+  const el = document.getElementById('btn-3d');
+  el.classList.toggle('is-3d', drawMode === '3d');
+  el.classList.toggle('is-2d', drawMode === '2d');
+}
+document.getElementById('btn-3d').addEventListener('click',()=>{
+  drawMode = drawMode==='2d' ? '3d' : '2d';
+  if(drawMode==='2d') rotation = 1;
+  if(drawMode==='3d') rotation = 0;
+  refreshDimToggle();
+  if(typeof refreshHeightsBtn === 'function') refreshHeightsBtn();
+  resetView();
+});
+refreshDimToggle();
+
+// Zoom buttons
+function applyZoom(factor){
+  const cx=cv.width/2, cy=cv.height/2;
+  zoomToward(cx, cy, targetScale * factor);
+}
+document.getElementById('btn-zoom-in') .addEventListener('click',()=>applyZoom(1.25));
+document.getElementById('btn-zoom-out').addEventListener('click',()=>applyZoom(0.8));
+
+// Reset view: fit entire map on screen
+function resetView(){
+  const {TW,TH} = getTileDims();
+  const maxW = cv.width  * 0.88;
+  const maxH = (cv.height - 120) * 0.88;
+  let fitScale, ox, oy;
+  if(drawMode==='3d'){
+    // Isometric map: width = GRID*TW, height = GRID*TH (diamond shape)
+    fitScale = Math.min(maxW / (GRID * TW), maxH / (GRID * TH));
+    // OX = screen center (iso origin is center-top of diamond)
+    ox = cv.width / 2;
+    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
+  } else {
+    // 2D square: simple rect, scaled down 1 step from full-fit
+    fitScale = Math.min(maxW / (GRID * TW), maxH / (GRID * TH)) * 0.8;
+    ox = cv.width  / 2 - (GRID * TW / 2) * fitScale - 30;
+    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
+  }
+  targetScale = fitScale;
+  targetOX = ox;
+  targetOY = oy;
+  // Immediately snap (no lerp delay on mode switch)
+  scale = fitScale; OX = ox; OY = oy;
+}
+document.getElementById('btn-reset-view').addEventListener('click', resetView);
+
+// Minimap toggle
+const minimapEl = document.getElementById('minimap');
+const btnMinimap = document.getElementById('btn-minimap');
+btnMinimap.addEventListener('click',()=>{
+  const show = !minimapEl.classList.contains('visible');
+  minimapEl.classList.toggle('visible', show);
+  btnMinimap.classList.toggle('active', show);
+  if(show) drawMinimap();
+});
+
+// Heights number overlay toggle (disabled in 3D mode)
+const btnHeights = document.getElementById('btn-heights');
+function refreshHeightsBtn(){
+  const is2d = drawMode === '2d';
+  btnHeights.classList.toggle('disabled', !is2d);
+  btnHeights.classList.toggle('is-on', is2d && showHeights);
+}
+btnHeights.addEventListener('click',()=>{
+  if(drawMode !== '2d') return;
+  showHeights = !showHeights;
+  heightsTouched = true;
+  refreshHeightsBtn();
+});
+refreshHeightsBtn();
+
+// Fullscreen toggle
+const btnFullscreen = document.getElementById('btn-fullscreen');
+btnFullscreen.addEventListener('click',()=>{
+  const on = document.body.classList.toggle('fullscreen');
+  btnFullscreen.textContent = on ? '✕' : '⛶';
+  if(on) closeAllPopups();
+  resizeCanvas();
+  resetView();
+});
+
+// 3D toggle
+mm.addEventListener('click',e=>{
+  const rect=mm.getBoundingClientRect();
+  const mc=(e.clientX-rect.left)/80*GRID, mr=(e.clientY-rect.top)/80*GRID;
+  const {x,y}=isoToScreen(mc,mr);
+  targetOX+=cv.width/2-x;
+  targetOY+=cv.height/2-y;
+});
+
+// ═══════════════════════════════════════════
+// PALETTE & CATEGORIES
+// ═══════════════════════════════════════════
+let selCat='🌿 自然';
+// カテゴリ名の読み（ひらがな昇順ソート用）
+const CAT_YOMI = {
+  '🎄 イベント':'いべんと',
+  '🌿 自然':'しぜん',
+  '🎪 その他':'そのた',
+  '✨ 空':'そら',
+  '🏗 建物':'たてもの',
+  '🍎 食べ物':'たべもの',
+  '🌍 地形':'ちけい',
+  '🐾 動物':'どうぶつ',
+  '🚗 乗り物':'のりもの',
+  '🧑 人':'ひと',
+  '📌 履歴':'りれき',
+};
+function sortedCats(){
+  const HISTORY = '📌 履歴';
+  const rest = Object.keys(CATEGORIES)
+    .filter(c => c !== HISTORY)
+    .sort((a,b)=>{
+      const ya = CAT_YOMI[a] || a, yb = CAT_YOMI[b] || b;
+      return ya.localeCompare(yb, 'ja');
+    });
+  return Object.keys(CATEGORIES).includes(HISTORY) ? [HISTORY, ...rest] : rest;
+}
+function buildCatTabs(){
+  const el=document.getElementById('cattabs');el.innerHTML='';
+  sortedCats().forEach(cat=>{
+    const t=document.createElement('button');t.className='cattab'+(cat===selCat?' active':'');
+    t.textContent=cat;t.addEventListener('click',()=>{selCat=cat;buildCatTabs();buildPalette();});
+    el.appendChild(t);
+  });
+}
+function makeEbtn(e){
+  const btn=document.createElement('button');
+  const fx = fxType(e);
+  btn.className='ebtn'+(e===selEmoji?' active':'')+(e==='🏪'?' ebtn-rainbow':'')+(fx?(' ebtn-fx-'+fx):'');
+  btn.textContent=e;
+  btn.addEventListener('click',()=>{document.querySelectorAll('.ebtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selEmoji=e;if(mode!=='place'){mode='place';updateModeUI();}});
+  return btn;
+}
+function buildPalette(){
+  const el=document.getElementById('palette');el.innerHTML='';
+  el.scrollTop = 0;
+  // Event category: render with per-event section headers
+  if(selCat === '🎄 イベント'){
+    el.classList.add('sectioned');
+    EVENT_SECTIONS.forEach(sec=>{
+      const h=document.createElement('div');
+      h.className='pal-section';
+      h.textContent=sec.title;
+      el.appendChild(h);
+      sec.emojis.forEach(e=>el.appendChild(makeEbtn(e)));
+    });
+    return;
+  }
+  el.classList.remove('sectioned');
+  const list = CATEGORIES[selCat]||[];
+  if(list.length === 0){
+    const msg = document.createElement('div');
+    msg.style.cssText = 'grid-column:1/-1;text-align:center;color:rgba(180,220,180,.45);font-size:11px;padding:20px 10px;line-height:1.6';
+    msg.textContent = '使った絵文字がここに記録されます';
+    el.appendChild(msg);
+    return;
+  }
+  list.forEach(e=>el.appendChild(makeEbtn(e)));
+}
+buildCatTabs();buildPalette();
+
+let terrainAction = 'paint';
+
+const terrainPaletteEl=document.getElementById('terrain-palette');
+
+// Row 1: actions (paint / height up / height down)
+const tpActionRow = document.createElement('div');
+tpActionRow.className = 'tp-row-actions';
+terrainPaletteEl.appendChild(tpActionRow);
+
+const TERRAIN_ACTIONS = [
+  {key:'paint', icon:'🎨', label:'塗る'},
+  {key:'up',    icon:'⬆️', label:'高さ+'},
+  {key:'down',  icon:'⬇️', label:'高さ-'},
+];
+TERRAIN_ACTIONS.forEach(({key,icon,label})=>{
+  const btn=document.createElement('button');
+  btn.className='tp-btn'+(key===terrainAction?' active':'');
+  btn.dataset.action=key;
+  btn.innerHTML=`<span class="tp-icon">${icon}</span><span class="tp-label">${label}</span>`;
+  btn.addEventListener('click',()=>{
+    terrainAction=key;
+    tpActionRow.querySelectorAll('.tp-btn').forEach(b=>b.classList.toggle('active',b.dataset.action===key));
+  });
+  tpActionRow.appendChild(btn);
+});
+
+// Row 2: terrain types (grass / sand / water / snow / dark)
+const tpTypeRow = document.createElement('div');
+tpTypeRow.className = 'tp-row-types';
+terrainPaletteEl.appendChild(tpTypeRow);
+
+const TERRAIN_TYPE_META = {
+  grass: {icon:'🌿', label:'草',  color:'#4a7a3a'},
+  sand:  {icon:'🏜', label:'砂',  color:'#c8a050'},
+  water: {icon:'🌊', label:'水',  color:'#2a7aaa'},
+  snow:  {icon:'❄️', label:'雪',  color:'#ddeeff'},
+  dark:  {icon:'🪨', label:'岩',  color:'#444038'},
+};
+TERRAIN_TYPES.forEach(t=>{
+  const m = TERRAIN_TYPE_META[t];
+  const btn=document.createElement('button');
+  btn.className='tp-btn'+(t===selTerrain?' active':'');
+  btn.dataset.terrain=t;
+  btn.innerHTML=`<span class="tp-swatch" style="background:${m.color}"></span><span class="tp-label">${m.label}</span>`;
+  btn.addEventListener('click',()=>{
+    selTerrain=t;
+    terrainAction='paint';
+    tpTypeRow.querySelectorAll('.tp-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    tpActionRow.querySelectorAll('.tp-btn').forEach(b=>b.classList.toggle('active',b.dataset.action==='paint'));
+  });
+  tpTypeRow.appendChild(btn);
+});
+
+// Custom color paint — color picker is always visible inside the button
+let customPaintColor = '#7a4a9a';
+const tpCustomBtn = document.createElement('label');
+tpCustomBtn.className = 'tp-btn tp-btn-custom';
+tpCustomBtn.dataset.terrain = 'custom';
+tpCustomBtn.innerHTML = `
+  <input type="color" id="tp-custom-picker" value="${customPaintColor}" class="tp-custom-input">
+  <span class="tp-label">色</span>
+`;
+const tpCustomPicker = tpCustomBtn.querySelector('#tp-custom-picker');
+
+function activateCustomColor(){
+  selTerrain = customPaintColor;
+  TERRAIN_COLORS[customPaintColor] = [customPaintColor, customPaintColor];
+  terrainAction = 'paint';
+  tpTypeRow.querySelectorAll('.tp-btn').forEach(b=>b.classList.remove('active'));
+  tpCustomBtn.classList.add('active');
+  tpActionRow.querySelectorAll('.tp-btn').forEach(b=>b.classList.toggle('active',b.dataset.action==='paint'));
+}
+
+tpCustomPicker.addEventListener('input',e=>{
+  customPaintColor = e.target.value;
+  activateCustomColor();
+});
+tpCustomPicker.addEventListener('change',e=>{
+  customPaintColor = e.target.value;
+  activateCustomColor();
+});
+tpTypeRow.appendChild(tpCustomBtn);
+
+function updateModeUI(){
+  ['place','terrain','erase'].forEach(m=>document.getElementById('mode-'+m).classList.toggle('active',mode===m));
+  document.getElementById('palette').style.display=mode==='terrain'?'none':'grid';
+  document.getElementById('cattabs').style.display=mode==='terrain'?'none':'flex';
+  terrainPaletteEl.style.display=mode==='terrain'?'flex':'none';
+}
+['place','terrain','erase'].forEach(m=>document.getElementById('mode-'+m).addEventListener('click',()=>{mode=m;updateModeUI();}));
+
+// ═══════════════════════════════════════════
+// TOP BUTTONS
+// ═══════════════════════════════════════════
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2200);}
+
+document.getElementById('btn-undo').addEventListener('click',()=>{
+  const last=history.pop();if(!last)return;
+  if(last.type==='place'){delete items[last.key];}
+  else if(last.type==='animal'){removeAnimal(last.id);}
+  else if(last.type==='erase'){items[last.key]={emoji:last.emoji,bobOffset:Math.random()*Math.PI*2};}
+  else if(last.type==='terrain'){terrain[last.key]=last.old||'grass';}
+  else if(last.type==='height'){if(last.old===0)delete heights[last.key];else heights[last.key]=last.old;}
+});
+
+document.getElementById('btn-clear-all').addEventListener('click',()=>{
+  for(const k in items)delete items[k];
+  for(const k in animals)delete animals[k];
+  for(const k in terrain)delete terrain[k];
+  for(const k in heights)delete heights[k];
+  history=[];
+  document.getElementById('menu-popup').style.display = 'none';
+  showToast('🗑 全リセットしました');
+});
+
+// Sound: master mute + placement sound selection
+function refreshSoundBtn(){
+  document.getElementById('sound-btn').textContent = muted ? '🔇' : '🔊';
+}
+function refreshMuteToggle(){
+  const tog = document.getElementById('mute-toggle');
+  tog.classList.toggle('is-on', !muted);
+  document.getElementById('mute-toggle-label').textContent = muted ? '🔇 ミュート中' : '🔊 サウンド ON';
+}
+document.getElementById('sound-btn').addEventListener('click',e=>{
+  e.stopPropagation();
+  togglePopup('sound-popup');
+  refreshMuteToggle();
+});
+document.getElementById('mute-toggle').addEventListener('click',e=>{
+  e.stopPropagation();
+  muted = !muted;
+  refreshMuteToggle();
+  refreshSoundBtn();
+  // Preview the current placement sound when unmuting (unless 'none')
+  if(!muted && selectedSound !== 'none') KawaiiSounds.play(selectedSound);
+});
+document.querySelectorAll('.sound-opt').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const s = btn.dataset.sound;
+    selectedSound = s;
+    document.querySelectorAll('.sound-opt').forEach(b=>b.classList.toggle('active', b===btn));
+    // Preview only if not muted, and not 'none'
+    if(!muted && s !== 'none') KawaiiSounds.play(s);
+  });
+});
+refreshSoundBtn();
+refreshMuteToggle();
+
+// ⚙️ Settings menu
+const menuPopup = document.getElementById('menu-popup');
+
+// Exclusive popup helper
+const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup'];
+function openPopup(id){
+  for(const p of ALL_POPUPS) document.getElementById(p).style.display = (p === id ? 'block' : 'none');
+}
+function closeAllPopups(){
+  for(const p of ALL_POPUPS) document.getElementById(p).style.display = 'none';
+}
+function togglePopup(id){
+  const el = document.getElementById(id);
+  if(el.style.display === 'block') closeAllPopups();
+  else openPopup(id);
+}
+
+document.getElementById('btn-menu').addEventListener('click',e=>{
+  e.stopPropagation();
+  togglePopup('menu-popup');
+});
+
+// 新規マップ
+const nmPopup = document.getElementById('newmap-popup');
+let nmSize = 10;
+const nmSlider = document.getElementById('nm-slider');
+const nmSizeEl = document.getElementById('nm-size');
+const nmCellsEl = document.getElementById('nm-cells');
+const nmLabelEl = document.getElementById('nm-label');
+const nmPreview = document.getElementById('nm-preview');
+const nmPctx = nmPreview.getContext('2d');
+
+function nmSizeLabel(s){
+  if(s<=8) return '🌱 ミニ';
+  if(s<=15) return '🌾 小さめ';
+  if(s<=25) return '🏞 ちょうどよい';
+  if(s<=35) return '🗺 広め';
+  return '🌏 巨大';
+}
+function drawNmPreview(){
+  const W=nmPreview.width,H=nmPreview.height;
+  nmPctx.clearRect(0,0,W,H);
+  nmPctx.fillStyle='#1a2a1d';nmPctx.fillRect(0,0,W,H);
+  const pad=6,inner=W-pad*2,cell=inner/nmSize;
+  for(let r=0;r<nmSize;r++)for(let c=0;c<nmSize;c++){
+    const x=pad+c*cell,y=pad+r*cell;
+    const n=Math.abs(Math.sin(c*12.9+r*78.2)*43.7%1);
+    nmPctx.fillStyle=`rgb(${50+n*20|0},${60+n*40|0},${40+n*15|0})`;
+    nmPctx.fillRect(x,y,cell,cell);
+  }
+}
+function updateNmLabel(){
+  nmSizeEl.textContent=`${nmSize}×${nmSize}`;
+  nmCellsEl.textContent=`${nmSize*nmSize} マス`;
+  nmLabelEl.textContent=nmSizeLabel(nmSize);
+  nmSlider.value=nmSize;
+  document.querySelectorAll('#nm-presets .nm-preset').forEach(b=>{
+    b.classList.toggle('active', parseInt(b.dataset.size)===nmSize);
+  });
+  drawNmPreview();
+}
+document.getElementById('btn-newmap').addEventListener('click',e=>{
+  e.stopPropagation();
+  togglePopup('newmap-popup');
+  updateNmLabel();
+});
+nmSlider.addEventListener('input',e=>{nmSize=parseInt(e.target.value);updateNmLabel();});
+
+[{s:5,icon:'🌱'},{s:10,icon:'🌾'},{s:15,icon:'🏡'},{s:20,icon:'🏞'},{s:25,icon:'🌳'},{s:30,icon:'🗺'},{s:40,icon:'🏔'},{s:50,icon:'🌏'}].forEach(({s,icon})=>{
+  const btn=document.createElement('button');
+  btn.className='tbtn nm-preset';
+  btn.dataset.size=s;
+  btn.style.cssText='font-size:11px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1';
+  btn.innerHTML=`<span style="font-size:16px">${icon}</span><span style="font-weight:600">${s}</span>`;
+  btn.addEventListener('click',e=>{e.stopPropagation();nmSize=s;updateNmLabel();});
+  document.getElementById('nm-presets').appendChild(btn);
+});
+
+document.getElementById('nm-cancel').addEventListener('click',()=>{nmPopup.style.display='none';});
+document.getElementById('nm-create').addEventListener('click',()=>{
+  GRID=nmSize;
+  for(const k in items)delete items[k];
+  for(const k in animals)delete animals[k];
+  for(const k in terrain)delete terrain[k];
+  for(const k in heights)delete heights[k];
+  history=[];
+  nmPopup.style.display='none';
+  resetView();
+  if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
+  showToast(`🆕 ${GRID}×${GRID} マップを作成しました`);
+});
+
+// Clock - time picker
+function fmtTime(min){const h=Math.floor(min/60)%24;return `${String(h).padStart(2,'0')}:00`;}
+function tIcon(min){const h=Math.floor(min/60)%24;if(h<5||h>=19)return '🌙';if(h<7||h>=17)return '🌅';return '☀️';}
+const timePopup = document.getElementById('time-popup');
+const timeSlider = document.getElementById('time-slider');
+const timeDisplayBig = document.getElementById('time-display-big');
+const timeTogglePause = document.getElementById('time-toggle-pause');
+function refreshTimePopupUI(){
+  const min = Math.round(timeOfDay*1440);
+  timeSlider.value = min;
+  timeDisplayBig.textContent = `${tIcon(min)} ${fmtTime(min)}`;
+  timeTogglePause.textContent = dayPaused ? '▶ 時間を進める' : '⏸ 時間を止める';
+}
+document.getElementById('clock-display').addEventListener('click',e=>{
+  e.stopPropagation();
+  const wasOpen = timePopup.style.display === 'block';
+  togglePopup('time-popup');
+  if(!wasOpen) refreshTimePopupUI();
+});
+timeSlider.addEventListener('input',e=>{
+  timeOfDay = parseInt(e.target.value)/1440;
+  dayPaused = true;
+  refreshTimePopupUI();
+});
+document.querySelectorAll('.time-preset').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    timeOfDay = parseInt(btn.dataset.min)/1440;
+    dayPaused = true;
+    refreshTimePopupUI();
+  });
+});
+timeTogglePause.addEventListener('click',e=>{
+  e.stopPropagation();
+  dayPaused = !dayPaused;
+  refreshTimePopupUI();
+});
+
+// Weather
+// Weather menu
+const WEATHER_ICONS = {clear:'☀️',rain:'🌧',snow:'❄️',thunder:'⛈',hail:'🧊',sandstorm:'🏜',sakura:'🌸',leaves:'🍂'};
+const WEATHER_LABELS = {clear:'晴',rain:'雨',snow:'雪',thunder:'雷',hail:'雹',sandstorm:'砂',sakura:'桜',leaves:'紅'};
+
+// Random weather state
+let weatherRandomOn = false;
+let weatherRandomPool = new Set(); // weather keys checked as candidates
+let weatherRandomTimer = 0; // seconds until next change
+
+function applyWeather(w){
+  weather = w;
+  initWeather(w);
+  rainbowOn = false;
+  rainFading = false;
+  document.getElementById('weather-btn').textContent = `${WEATHER_ICONS[w]||'☀️'} ${WEATHER_LABELS[w]||'天気'}`;
+}
+
+function pickRandomWeather(){
+  // Pick a random one from pool that's different from current
+  const pool = [...weatherRandomPool].filter(w => w !== weather);
+  if(pool.length === 0){
+    // Fall back to any from pool (even if same)
+    const any = [...weatherRandomPool];
+    if(any.length === 0) return;
+    return applyWeather(any[Math.floor(Math.random()*any.length)]);
+  }
+  applyWeather(pool[Math.floor(Math.random()*pool.length)]);
+}
+
+function refreshRandomToggle(){
+  const tog = document.getElementById('weather-random-toggle');
+  tog.classList.toggle('is-on', weatherRandomOn);
+  document.getElementById('weather-popup').classList.toggle('random-on', weatherRandomOn);
+  document.getElementById('weather-random-hint').style.display = weatherRandomOn ? 'block' : 'none';
+}
+
+function refreshWeatherChecks(){
+  document.querySelectorAll('.weather-opt').forEach(btn=>{
+    btn.classList.toggle('checked', weatherRandomPool.has(btn.dataset.weather));
+  });
+}
+
+document.getElementById('weather-random-toggle').addEventListener('click',e=>{
+  e.stopPropagation();
+  weatherRandomOn = !weatherRandomOn;
+  if(weatherRandomOn){
+    // If pool is empty, seed with the current weather + 2 common ones
+    if(weatherRandomPool.size === 0){
+      weatherRandomPool.add('clear');
+      weatherRandomPool.add('rain');
+      weatherRandomPool.add('snow');
+    }
+    weatherRandomTimer = 30 + Math.random() * 30; // 30-60s
+  }
+  refreshRandomToggle();
+  refreshWeatherChecks();
+});
+
+document.getElementById('weather-btn').addEventListener('click',e=>{
+  e.stopPropagation();
+  togglePopup('weather-popup');
+  refreshRandomToggle();
+  refreshWeatherChecks();
+});
+
+document.querySelectorAll('.weather-opt').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    const w = btn.dataset.weather;
+    // If random is ON, the whole button toggles pool membership
+    if(weatherRandomOn){
+      if(weatherRandomPool.has(w)) weatherRandomPool.delete(w);
+      else weatherRandomPool.add(w);
+      refreshWeatherChecks();
+      return;
+    }
+    // Otherwise apply immediately
+    applyWeather(w);
+    closeAllPopups();
+  });
+});
+
+// ═══════════════════════════════════════════
+// TERRAIN GENERATION UI
+// ═══════════════════════════════════════════
+const genPopup=document.getElementById('gen-popup');
+
+// Generation mode: 'flat' = 平面のみ / 'height' = 高さあり
+let genMode = 'height';
+function applyGenResult(result){
+  if(genMode==='flat'){
+    applyTerrainMap({terrain: result.terrain || result, heights: {}});
+  } else {
+    applyTerrainMap(result);
+  }
+}
+document.getElementById('gen-mode-flat').addEventListener('click',e=>{
+  e.stopPropagation();
+  genMode='flat';
+  document.getElementById('gen-mode-flat').classList.add('active');
+  document.getElementById('gen-mode-height').classList.remove('active');
+  if(typeof updateLandSummary==='function') updateLandSummary();
+});
+document.getElementById('gen-mode-height').addEventListener('click',e=>{
+  e.stopPropagation();
+  genMode='height';
+  document.getElementById('gen-mode-height').classList.add('active');
+  document.getElementById('gen-mode-flat').classList.remove('active');
+  if(typeof updateLandSummary==='function') updateLandSummary();
+});
+
+Object.keys(MAP_PRESETS).forEach(name=>{
+  const btn=document.createElement('button');
+  btn.className='tbtn';
+  btn.style.cssText='font-size:9px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1';
+  const parts=name.split(' ');
+  btn.innerHTML=`<span style="font-size:16px">${parts[0]}</span><span style="font-weight:600">${parts.slice(1).join(' ')}</span>`;
+  btn.addEventListener('click',()=>{applyGenResult(MAP_PRESETS[name](Math.floor(Math.random()*99999)));genPopup.style.display='none';showToast(`🗺 ${name}を生成しました`);});
+  document.getElementById('gen-btns').appendChild(btn);
+});
+document.getElementById('btn-gen-random').addEventListener('click',()=>{
+  const fns=Object.values(MAP_PRESETS);applyGenResult(fns[Math.floor(Math.random()*fns.length)](Math.floor(Math.random()*99999)));
+  genPopup.style.display='none';showToast('🎲 ランダムマップ生成！');
+});
+let lastOpenAcc = 'land';
+function updateLandSummary(){
+  const sum=document.getElementById('acc-summary-land');
+  if(sum) sum.textContent = genMode==='flat'?'平らな地形':'起伏のある地形';
+}
+document.querySelectorAll('.acc-header').forEach(h=>{
+  h.addEventListener('click',e=>{
+    e.stopPropagation();
+    const sec=h.parentElement;
+    const isOpen=sec.classList.contains('open');
+    document.querySelectorAll('.acc-section').forEach(s=>s.classList.remove('open'));
+    if(!isOpen){sec.classList.add('open');lastOpenAcc=h.dataset.acc;}else{lastOpenAcc=null;}
+  });
+});
+
+document.getElementById('btn-gen').addEventListener('click',e=>{
+  e.stopPropagation();
+  const wasOpen = document.getElementById('gen-popup').style.display === 'block';
+  togglePopup('gen-popup');
+  if(!wasOpen){
+    refreshScatterUI();
+    document.querySelectorAll('.acc-section').forEach(s=>s.classList.remove('open'));
+    if(lastOpenAcc){
+      const h=document.querySelector(`.acc-header[data-acc="${lastOpenAcc}"]`);
+      if(h) h.parentElement.classList.add('open');
+    }
+  }
+});
+
+// Scatter
+let scCount = 20;
+let scSource = 'all'; // 'all' | 'recent'
+const scSlider = document.getElementById('sc-slider');
+const scCountEl = document.getElementById('sc-count');
+const scInfoEl = document.getElementById('sc-info');
+const scSrcAll = document.getElementById('sc-src-all');
+const scSrcRecent = document.getElementById('sc-src-recent');
+
+function refreshScatterUI(){
+  const max = GRID*GRID;
+  if(scCount>max) scCount=max;
+  if(scCount<1) scCount=1;
+  scSlider.max = max;
+  scSlider.value = scCount;
+  scCountEl.textContent = scCount;
+  const pct = Math.round((scCount/max)*100);
+  scInfoEl.textContent = `マップの ${pct}% (最大 ${max})`;
+  const sum = document.getElementById('acc-summary-scatter');
+  if(sum) sum.textContent = `${scCount}個`;
+  document.querySelectorAll('#sc-presets .sc-preset').forEach(b=>{
+    const t = Math.max(1, Math.round(max*parseInt(b.dataset.val)/100));
+    b.classList.toggle('active', t===scCount);
+  });
+  // Recent source enable/disable
+  const recentList = CATEGORIES['📌 履歴']||[];
+  const recentEmpty = recentList.length === 0;
+  scSrcRecent.classList.toggle('locked', recentEmpty);
+  if(recentEmpty && scSource === 'recent') scSource = 'all';
+  scSrcAll.classList.toggle('active', scSource === 'all');
+  scSrcRecent.classList.toggle('active', scSource === 'recent');
+}
+
+scSrcAll.addEventListener('click',e=>{
+  e.stopPropagation();
+  scSource = 'all';
+  refreshScatterUI();
+});
+scSrcRecent.addEventListener('click',e=>{
+  e.stopPropagation();
+  if(scSrcRecent.classList.contains('locked')) return;
+  scSource = 'recent';
+  refreshScatterUI();
+});
+
+scSlider.addEventListener('input',e=>{scCount=parseInt(e.target.value);refreshScatterUI();});
+[10,25,50,75,100].forEach(p=>{
+  const btn=document.createElement('button');
+  btn.className='tbtn sc-preset';
+  btn.dataset.val=p;
+  btn.style.cssText='font-size:10px;padding:6px 2px;font-weight:600';
+  btn.textContent=p+'%';
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const max=GRID*GRID;
+    scCount=Math.max(1,Math.round(max*p/100));
+    refreshScatterUI();
+  });
+  document.getElementById('sc-presets').appendChild(btn);
+});
+refreshScatterUI();
+updateLandSummary();
+
+// Solid color
+function lighten(hex,amt){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);const cl=v=>Math.max(0,Math.min(255,Math.round(v+255*amt)));return`#${cl(r).toString(16).padStart(2,'0')}${cl(g).toString(16).padStart(2,'0')}${cl(b).toString(16).padStart(2,'0')}`;}
+const SOLID=[{label:'🌿 草',c:'#4a8a3a'},{label:'🏜 砂',c:'#d4aa5a'},{label:'🌊 水',c:'#2a6e9a'},{label:'❄️ 雪',c:'#ddeeff'},{label:'⬛ 岩',c:'#3a3530'},{label:'🟫 土',c:'#8b5e3c'},{label:'🟪 紫',c:'#7a4a9a'},{label:'🟥 赤',c:'#9a3a3a'}];
+function fillSolid(hex){
+  TERRAIN_COLORS[hex]=[hex, hex];
+  const tmap={};for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)tmap[`${c},${r}`]=hex;
+  applyTerrainMap({terrain:tmap, heights:{}});
+}
+SOLID.forEach(({label,c})=>{
+  const btn=document.createElement('button');btn.className='tbtn';
+  btn.style.cssText='font-size:10px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.1';
+  btn.innerHTML=`<span style="display:block;width:18px;height:18px;background:${c};border-radius:4px;border:1px solid rgba(255,255,255,.15)"></span><span>${label}</span>`;
+  btn.addEventListener('click',()=>{fillSolid(c);genPopup.style.display='none';showToast(`${label}で塗りつぶしました`);});
+  document.getElementById('solid-presets').appendChild(btn);
+});
+document.getElementById('btn-solid-custom').addEventListener('click',()=>{
+  fillSolid(document.getElementById('color-picker').value);genPopup.style.display='none';showToast('🎨 カスタム色で塗りつぶしました');
+});
+
+// ⭐ Scatter
+// ✨ Effects menu
+const fxPopup = document.getElementById('fx-popup');
+function isNight(){ return timeOfDay < 0.27 || timeOfDay > 0.73; }
+function isDay()  { return timeOfDay >= 0.27 && timeOfDay <= 0.73; }
+
+function updateFxAvailability(){
+  const night = isNight();
+  document.querySelectorAll('.fx-night').forEach(b => b.classList.toggle('locked', !night));
+  document.querySelectorAll('.fx-day')  .forEach(b => b.classList.toggle('locked', night));
+  document.getElementById('fx-night-label').textContent = night ? '🌙 夜の演出' : '🌙 夜の演出（日没後に使えます）';
+  document.getElementById('fx-day-label')  .textContent = !night ? '☀️ 昼の演出' : '☀️ 昼の演出（日の出後に使えます）';
+}
+
+document.getElementById('btn-effects').addEventListener('click',e=>{
+  e.stopPropagation();
+  const wasOpen = fxPopup.style.display === 'block';
+  togglePopup('fx-popup');
+  if(!wasOpen) updateFxAvailability();
+});
+
+document.addEventListener('click',e=>{
+  const insideAnyPopup = ALL_POPUPS.some(id => document.getElementById(id).contains(e.target));
+  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn'].includes(e.target.id);
+  if(!insideAnyPopup && !isTriggerBtn) closeAllPopups();
+});
+
+// Fireworks & Meteors loop timers
+let fireworksOn = false, fireworksTimer = 0;
+let meteorsTimer = 0; // unused, kept to avoid breaking other refs if any
+
+// Toggle helper: bind a toggle button to a state setter
+function bindFxToggle(id, getOn, setOn, opts){
+  const btn = document.getElementById(id);
+  function refresh(){ btn.classList.toggle('on', getOn()); }
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    if(btn.classList.contains('locked')) return;
+    setOn(!getOn());
+    if(opts && opts.afterToggle) opts.afterToggle(getOn());
+    refresh();
+  });
+  return refresh;
+}
+
+const refreshAurora    = bindFxToggle('fx-aurora',    ()=>auroraOn,    v=>{auroraOn=v;});
+const refreshFireworks = bindFxToggle('fx-fireworks', ()=>fireworksOn, v=>{fireworksOn=v;   if(v){fireworksTimer=0; spawnFirework();}});
+const refreshBubbles   = bindFxToggle('fx-bubbles',   ()=>bubblesOn,   v=>{bubblesOn=v;});
+const refreshMist      = bindFxToggle('fx-mist',      ()=>mistOn,      v=>{mistOn=v; if(v && mistPatches.length===0) initMist();});
+
+function refreshAllFxToggles(){
+  refreshAurora(); refreshFireworks();
+  refreshBubbles(); refreshMist();
+}
+refreshAllFxToggles();
+
+document.getElementById('btn-scatter').addEventListener('click',()=>{
+  let favs;
+  if(scSource === 'recent'){
+    favs = [...(CATEGORIES['📌 履歴']||[])];
+  } else {
+    favs = [];
+    for(const [cat, list] of Object.entries(CATEGORIES)){
+      if(cat !== '📌 履歴') favs.push(...list);
+    }
+  }
+  if(!favs.length)return;
+  for(const k in items)delete items[k];
+  for(const k in animals)delete animals[k];
+  history=[];
+  const total=GRID*GRID;
+  const count=Math.min(scCount,total);
+  const cells=[];for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)cells.push({c,r});
+  for(let i=cells.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
+  cells.slice(0,count).forEach(({c,r},i)=>setTimeout(()=>{
+    const e=favs[Math.floor(Math.random()*favs.length)];
+    if(ANIMALS.has(e))spawnAnimal(e,c,r);
+    else items[`${c},${r}`]={emoji:e,bobOffset:Math.random()*Math.PI*2};
+    if(i % 2 === 0) playPlaceSound();
+  },i*20));
+  closeAllPopups();
+  showToast(`🎲 ${count}個をランダム配置！`);
+});
+
+// ═══════════════════════════════════════════
+// ANIMATE LOOP
+// ═══════════════════════════════════════════
+const DAY_SPEED=0.00008;
+let last=performance.now(), mmTimer=0;
+
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt=Math.min((now-last)/1000,.05); last=now;
+  animT+=dt;
+
+  // Smooth zoom & pan
+  const ease=1-Math.pow(0.01, dt*6);
+  scale += (targetScale - scale) * ease;
+  OX    += (targetOX - OX)       * ease;
+  OY    += (targetOY - OY)       * ease;
+
+  if(!dayPaused) timeOfDay=(timeOfDay+DAY_SPEED*60*dt)%1;
+
+  // Auto-stop time-locked effects when time of day changes
+  const night = timeOfDay < 0.27 || timeOfDay > 0.73;
+  // Night-only: aurora — stop if day arrives
+  if(auroraOn && !night){ auroraOn = false; refreshAurora(); }
+  if(fireworksOn && !night){ fireworksOn = false; refreshFireworks(); }
+  if(rainbowOn && night){ rainbowOn = false; }
+  if(bubblesOn && night){ bubblesOn = false; refreshBubbles(); }
+  if(mistOn && night){ mistOn = false; refreshMist(); }
+
+  const totalMin = Math.round(timeOfDay*1440);
+  document.getElementById('clock-display').textContent = `${tIcon(totalMin)} ${fmtTime(totalMin)}`;
+  document.getElementById('clock-display').style.opacity = dayPaused ? .6 : 1;
+  if(!dayPaused && timePopup.style.display === 'block') refreshTimePopupUI();
+
+  updateAnimals(dt);
+  updateMeteors(dt);
+  updateFireworks(dt);
+  if(fireworksOn){
+    fireworksTimer -= dt;
+    if(fireworksTimer <= 0){
+      spawnFirework();
+      fireworksTimer = 0.8 + Math.random() * 1.8;
+    }
+  }
+  updateBubbles(dt);
+  updateMist(dt);
+  updateThunder(dt);
+  updateRainbow(dt);
+  updateRainFade(dt);
+  // Random weather rotation
+  if(weatherRandomOn && weatherRandomPool.size > 0){
+    weatherRandomTimer -= dt;
+    if(weatherRandomTimer <= 0){
+      pickRandomWeather();
+      weatherRandomTimer = 30 + Math.random() * 30;
+    }
+  }
+  updateCloudFade(dt);
+  render();
+
+  mmTimer+=dt;if(mmTimer>.4){if(minimapEl.classList.contains('visible')) drawMinimap();mmTimer=0;}
+}
+requestAnimationFrame(loop);
+
+window.addEventListener('resize',()=>{resizeCanvas();syncTargets();});
+</script>
+
+</body>
+</html>
