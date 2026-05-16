@@ -29,7 +29,7 @@ body{background:#0a150b;overflow:hidden;font-family:'Hiragino Kaku Gothic ProN',
 .acc-section.open .acc-summary{display:none}
 .acc-content{display:none;padding:0 12px 12px}
 .acc-section.open .acc-content{display:block;padding-top:10px}
-body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast,body.fullscreen #btn-palette{display:none !important}
+body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast{display:none !important}
 body.fullscreen #map-btns{top:auto;bottom:14px;right:14px}
 body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 .mapbtn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
@@ -76,11 +76,13 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
 #minimap.visible{display:block}
-body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:none!important}
+body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:none!important}
 #modebar{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:29;display:flex;background:var(--panel);border:1px solid var(--border);border-radius:20px;overflow:hidden}
 .mbtn{padding:5px 13px;font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:all .12s}
 .mbtn.active{background:rgba(93,186,106,.25);color:var(--accent2)}
-#cattabs{display:flex;gap:4px;padding:0 0 6px;overflow-x:auto;scrollbar-width:none}
+#cattabs{display:flex;gap:4px;padding:0 0 6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+#cattabs-row{display:flex;align-items:flex-start;gap:5px}
+#btn-palmin{flex:0 0 auto;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;line-height:1;padding:5px 8px;cursor:pointer}
 #cattabs::-webkit-scrollbar{display:none}
 .cattab{flex:0 0 auto;padding:3px 10px;font-size:11px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.04);color:var(--dim);cursor:pointer;transition:all .12s}
 .cattab.active{background:rgba(93,186,106,.22);color:var(--accent2);border-color:var(--accent)}
@@ -424,7 +426,10 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
       <button id="mpc-send" type="button" data-i18n="chat.send">送信</button>
     </div>
   </div>
-  <div id="cattabs"></div>
+  <div id="cattabs-row">
+    <button id="btn-palmin" type="button" data-i18n-title="ttPalette" title="パレットの最小化">▾</button>
+    <div id="cattabs"></div>
+  </div>
   <div id="palette"></div>
   <div id="terrain-palette"></div>
 </div>
@@ -432,7 +437,6 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
 
 <div id="map-btns">
   <button class="mapbtn" id="btn-minimap">🗺</button>
-  <button class="mapbtn" id="btn-palette" data-i18n-title="ttPalette" title="パレットの折りたたみ">🎨</button>
   <button class="mapbtn" id="btn-zoom-in">＋</button>
   <button class="mapbtn" id="btn-zoom-out">－</button>
   <button class="mapbtn" id="btn-reset-view">⊡</button>
@@ -3513,11 +3517,11 @@ btnFullscreen.addEventListener('click',()=>{
   resetView();
 });
 
-// 絵文字パレットの折りたたみ（全体）
-document.getElementById('btn-palette').addEventListener('click',e=>{
+// 絵文字パレットの最小化（カテゴリ行左端のボタン。最小化時はカテゴリのみ表示）
+document.getElementById('btn-palmin').addEventListener('click',e=>{
   e.stopPropagation();
   const on=document.body.classList.toggle('palette-collapsed');
-  e.currentTarget.textContent = on ? '🙈' : '🎨';   // 色つけずアイコンで状態表示
+  e.currentTarget.textContent = on ? '▴' : '▾';
 });
 
 // 3D toggle
