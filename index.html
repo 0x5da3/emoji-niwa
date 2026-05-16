@@ -811,6 +811,8 @@ const KawaiiSounds = (function(){
       sounds[name]();
     },
     setVolume(v){ getMaster().gain.value = v; },
+    ctx(){ return ac(); },
+    resume(){ const c = ac(); if(c.state === 'suspended') c.resume(); },
   };
 })();
 
@@ -824,7 +826,7 @@ function playPlaceSound(){
 // 動物・人が食べ物を食べたときの効果音（配置音設定とは独立、ミュート尊重）
 function playEatSound(){ if(muted) return; KawaiiSounds.play('munch'); }
 // 真夜中FM入店音 B→G — drop-in (no deps)。呼び出し側で muted を尊重する
-let _c;const _a=()=>_c||=new(window.AudioContext||webkitAudioContext)();
+const _a=()=>KawaiiSounds.ctx();   // 単一 AudioContext を共有（resume 経路を一本化）
 let _m,_w,_v;
 function _bus(){if(_m)return _m;const a=_a();_m=a.createGain();_m.gain.value=.55;
  const L=a.sampleRate*2.6,ir=a.createBuffer(2,L,a.sampleRate);
@@ -845,6 +847,14 @@ function playEntranceChime(){const a=_a();if(a.state==='suspended')a.resume();
  const t=a.currentTime+.05, root=493.88;
  _bell(root,t,1.70,40,.5);
  _bell(root*0.7937,t+0.52,1.95,34,.46);}
+// ブラウザは AudioContext を生成時サスペンド／タブ非アクティブ等で自動サスペンドする。
+// ユーザー操作とタブ復帰で単一 context を一括 resume し、音が出なくなるのを防ぐ。
+function resumeAudio(){ try{ KawaiiSounds.resume(); }catch(e){} }
+['pointerdown','touchstart','keydown'].forEach(ev =>
+  window.addEventListener(ev, resumeAudio, { passive: true }));
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible') resumeAudio();
+});
 // Duration (seconds) of each launch whistle — used to sync shell flight
 const FW_LAUNCH_DUR = { '1': 1.15, '2': 0.75, '3': 1.3, '4': 1.6 };
 // Pick a random launch+boom combo for each firework
