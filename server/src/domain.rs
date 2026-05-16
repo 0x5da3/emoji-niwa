@@ -38,6 +38,7 @@ pub struct Session {
 pub enum Bcast {
     Snap { from: u64, d: String },
     Refresh,
+    Chat { name: String, text: String },
 }
 
 /// One collaborative room: latest world snapshot + fan-out channel + members.

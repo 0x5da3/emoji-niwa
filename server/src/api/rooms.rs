@@ -124,6 +124,30 @@ pub async fn ws(
                                             }
                                             let _ = room2.tx.send(Bcast::Refresh);
                                         }
+                                        Some("chat") => {
+                                            let text: String = v
+                                                .get("text")
+                                                .and_then(|x| x.as_str())
+                                                .unwrap_or("")
+                                                .chars()
+                                                .filter(|c| !c.is_control() || *c == ' ')
+                                                .take(400)
+                                                .collect::<String>()
+                                                .trim()
+                                                .to_string();
+                                            if !text.is_empty() {
+                                                let name = room2
+                                                    .conns
+                                                    .lock()
+                                                    .unwrap()
+                                                    .get(&conn_id)
+                                                    .cloned()
+                                                    .unwrap_or_default();
+                                                let _ = room2
+                                                    .tx
+                                                    .send(Bcast::Chat { name, text });
+                                            }
+                                        }
                                         _ => {}
                                     }
                                 }
@@ -171,6 +195,16 @@ pub async fn ws(
                                 .await;
                             if session
                                 .text(serde_json::json!({ "t": "role", "owner": owner }).to_string())
+                                .await
+                                .is_err()
+                            { break; }
+                        }
+                        Ok(Bcast::Chat { name, text }) => {
+                            if session
+                                .text(
+                                    serde_json::json!({ "t": "chat", "name": name, "text": text })
+                                        .to_string(),
+                                )
                                 .await
                                 .is_err()
                             { break; }

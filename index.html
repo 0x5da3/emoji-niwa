@@ -87,6 +87,18 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .cattab.active{background:rgba(93,186,106,.22);color:var(--accent2);border-color:var(--accent)}
 #palette-wrap{position:fixed;bottom:0;left:0;right:0;z-index:28;background:var(--panel);border-top:1px solid var(--border);backdrop-filter:blur(14px);padding:6px 8px 14px}
 #palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;grid-auto-rows:42px;height:136px;overflow-y:auto;align-content:start;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:rgba(168,224,99,.4) transparent;-webkit-overflow-scrolling:touch}
+/* 共有プレイ用チャット（パレット上・既定3行・最小化/拡大可） */
+#mp-chat{display:none;flex-direction:column;gap:4px;margin-bottom:6px;border:1px solid rgba(120,210,130,.3);border-radius:10px;background:rgba(8,20,10,.55);padding:5px 6px}
+#mpc-head{display:flex;align-items:center;gap:6px;font-size:11px;color:#a8e063}
+#mpc-head .mpc-t{flex:1;font-weight:700}
+#mpc-head button{background:rgba(120,210,130,.18);border:1px solid rgba(120,210,130,.3);color:#cfeecb;border-radius:6px;font-size:11px;line-height:1;padding:3px 7px;cursor:pointer}
+#mpc-log{height:54px;overflow-y:auto;font-size:12px;line-height:1.45;color:#e9f5e5;word-break:break-word;scrollbar-width:thin}
+#mp-chat.exp #mpc-log{height:min(42vh,260px)}
+#mp-chat.min #mpc-log,#mp-chat.min #mpc-inrow{display:none}
+#mpc-log .nm{color:#a8e063;font-weight:700;margin-right:4px}
+#mpc-inrow{display:flex;gap:5px}
+#mpc-in{flex:1;min-width:0;background:rgba(0,0,0,.3);border:1px solid rgba(120,210,130,.3);color:#fff;border-radius:6px;font-size:13px;padding:5px 7px}
+#mpc-send{background:rgba(93,186,106,.5);border:1px solid rgba(168,224,99,.6);color:#fff;border-radius:6px;font-size:12px;padding:5px 10px;cursor:pointer}
 #palette .ebtn{scroll-snap-align:start}
 #palette::-webkit-scrollbar{width:5px}
 #palette::-webkit-scrollbar-thumb{background:rgba(168,224,99,.35);border-radius:3px}
@@ -391,6 +403,18 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 </div>
 
 <div id="palette-wrap">
+  <div id="mp-chat">
+    <div id="mpc-head">
+      <span class="mpc-t" data-i18n="chat.title">💬 チャット</span>
+      <button id="mpc-exp" type="button" title="拡大/戻す">⤢</button>
+      <button id="mpc-min" type="button" title="最小化/戻す">▾</button>
+    </div>
+    <div id="mpc-log"></div>
+    <div id="mpc-inrow">
+      <input id="mpc-in" type="text" maxlength="400" autocomplete="off" data-i18n-ph="chat.ph" placeholder="メッセージ…">
+      <button id="mpc-send" type="button" data-i18n="chat.send">送信</button>
+    </div>
+  </div>
   <div id="cattabs"></div>
   <div id="palette"></div>
   <div id="terrain-palette"></div>
@@ -1033,7 +1057,7 @@ const I18N = {
     'toast.roomCreated':'👥 ルームを作成しました（招待URLをコピー）','toast.roomJoined':'👥 共有ルームに参加しました',
     'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
     'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ 多人数サーバー未設定です',
-    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出','mp.namePrompt':'共有プレイの表示名を入力してください',
+    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出','mp.namePrompt':'共有プレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信',
     'share':'🔗 共有', 'toast.shareCopied':'🔗 共有URLをコピーしました！', 'toast.shareError':'⚠️ 共有データを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
@@ -1096,7 +1120,7 @@ const I18N = {
     'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined shared room',
     'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
-    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for shared play',
+    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for shared play','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send',
     'share':'🔗 Share', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read shared data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
@@ -3890,17 +3914,68 @@ async function mpOnMsg(ev){
     if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
   } else if(m.t==='peers'){
     mpPeers=m.n|0; mpNames=Array.isArray(m.names)?m.names:[]; mpRefreshBar();
+  } else if(m.t==='chat'){
+    mpChatAppend(m.name, m.text);
   } else if(m.t==='full'){
     // 満員：再接続せず多人数を停止し、自分の世界に留まる
     mpActive=false;
     if(mpOwnerTimer){ clearInterval(mpOwnerTimer); mpOwnerTimer=null; }
     try{ if(mpWs){ mpWs.onclose=null; mpWs.close(); } }catch(_){ }
     mpWs=null;
-    mpBar('hide');
+    mpBar('hide'); mpChatShow(false);
     try{ history.replaceState(null,'',location.pathname); }catch(_){ }
     showToast(tr('toast.roomFull'));
   }
 }
+// ── 共有プレイ チャット ──────────────────────────────────
+function mpChatShow(on){
+  const el=document.getElementById('mp-chat');
+  if(!el) return;
+  if(on){
+    el.classList.remove('min','exp');
+    const inp=document.getElementById('mpc-in');
+    if(inp) inp.placeholder=tr('chat.ph');
+    el.style.display='flex';
+  } else { el.style.display='none'; }
+}
+function mpChatAppend(name, text){
+  const log=document.getElementById('mpc-log');
+  if(!log) return;
+  const near = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+  const line=document.createElement('div');
+  const nm=document.createElement('span');
+  nm.className='nm';
+  nm.textContent=(name && String(name).trim()) ? name : 'ゲスト';
+  line.appendChild(nm);
+  line.appendChild(document.createTextNode(String(text==null?'':text)));
+  log.appendChild(line);
+  while(log.childElementCount>200) log.removeChild(log.firstChild);
+  if(near) log.scrollTop=log.scrollHeight;
+}
+function mpChatSend(){
+  const inp=document.getElementById('mpc-in');
+  if(!inp) return;
+  const text=inp.value.trim().slice(0,400);
+  inp.value='';
+  if(!text || !mpActive || !mpWs || mpWs.readyState!==1) return;
+  try{ mpWs.send(JSON.stringify({t:'chat',text})); }catch(_){ }
+}
+(function mpChatWire(){
+  const exp=document.getElementById('mpc-exp'), min=document.getElementById('mpc-min'),
+        snd=document.getElementById('mpc-send'), inp=document.getElementById('mpc-in'),
+        el=document.getElementById('mp-chat');
+  if(!el) return;
+  exp.addEventListener('click',e=>{ e.stopPropagation();
+    el.classList.remove('min'); el.classList.toggle('exp'); });
+  min.addEventListener('click',e=>{ e.stopPropagation();
+    el.classList.remove('exp'); el.classList.toggle('min');
+    min.textContent = el.classList.contains('min') ? '▴' : '▾'; });
+  snd.addEventListener('click',e=>{ e.stopPropagation(); mpChatSend(); });
+  inp.addEventListener('keydown',e=>{
+    e.stopPropagation();
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); mpChatSend(); }
+  });
+})();
 function mpConnect(){
   if(!MP_WS || !mpRoomId) return;
   let ws; try{ ws=new WebSocket(MP_WS + '/room/' + encodeURIComponent(mpRoomId)); }catch(_){ return; }
@@ -3919,6 +3994,8 @@ function mpConnect(){
 function mpJoin(roomId, name){
   mpRoomId=roomId; mpMyName=name||mpName()||'ゲスト';
   mpActive=true; mpGotSnap=false; mpSeeded=false;
+  const log=document.getElementById('mpc-log'); if(log) log.textContent='';
+  mpChatShow(true);
   mpConnect();
   mpBar('room');
   if(mpOwnerTimer) clearInterval(mpOwnerTimer);
