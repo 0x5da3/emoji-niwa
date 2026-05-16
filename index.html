@@ -239,6 +239,7 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
   <div style="display:flex;flex-direction:column;gap:6px">
     <button class="tbtn" id="btn-newmap" data-i18n="newMap">🆕 新規マップ</button>
     <button class="tbtn" id="btn-clear-all" data-i18n="clearAll">🗑 全リセット</button>
+    <button class="tbtn" id="btn-share" data-i18n="share">🔗 共有</button>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="autosaveInterval" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">💾 オートセーブ間隔</div>
@@ -318,6 +319,13 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 </div>
 
 <div id="toast"></div>
+<div id="visiting-bar" style="display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:48;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(16px);max-width:92vw;text-align:center">
+  <div id="visiting-text" data-i18n="visiting.title" style="font-size:12px;color:#a8e063;margin-bottom:8px">👀 共有された箱庭を閲覧中（自動保存は停止中）</div>
+  <div style="display:flex;gap:6px;justify-content:center">
+    <button class="tbtn" id="btn-visit-back" data-i18n="visiting.back">↩ 自分の箱庭に戻る</button>
+    <button class="tbtn" id="btn-visit-keep" data-i18n="visiting.keep">💾 これを自分のものに</button>
+  </div>
+</div>
 
 <div id="gen-popup">
   <div class="acc-section open">
@@ -1014,6 +1022,8 @@ const I18N = {
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
     'toast.scatter':'🎲 {count}個をランダム配置！', 'toast.saved':'💾 セーブしました',
+    'share':'🔗 共有', 'toast.shareCopied':'🔗 共有URLをコピーしました！', 'toast.shareError':'⚠️ 共有データを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
+    'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
     'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
     'toast.langSet':'🌐 言語を日本語にしました',
@@ -1068,6 +1078,8 @@ const I18N = {
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
     'toast.scatter':'🎲 Scattered {count}!', 'toast.saved':'💾 Saved',
+    'share':'🔗 Share', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read shared data', 'toast.kept':'💾 Saved this world as your own',
+    'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
     'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
     'toast.langSet':'🌐 Language set to English',
@@ -3715,6 +3727,36 @@ document.getElementById('btn-menu').addEventListener('click',e=>{
   togglePopup('menu-popup');
 });
 
+// 🔗 ワールドを URL で共有（ハッシュにエンコード、サーバー不要）
+document.getElementById('btn-share').addEventListener('click', async e=>{
+  e.stopPropagation();
+  closeAllPopups();
+  let url;
+  try{ url = location.origin + location.pathname + '#w=' + await encodeWorld(worldPayload()); }
+  catch(err){ showToast(tr('toast.shareError')); return; }
+  try{
+    await navigator.clipboard.writeText(url);
+    showToast(tr('toast.shareCopied'));
+  }catch(err){
+    window.prompt(tr('share'), url);   // clipboard 不可（非secure等）はURL提示
+  }
+});
+
+// 共有URL閲覧バーの表示と操作
+function showVisitingBar(){ document.getElementById('visiting-bar').style.display = 'block'; }
+document.getElementById('btn-visit-back').addEventListener('click', e=>{
+  e.stopPropagation();
+  location.href = location.origin + location.pathname;   // ハッシュ無しで再読込→自分の世界
+});
+document.getElementById('btn-visit-keep').addEventListener('click', e=>{
+  e.stopPropagation();
+  visiting = false;
+  history.replaceState(null, '', location.pathname);
+  saveState(); restartAutosave();
+  document.getElementById('visiting-bar').style.display = 'none';
+  showToast(tr('toast.kept'));
+});
+
 // 新規マップ
 const nmPopup = document.getElementById('newmap-popup');
 let nmSize = 10;
@@ -4197,7 +4239,69 @@ function refreshAutosaveUI(){
   });
 }
 
+// 共有URL閲覧モード：true の間は一切 localStorage へ書かない（自分の箱庭を守る）
+let visiting = false;
+
+// 共有する「世界＋情景」のみ（個人設定 lang/音/ミュート/履歴等は含めない）
+function worldPayload(){
+  return {
+    v: SAVE_VERSION,
+    grid: GRID,
+    terrain, items, heights, animals, animalId,
+    timeOfDay, dayPaused, weather,
+    drawMode, showHeights, heightsTouched,
+    weatherRandomOn,
+    weatherRandomPool: [...weatherRandomPool],
+    fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
+  };
+}
+function _b64urlFromBytes(bytes){
+  let s = '';
+  for(let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function _bytesFromB64url(str){
+  const b64 = str.replace(/-/g,'+').replace(/_/g,'/');
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function _streamBytes(bytes, StreamCtor){
+  const cs = new StreamCtor('deflate-raw');
+  const w = cs.writable.getWriter(); w.write(bytes); w.close();
+  const chunks = []; const r = cs.readable.getReader();
+  for(;;){ const {done,value} = await r.read(); if(done) break; chunks.push(value); }
+  let len = 0; for(const c of chunks) len += c.length;
+  const out = new Uint8Array(len); let o = 0;
+  for(const c of chunks){ out.set(c, o); o += c.length; }
+  return out;
+}
+// JSON→(deflate-raw 圧縮があれば圧縮)→base64url。先頭1文字タグ '1'=圧縮 '0'=非圧縮
+async function encodeWorld(obj){
+  const raw = new TextEncoder().encode(JSON.stringify(obj));
+  if(typeof CompressionStream === 'function'){
+    try{ return '1' + _b64urlFromBytes(await _streamBytes(raw, CompressionStream)); }catch(e){}
+  }
+  return '0' + _b64urlFromBytes(raw);
+}
+async function decodeWorld(str){
+  try{
+    if(!str || str.length < 2) return null;
+    const tag = str[0], body = _bytesFromB64url(str.slice(1));
+    let json;
+    if(tag === '1'){
+      if(typeof DecompressionStream !== 'function') return null;
+      json = new TextDecoder().decode(await _streamBytes(body, DecompressionStream));
+    } else {
+      json = new TextDecoder().decode(body);
+    }
+    return JSON.parse(json);
+  }catch(e){ return null; }
+}
+
 function saveState(){
+  if(visiting) return;   // 閲覧モード中は保存しない（オートセーブ非干渉）
   try{
     const data = {
       v: SAVE_VERSION,
@@ -4221,6 +4325,7 @@ function saveState(){
 }
 
 function clearSave(){
+  if(visiting) return;   // 閲覧モード中は他人の世界を見ながら自分のセーブを消さない
   try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
 }
 
@@ -4231,6 +4336,10 @@ function loadState(){
     if(!raw) return false;
     data = JSON.parse(raw);
   }catch(e){ return false; }
+  return applyState(data);
+}
+// パース済み world データを state へ適用＋UI更新（loadState と共有URL経路で再利用）
+function applyState(data){
   if(!data || data.v !== SAVE_VERSION) return false;
   try{
     if(typeof data.grid === 'number') GRID = data.grid;
@@ -4251,9 +4360,13 @@ function loadState(){
 
     history = Array.isArray(data.history) ? data.history : [];
 
-    const recent = CATEGORIES['📌 履歴'];
-    recent.length = 0;
-    if(Array.isArray(data.recent)) recent.push(...data.recent);
+    // recent はセーブには必ず含まれるが共有ペイロードには無い。
+    // 無い場合は閲覧者の履歴を消さない（個人設定を尊重）。
+    if(Array.isArray(data.recent)){
+      const recent = CATEGORIES['📌 履歴'];
+      recent.length = 0;
+      recent.push(...data.recent);
+    }
 
     if(typeof data.selCat === 'string' && CATEGORIES[data.selCat]) selCat = data.selCat;
     if(data.selEmoji != null)   selEmoji   = data.selEmoji;
@@ -4268,7 +4381,8 @@ function loadState(){
     showHeights    = !!data.showHeights;
     heightsTouched = !!data.heightsTouched;
 
-    muted = !!data.muted;
+    // muted も共有ペイロードには無い。無い場合は閲覧者のミュート設定を維持。
+    if(typeof data.muted === 'boolean') muted = !!data.muted;
     if(typeof data.selectedSound === 'string') selectedSound = data.selectedSound;
 
     weatherRandomOn = !!data.weatherRandomOn;
@@ -4328,8 +4442,21 @@ AUTOSAVE_PRESETS.forEach(({ms,label}) => {
 });
 refreshAutosaveUI();
 
-loadState();
-restartAutosave();
+// 共有URL（#w=...）があれば閲覧モードで世界を復元し、自分のセーブには一切触れない
+(async () => {
+  const h = location.hash || '';
+  if(h.startsWith('#w=')){
+    const d = await decodeWorld(h.slice(3));
+    if(d && d.v === SAVE_VERSION && applyState(d)){
+      visiting = true;            // saveState/clearSave を無効化（オートセーブ非干渉）
+      showVisitingBar();          // restartAutosave は呼ばない＝タイマー非起動
+      return;
+    }
+    showToast(tr('toast.shareError'));   // 不正/非対応 → 自分の世界へフォールバック
+  }
+  loadState();
+  restartAutosave();
+})();
 window.addEventListener('pagehide', saveState);
 document.addEventListener('visibilitychange', () => { if(document.hidden) saveState(); });
 

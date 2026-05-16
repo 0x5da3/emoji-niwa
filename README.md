@@ -22,6 +22,7 @@ Generate terrain, arrange emoji, change the weather and time of day, and watch f
 - **Sound** — 9 cute placement sounds synthesized with the Web Audio API, plus fireworks/bubble sounds (mutable)
 - **Language switch** — Toggle Japanese / English from the settings menu (your choice is saved)
 - **Saving** — Autosave to localStorage (configurable interval) plus manual save; your garden survives reloads
+- **Share via URL** — “🔗 Share” in ⚙️ encodes your world into a URL (no server). Opening one starts a read-but-editable visiting mode that never touches the viewer's own garden or autosave (with “Back to my garden” / “Make this mine”)
 - **Helpers** — Zoom, minimap, fullscreen, undo, new map (5×5–50×50)
 
 ## 🕹 Controls
