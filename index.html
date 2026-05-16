@@ -2351,7 +2351,7 @@ function render(){
       drawRainbowGlow(cx, gy, bigSize);
       const img=getEmojiImg('🏪',bigSize);
       ctx.drawImage(img, cx-bigSize/2, gy-bigSize/2, bigSize, bigSize);
-      drawStoreCount(cx, gy-bigSize/2, it.customers||0, bigSize);
+      drawStoreCount(cx, gy-bigSize/2, it.customers||0, eSize);
     }
     // Animals in 3D
     for(const a of Object.values(animals)){
@@ -2414,7 +2414,7 @@ function render(){
       drawRainbowGlow(cx, cy+bob, bigSize);
       const img=getEmojiImg('🏪',bigSize);
       ctx.drawImage(img, cx-bigSize/2, cy-bigSize/2+bob, bigSize, bigSize);
-      drawStoreCount(cx, cy-bigSize/2+bob, it.customers||0, bigSize);
+      drawStoreCount(cx, cy-bigSize/2+bob, it.customers||0, eSize);
     }
     for(const a of Object.values(animals)){
       const {x,y}=isoToScreen(Math.floor(a.wx),Math.floor(a.wy));
