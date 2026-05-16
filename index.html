@@ -3784,8 +3784,8 @@ document.getElementById('btn-visit-keep').addEventListener('click', e=>{
 });
 
 // ── 多人数（共有プレイ）─ オプトイン。MP_* 未設定なら無効＝オフライン従来動作 ──
-const MP_HTTP = '';   // TODO: デプロイ後に 'https://<api-domain>' を設定
-const MP_WS   = '';   // TODO: デプロイ後に 'wss://<api-domain>' を設定
+const MP_HTTP = 'https://emoji-niwa.fly.dev';   // 多人数APIサーバー（Fly.io）
+const MP_WS   = 'wss://emoji-niwa.fly.dev';     // 同 WebSocket
 const MP_AUTH_KEY = 'emoji-niwa-auth';
 let mpActive=false, mpOwner=false, mpWs=null, mpGotSnap=false, mpSeeded=false;
 let mpApplying=false, mpRoomId='', mpPeers=0, mpRetry=0, mpSendT=null, mpOwnerTimer=null;
