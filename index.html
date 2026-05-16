@@ -4243,16 +4243,49 @@ function refreshAutosaveUI(){
 let visiting = false;
 
 // 共有する「世界＋情景」のみ（個人設定 lang/音/ミュート/履歴等は含めない）
+// 共有用コンパクトペイロード（sf:2）。bobOffset や animals の実行時 float など
+// エンティティ毎の高エントロピー値を捨て、deflate が効く形にして URL を短縮。
+// 保存形式(saveState)と applyState は不変。decodeWorld 側で元の形へ復元する。
 function worldPayload(){
+  const it = {};
+  for(const k in items){ const v = items[k]; it[k] = (v.size>1) ? [v.emoji, v.size] : v.emoji; }
+  const an = [];
+  for(const id in animals){ const a = animals[id]; an.push([a.emoji, Math.round(a.wx), Math.round(a.wy)]); }
   return {
-    v: SAVE_VERSION,
+    v: SAVE_VERSION, sf: 2,
     grid: GRID,
-    terrain, items, heights, animals, animalId,
-    timeOfDay, dayPaused, weather,
+    terrain, heights,
+    it, an,
+    timeOfDay: Math.round(timeOfDay*1e4)/1e4, dayPaused, weather,
     drawMode, showHeights, heightsTouched,
     weatherRandomOn,
     weatherRandomPool: [...weatherRandomPool],
     fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
+  };
+}
+// コンパクト共有形式(sf:2)を applyState が期待する通常 data 形へ復元
+function expandShared(d){
+  if(!d || d.sf !== 2) return d;   // 旧共有URL(sf無し)はそのまま
+  const items = {};
+  for(const k in (d.it||{})){
+    const v = d.it[k];
+    const o = { emoji: Array.isArray(v) ? v[0] : v, bobOffset: Math.random()*Math.PI*2 };
+    if(Array.isArray(v) && v[1] > 1) o.size = v[1];
+    items[k] = o;
+  }
+  const animals = {}; const list = Array.isArray(d.an) ? d.an : [];
+  list.forEach(([emoji,c,r], i) => {
+    animals[i] = { id:i, emoji, wx:c, wy:r, tx:c, ty:r, moving:false, flip:false,
+      speed:.6+Math.random()*.8, waitTimer:.5+Math.random()*2, excited:0, eatCD:0 };
+  });
+  return {
+    v: d.v, grid: d.grid,
+    terrain: d.terrain || {}, heights: d.heights || {},
+    items, animals, animalId: list.length,
+    timeOfDay: d.timeOfDay, dayPaused: d.dayPaused, weather: d.weather,
+    drawMode: d.drawMode, showHeights: d.showHeights, heightsTouched: d.heightsTouched,
+    weatherRandomOn: d.weatherRandomOn, weatherRandomPool: d.weatherRandomPool,
+    fx: d.fx,
   };
 }
 function _b64urlFromBytes(bytes){
@@ -4296,7 +4329,7 @@ async function decodeWorld(str){
     } else {
       json = new TextDecoder().decode(body);
     }
-    return JSON.parse(json);
+    return expandShared(JSON.parse(json));
   }catch(e){ return null; }
 }
 
