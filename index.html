@@ -71,7 +71,7 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .sound-opt{padding:6px 4px;font-size:10px;line-height:1.2}
 .sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .autosave-opt{padding:6px 2px;font-size:10px;line-height:1.2}
-.autosave-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.autosave-opt.active,.fps-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .lang-opt{padding:7px 4px;font-size:11px}
 .lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
@@ -262,7 +262,7 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="fpsLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🎞️ フレームレート</div>
-    <div id="fps-opts" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px"></div>
+    <div id="fps-opts" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px"></div>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="langLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🌐 言語 / Language</div>
@@ -1055,7 +1055,7 @@ const I18N = {
     'ta:paint':'塗る','ta:up':'高さ+','ta:down':'高さ-',
     'tt:grass':'草','tt:sand':'砂','tt:water':'水','tt:snow':'雪','tt:dark':'岩','tt:custom':'色',
     'as:0':'オフ','as:30000':'30秒','as:60000':'1分','as:180000':'3分','as:300000':'5分',
-    'fps:15':'15','fps:30':'30','fps:60':'60','fps:0':'無制限',
+    'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 全リセットしました', 'toast.newMap':'🆕 {n}×{n} マップを作成しました',
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
@@ -1071,7 +1071,6 @@ const I18N = {
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
     'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
-    'toast.fpsSet':'🎞️ フレームレート：{label}',
     'toast.langSet':'🌐 言語を日本語にしました',
   },
   en: {
@@ -1120,7 +1119,7 @@ const I18N = {
     'ta:paint':'Paint','ta:up':'Height +','ta:down':'Height -',
     'tt:grass':'Grass','tt:sand':'Sand','tt:water':'Water','tt:snow':'Snow','tt:dark':'Rock','tt:custom':'Color',
     'as:0':'Off','as:30000':'30s','as:60000':'1m','as:180000':'3m','as:300000':'5m',
-    'fps:15':'15','fps:30':'30','fps:60':'60','fps:0':'Unlimited',
+    'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 Reset everything', 'toast.newMap':'🆕 Created a {n}×{n} map',
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
@@ -1136,7 +1135,6 @@ const I18N = {
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
     'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
-    'toast.fpsSet':'🎞️ Frame rate: {label}',
     'toast.langSet':'🌐 Language set to English',
   },
 };
@@ -4533,7 +4531,7 @@ const AUTOSAVE_PRESETS = [
   {ms:180000, label:'3分'},
   {ms:300000, label:'5分'},
 ];
-const FPS_PRESETS = [15, 30, 60, 0]; // 描画FPS上限候補（0=無制限・電力削減）
+const FPS_PRESETS = [30, 60]; // 描画FPS上限候補（30=省電力）
 let fpsCap = 30; // 既定30。dt連続なので演算は不変、描画頻度のみ
 let autosaveMs = 60000;
 let autosaveTimerId = null;
@@ -4813,9 +4811,8 @@ FPS_PRESETS.forEach(v => {
   b.addEventListener('click', e => {
     e.stopPropagation();
     fpsCap = v;
-    refreshFpsUI();
+    refreshFpsUI();   // 選択を色づけ表示（トーストなし）
     saveState();
-    showToast(tr('toast.fpsSet',{label:tr('fps:'+v)}));
   });
   document.getElementById('fps-opts').appendChild(b);
 });
