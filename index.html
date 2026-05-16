@@ -4868,8 +4868,9 @@ refreshFpsUI();
     h = location.hash || '';
   }
   if(h.startsWith('#r=')){
-    const nm=mpAskName();
-    if(nm==null){                // 表示名キャンセル → 参加せず自分の世界へ
+    const saved=mpName();
+    const nm = saved ? saved : mpAskName();   // 保存名があれば再入力不要＝ブラウザ更新時に聞かない
+    if(nm==null){                // 表示名キャンセル（保存名なし時のみ）→ 参加せず自分の世界へ
       try{ history.replaceState(null,'',location.pathname); }catch(_){ }
       loadState(); restartAutosave(); return;
     }
