@@ -3984,6 +3984,11 @@ function mpChatShow(on){
   } else { el.style.display='none'; }
   mpChatLift();
 }
+// チャットログのタイムスタンプ（年月日＋時分）
+function mpTs(d){
+  return d.getFullYear()+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+d.getDate()).slice(-2)
+    +' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+}
 function mpChatAppend(name, text){
   const log=document.getElementById('mpc-log');
   if(!log) return;
@@ -3992,7 +3997,7 @@ function mpChatAppend(name, text){
   const d=new Date();
   const ts=document.createElement('span');
   ts.className='ts';
-  ts.textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+  ts.textContent=mpTs(d);
   const nm=document.createElement('span');
   nm.className='nm';
   nm.textContent=(name && String(name).trim()) ? name : 'ゲスト';
@@ -4012,7 +4017,7 @@ function mpChatSystem(text){
   const d=new Date();
   const ts=document.createElement('span');
   ts.className='ts';
-  ts.textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+  ts.textContent=mpTs(d);
   line.appendChild(ts);
   line.appendChild(document.createTextNode(String(text==null?'':text)));
   log.appendChild(line);
