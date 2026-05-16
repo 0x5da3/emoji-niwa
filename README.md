@@ -15,7 +15,7 @@ Generate terrain, arrange emoji, change the weather and time of day, and watch f
 - **2D / 3D view** — Switch between a top-down flat view and an isometric 3D view with height
 - **Place emoji** — 10 categories (nature, animals, buildings, sky, food, vehicles, people, seasonal events, …). Animals wander the garden, sleep at night (💤), and nocturnal creatures (🦉🦊🦝🦔🐍🐈‍⬛) roam after dark
 - **Terrain paint** — Grass / sand / water / snow / rock plus custom colors; raise and lower tile height
-- **Procedural terrain** — 10 presets (grassland / island / mountains / desert / snowfield / archipelago / forest / volcano / atoll / valley) via Perlin noise, solid fill, and random scatter
+- **Procedural terrain** — 20 presets in 5 categories (Green / Mountain & Snow / Arid & Rock / Water / Built — e.g. grassland, forest, Amazon, snowy peaks, volcano, canyon, atoll, waterfall, city) via Perlin noise, plus solid fill and random scatter
 - **Time & sky** — 24-hour time slider; sky, sun, moon and stars change with day/night (time can be paused)
 - **Weather** — Clear / rain / snow / thunderstorm / hail / sandstorm / cherry blossoms / autumn leaves, plus a random-rotation mode
 - **Effects** — Night: fireworks & aurora / Day: bubbles & morning mist. Tap the moon for a meteor shower; tap the sun while raining for a rainbow
