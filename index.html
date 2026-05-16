@@ -3843,7 +3843,7 @@ const MP_AUTH_KEY = 'emoji-niwa-auth';
 const MP_NAME_KEY = 'emoji-niwa-name';
 let mpActive=false, mpOwner=false, mpWs=null, mpGotSnap=false, mpSeeded=false;
 let mpApplying=false, mpRoomId='', mpPeers=0, mpRetry=0, mpSendT=null, mpOwnerTimer=null;
-let mpMyName='', mpNames=[], mpCap=0, mpRosterInit=false;
+let mpMyName='', mpNames=[], mpCap=0, mpRosterInit=false, mpJoinAnnounced=false;
 
 function mpName(){ try{ return localStorage.getItem(MP_NAME_KEY)||''; }catch(_){ return ''; } }
 // 表示名入力フロー（ゲスト・オーナー共通）。キャンセルで null
@@ -3950,6 +3950,10 @@ async function mpOnMsg(ev){
     if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
   } else if(m.t==='peers'){
     const next=Array.isArray(m.names)?m.names:[];
+    if(!mpJoinAnnounced && mpMyName && next.indexOf(mpMyName)>=0){
+      mpJoinAnnounced=true;       // 自分の入室を1回だけ告知（オーナー作成時もログに残る・再接続では出ない）
+      mpChatSystem(tr('chat.joined',{name:mpMyName}));
+    }
     if(mpRosterInit){
       for(const nm of next){
         if(nm && nm!==mpMyName && mpNames.indexOf(nm)<0) mpChatSystem(tr('chat.joined',{name:nm}));
@@ -4082,7 +4086,7 @@ function mpConnect(){
 }
 function mpJoin(roomId, name){
   mpRoomId=roomId; mpMyName=name||mpName()||'ゲスト';
-  mpActive=true; mpGotSnap=false; mpSeeded=false;
+  mpActive=true; mpGotSnap=false; mpSeeded=false; mpJoinAnnounced=false;
   mpPeers=0; mpNames=[]; mpUpdateCountBadge();
   const log=document.getElementById('mpc-log'); if(log) log.textContent='';
   mpChatShow(true);
