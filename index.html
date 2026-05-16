@@ -71,7 +71,7 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .sound-opt{padding:6px 4px;font-size:10px;line-height:1.2}
 .sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .autosave-opt{padding:6px 2px;font-size:10px;line-height:1.2}
-.autosave-opt.active,.fps-opt.active,.gif-scale-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.autosave-opt.active,.fps-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .lang-opt{padding:7px 4px;font-size:11px}
 .lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
@@ -299,22 +299,6 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
     <button class="tbtn sound-opt" data-sound="chari" data-i18n="s.chari">🪙 ちゃり</button>
     <button class="tbtn sound-opt" data-sound="none" data-i18n="s.none">🚫 なし</button>
   </div>
-</div>
-
-<!-- GIF POPUP -->
-
-<div id="gif-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw">
-  <div data-i18n="gifTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">📸 GIF 書き出し</div>
-  <div data-i18n="gifScaleLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🔭 縮尺</div>
-  <div id="gif-scale-opts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px"></div>
-  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <span data-i18n="gifZoomLabel" style="font-size:11px;color:rgba(180,220,180,.6)">🔎 ズーム微調整</span>
-      <span id="gif-zoom-val" style="font-size:11px;color:#a8e063;font-weight:700">×1.00</span>
-    </div>
-    <input type="range" id="gif-zoom" min="0.5" max="2" step="0.05" value="1" style="width:100%;accent-color:#5dba6a">
-  </div>
-  <button class="tbtn" id="btn-gif-make" data-i18n="gifMake" style="width:100%;margin-top:12px;background:rgba(93,186,106,.3);border-color:rgba(168,224,99,.6)">📸 GIF を作成</button>
 </div>
 
 <!-- EFFECTS POPUP -->
@@ -1035,8 +1019,8 @@ const I18N = {
     ttSettings:'設定', ttSave:'保存', ttSound:'サウンド', ttGif:'GIF書き出し',
     'toast.gifMaking':'🎞️ GIFを生成中…', 'toast.gifError':'⚠️ GIF生成に失敗しました',
     'toast.gifHint':'💾 保存後、iOSのショートカット/対応アプリでGIF→Live Photoに変換できます',
-    gifTitle:'📸 GIF 書き出し', gifScaleLabel:'🔭 縮尺', gifZoomLabel:'🔎 ズーム微調整', gifMake:'📸 GIF を作成',
-    'gifScale:keep':'拡大率そのまま', 'gifScale:fit':'今の見たまま', 'gifScale:whole':'箱庭全体',
+    'toast.gifHintAndroid':'💾 GIFを保存しました。ライブ壁紙/動く画像アプリで活用できます',
+    'toast.gifHintSaved':'💾 GIFを保存しました',
     weatherRandom:'🎲 ランダム切替',
     weatherRandomHint:'候補から30〜60秒ごとに切替（タップで候補を選択）',
     weatherSelect:'天気を選択',
@@ -1106,8 +1090,8 @@ const I18N = {
     ttSettings:'Settings', ttSave:'Save', ttSound:'Sound', ttGif:'Export GIF',
     'toast.gifMaking':'🎞️ Making GIF…', 'toast.gifError':'⚠️ GIF export failed',
     'toast.gifHint':'💾 After saving, convert GIF→Live Photo via an iOS Shortcut/app',
-    gifTitle:'📸 Export GIF', gifScaleLabel:'🔭 Scale', gifZoomLabel:'🔎 Zoom fine-tune', gifMake:'📸 Make GIF',
-    'gifScale:keep':'Keep zoom', 'gifScale:fit':'As on screen', 'gifScale:whole':'Whole garden',
+    'toast.gifHintAndroid':'💾 GIF saved — use it in a live-wallpaper / motion-photo app',
+    'toast.gifHintSaved':'💾 GIF saved',
     weatherRandom:'🎲 Random switch',
     weatherRandomHint:'Switches among picks every 30–60s (tap to choose picks)',
     weatherSelect:'Select weather',
@@ -3968,7 +3952,7 @@ refreshMuteToggle();
 const menuPopup = document.getElementById('menu-popup');
 
 // Exclusive popup helper
-const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','gif-popup'];
+const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup'];
 function openPopup(id){
   for(const p of ALL_POPUPS) document.getElementById(p).style.display = (p === id ? 'block' : 'none');
 }
@@ -4003,13 +3987,12 @@ document.getElementById('btn-share').addEventListener('click', async e=>{
 
 // ═══════════════════════════════════════════
 // 📸 箱庭GIF書き出し（依存ゼロ・自前GIF89aエンコーダ）
-//   縮尺はユーザー選択（拡大率そのまま/見たまま/箱庭全体）＋微調整。正方形
-//   クリップで UI は cv 非描画ゆえ含まれない。
+//   📸 タップで即「今の見たまま」を正方形クリップに（メニューなし）。
+//   UI は cv 非描画ゆえ含まれない。保存後ヒントは端末別（iOS/Android/その他）。
 //   Live Photo 化は端末側の Shortcut/アプリで（埋め込み不可・文言案内のみ）。
 // ═══════════════════════════════════════════
 const GIF_SECONDS = 3, GIF_FPS = 12, GIF_SIZE = 320;
-const GIF_SCALE_MODES = ['keep','fit','whole'];
-let gifBusy = false, gifScaleMode = 'keep', gifZoomMul = 1;   // 既定=拡大率そのまま
+let gifBusy = false;
 
 // 全フレームを median-cut で ≤256 色に量子化
 function _gifQuantize(frames, n){
@@ -4107,28 +4090,16 @@ function _gifEncode(frames, size, delayCs){
   return new Blob([new Uint8Array(b)],{type:'image/gif'});
 }
 
-// 縮尺はユーザー選択（keep=拡大率そのまま / fit=今の見たまま / whole=箱庭全体）
-// ＋ズーム微調整 mul。投影は screen = OX + projected·scale（線形）なので、基準点
-// （keep/fit=現在の画面中心の世界点、whole=マップ中心）を GIF 中央へ合わせる。
-// 正方形フレームを GIF_FPS で同期収集（rAF と非干渉）。
-function _gifCapture(mode, mul){
+// 「今の見たまま」を正方形に収めて GIF_FPS で同期収集（rAF と非干渉）。
+// 投影 screen = OX + projected·scale（線形）。短辺基準で見たままを正方形へ
+// フィットし、現在の画面中心の世界点を GIF 中央へ合わせる。
+function _gifCapture(){
   const W0=cv.width,H0=cv.height;
   const sOX=OX,sOY=OY,sSc=scale,tOX=targetOX,tOY=targetOY,tSc=targetScale;
   const sT=animT, sDay=timeOfDay, sAn=JSON.stringify(animals), sAid=animalId;
   cv.width=GIF_SIZE; cv.height=GIF_SIZE;
-  const {TW,TH}=getTileDims();
-  let base, Ax, Ay;
-  if(mode==='whole'){
-    const spanW=GRID*TW, spanH=GRID*TH;
-    base = 0.88 * Math.min(GIF_SIZE/spanW, GIF_SIZE/spanH);
-    if(drawMode==='3d'){ Ax=0; Ay=(GRID-1)*TH/2; }
-    else { Ax=GRID*TW/2; Ay=GRID*TH/2; }
-  } else {
-    base = (mode==='fit') ? sSc * GIF_SIZE / Math.min(W0,H0) : sSc;  // fit=見たまま, 既定 keep
-    Ax = (W0/2 - sOX) / sSc;   // 現在の画面中心にある世界点（投影座標）
-    Ay = (H0/2 - sOY) / sSc;
-  }
-  const nSc = base * (mul||1);
+  const nSc = sSc * GIF_SIZE / Math.min(W0,H0);            // 見たまま（短辺基準）
+  const Ax = (W0/2 - sOX) / sSc, Ay = (H0/2 - sOY) / sSc;  // 画面中心の世界点
   OX = GIF_SIZE/2 - Ax*nSc; OY = GIF_SIZE/2 - Ay*nSc;
   scale=nSc; targetOX=OX; targetOY=OY; targetScale=nSc;
   const n=Math.round(GIF_SECONDS*GIF_FPS), dt=1/GIF_FPS, frames=[];
@@ -4145,13 +4116,16 @@ function _gifCapture(mode, mul){
   return frames;
 }
 
-document.getElementById('btn-gif').addEventListener('click', e=>{
-  e.stopPropagation();
-  refreshGifUI();
-  togglePopup('gif-popup');
-});
+// 保存後ヒントは端末別（Live Photo は iOS のみ。Android/その他にも案内）
+function _gifHintKey(){
+  const ua=navigator.userAgent||'';
+  const iOS=/iPad|iPhone|iPod/.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  if(iOS) return 'toast.gifHint';
+  if(/Android/.test(ua)) return 'toast.gifHintAndroid';
+  return 'toast.gifHintSaved';
+}
 
-document.getElementById('btn-gif-make').addEventListener('click', async e=>{
+document.getElementById('btn-gif').addEventListener('click', async e=>{
   e.stopPropagation();
   if(gifBusy) return;
   gifBusy=true;
@@ -4159,19 +4133,22 @@ document.getElementById('btn-gif-make').addEventListener('click', async e=>{
     closeAllPopups();
     showToast(tr('toast.gifMaking'));
     await new Promise(r=>setTimeout(r,50));      // トースト描画を待つ
-    const frames=_gifCapture(gifScaleMode, gifZoomMul);
+    const frames=_gifCapture();
     await new Promise(r=>setTimeout(r,0));
     const blob=_gifEncode(frames, GIF_SIZE, Math.round(100/GIF_FPS));
     const file=new File([blob], 'emoji-niwa-'+Date.now()+'.gif', {type:'image/gif'});
+    let saved=false;
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file], title:'emoji-niwa'}); }catch(_){ }
+      try{ await navigator.share({files:[file], title:'emoji-niwa'}); saved=true; }
+      catch(_){ saved=false; }   // キャンセル等＝保存されていない
     } else {
       const u=URL.createObjectURL(blob);
       const a=document.createElement('a'); a.href=u; a.download=file.name;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(()=>URL.revokeObjectURL(u),4000);
+      saved=true;
     }
-    showToast(tr('toast.gifHint'));
+    if(saved) showToast(tr(_gifHintKey()));   // 保存した時だけヒントを出す
   }catch(err){ showToast(tr('toast.gifError')); }
   finally{ gifBusy=false; }
 });
@@ -4867,7 +4844,7 @@ document.getElementById('btn-effects').addEventListener('click',e=>{
 
 document.addEventListener('click',e=>{
   const insideAnyPopup = ALL_POPUPS.some(id => document.getElementById(id).contains(e.target));
-  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn','btn-gif'].includes(e.target.id);
+  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn'].includes(e.target.id);
   if(!insideAnyPopup && !isTriggerBtn) closeAllPopups();
 });
 
@@ -5239,33 +5216,6 @@ FPS_PRESETS.forEach(v => {
   document.getElementById('fps-opts').appendChild(b);
 });
 refreshFpsUI();
-
-// GIF 縮尺プリセット（色づけ選択・トーストなし）＋ズーム微調整スライダー
-function refreshGifUI(){
-  document.querySelectorAll('#gif-scale-opts .gif-scale-opt').forEach(b =>
-    b.classList.toggle('active', b.dataset.mode === gifScaleMode));
-  const z=document.getElementById('gif-zoom'), zv=document.getElementById('gif-zoom-val');
-  if(z) z.value = gifZoomMul;
-  if(zv) zv.textContent = '×' + gifZoomMul.toFixed(2);
-}
-GIF_SCALE_MODES.forEach(m => {
-  const b = document.createElement('button');
-  b.className = 'tbtn gif-scale-opt';
-  b.dataset.mode = m;
-  b.dataset.i18n = 'gifScale:'+m;
-  b.textContent = tr('gifScale:'+m);
-  b.addEventListener('click', e => {
-    e.stopPropagation();
-    gifScaleMode = m;
-    refreshGifUI();
-  });
-  document.getElementById('gif-scale-opts').appendChild(b);
-});
-document.getElementById('gif-zoom').addEventListener('input', e => {
-  gifZoomMul = Number(e.target.value) || 1;
-  document.getElementById('gif-zoom-val').textContent = '×' + gifZoomMul.toFixed(2);
-});
-refreshGifUI();
 
 // 起動分岐: #auth=（ログイン受領）→ #r=（マルチプレイルーム）→ #w=（共有リンク閲覧）→ 通常ロード
 (async () => {
