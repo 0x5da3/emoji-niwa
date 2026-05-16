@@ -1,70 +1,78 @@
-# 🌿 絵文字庭 (emoji-niwa)
+# 🌿 emoji-niwa (絵文字庭)
 
-絵文字を置いて自分だけの箱庭をつくる、ブラウザだけで動く箱庭シミュレーター。
+🌐 **English** | [日本語](ja.md)
 
-地形を生成して、絵文字を並べて、天気と時間を変えて、夜には花火やオーロラを眺める ── インストール不要、依存ゼロの単一 HTML ファイルで完結します。
+Place emoji to build your own little garden — a sandbox that runs entirely in the browser.
 
-**🎮 デモ:** https://0x5da3.github.io/emoji-niwa/
+Generate terrain, arrange emoji, change the weather and time of day, and watch fireworks or auroras at night. No install, zero dependencies, all in a single HTML file.
 
-## ✨ 特長
+**🎮 Demo:** https://0x5da3.github.io/emoji-niwa/
 
-- **2D / 3D 表示** — トップダウンの平面ビューと、高さ表現つきアイソメトリック 3D ビューを切り替え
-- **絵文字の配置** — 自然・動物・建物・空・食べ物・乗り物・人・季節イベントなど 10 カテゴリ。動物は箱庭の中を歩き回ります
-- **地形ペイント** — 草・砂・水・雪・岩＋カスタムカラーで塗り、タイルの高さを上げ下げ
-- **地形の自動生成** — 草原 / 島 / 山岳 / 砂漠 / 雪原 / 群島 / 森 / 火山 / 環礁 / 谷 の 10 プリセット（Perlin ノイズ生成）、単色塗りつぶし、ランダム散布
-- **時間と空** — 24 時間の時刻スライダー、昼夜で変わる空・太陽・月・星空（時間を止めることも可能）
-- **天気** — 晴れ / 雨 / 雪 / 雷雨 / 雹 / 砂嵐 / 桜吹雪 / 紅葉。候補からランダムに切り替えるモードも
-- **演出** — 夜：花火・オーロラ／昼：シャボン玉・朝霧。月をタップで流星群、雨の日に太陽をタップで虹
-- **効果音** — Web Audio で合成したかわいい配置音 9 種＋花火・シャボン玉の音（ミュート対応）
-- **操作補助** — ズーム、ミニマップ、フルスクリーン、配置のやり直し（Undo）、新規マップ（5×5〜50×50）
+## ✨ Features
 
-## 🕹 使い方
+- **2D / 3D view** — Switch between a top-down flat view and an isometric 3D view with height
+- **Place emoji** — 10 categories (nature, animals, buildings, sky, food, vehicles, people, seasonal events, …). Animals wander around the garden
+- **Terrain paint** — Grass / sand / water / snow / rock plus custom colors; raise and lower tile height
+- **Procedural terrain** — 10 presets (grassland / island / mountains / desert / snowfield / archipelago / forest / volcano / atoll / valley) via Perlin noise, solid fill, and random scatter
+- **Time & sky** — 24-hour time slider; sky, sun, moon and stars change with day/night (time can be paused)
+- **Weather** — Clear / rain / snow / thunderstorm / hail / sandstorm / cherry blossoms / autumn leaves, plus a random-rotation mode
+- **Effects** — Night: fireworks & aurora / Day: bubbles & morning mist. Tap the moon for a meteor shower; tap the sun while raining for a rainbow
+- **Sound** — 9 cute placement sounds synthesized with the Web Audio API, plus fireworks/bubble sounds (mutable)
+- **Language switch** — Toggle Japanese / English from the settings menu (your choice is saved)
+- **Saving** — Autosave to localStorage (configurable interval) plus manual save; your garden survives reloads
+- **Helpers** — Zoom, minimap, fullscreen, undo, new map (5×5–50×50)
 
-| 操作 | 動作 |
+## 🕹 Controls
+
+| Action | Effect |
 |---|---|
-| タップ / クリック | 選択中の絵文字を配置（または地形を塗る・消す） |
-| ドラッグ / 2 本指 | 視点をパン |
-| ＋ / − ボタン | ズームイン / アウト |
-| 🗺 ボタン | ミニマップ表示 |
-| 2D / 3D トグル | 表示モード切り替え |
-| ↩ ボタン | 直前の操作を取り消し |
-| 🌙 をタップ | 流星群 |
-| ☀️ をタップ（雨天時） | 雨が止んで虹が出る |
+| Tap / click | Place the selected emoji (or paint/erase terrain) |
+| Drag / two fingers | Pan the view |
+| ＋ / − buttons | Zoom in / out |
+| 🗺 button | Toggle minimap |
+| 2D / 3D toggle | Switch view mode |
+| ↩ Undo | Undo the last action |
+| Tap 🌙 | Meteor shower |
+| Tap ☀️ (while raining) | Rain stops and a rainbow appears |
 
-上部バーから時刻・天気・サウンド・生成・演出の各メニューを開けます。
+⚙️ Settings, 💾 Save and 🔈 Sound are at the top-left; time, weather, generate and effects menus are in the top bar.
 
-## 🚀 ローカルで動かす
+## 🚀 Run locally
 
-ビルド不要。リポジトリを取得して `index.html` をブラウザで開くだけです。
+No build step. Clone the repo and open `index.html` in a browser.
 
 ```bash
 git clone https://github.com/0x5da3/emoji-niwa.git
 cd emoji-niwa
-# そのまま index.html を開く、または簡易サーバで配信
+# open index.html directly, or serve it
 python3 -m http.server 8000   # → http://localhost:8000
 ```
 
-## 🛠 技術構成
+> If Japanese text looks garbled in iOS Safari, serve it with `charset=utf-8` or open the GitHub Pages URL (which sends the charset).
 
-- **フレームワーク / ライブラリ / ビルド: なし** — 単一の `index.html` で完結
-- 描画は **Canvas 2D**（アイソメトリック投影・自前 Perlin ノイズによる地形生成）
-- 効果音は **Web Audio API** によるリアルタイム合成（音声ファイルなし）
-- スマホのタッチ操作・ピンチ／2 本指パンに対応
+## 🛠 Tech
 
-## 📁 構成
+- **No framework / library / build** — a single self-contained `index.html`
+- Rendering with **Canvas 2D** (isometric projection, hand-rolled Perlin-noise terrain)
+- Sounds synthesized in real time with the **Web Audio API** (no audio files)
+- State persistence via **localStorage**; UI is bilingual (display text only)
+- Touch, pinch and two-finger pan supported on mobile
+
+## 📁 Structure
 
 ```
 emoji-niwa/
-├── index.html   # アプリ本体（HTML + CSS + JS すべて）
-└── README.md
+├── index.html   # The whole app (HTML + CSS + JS)
+├── README.md    # English (this file)
+└── ja.md        # Japanese
 ```
 
-## 🌐 デプロイ（GitHub Pages）
+## 🌐 Deploy (GitHub Pages)
 
-ルート直下の静的 `index.html` のみなので、ビルド不要でそのまま配信できます。
+Only a static `index.html` at the repo root, so no build is needed.
 
-1. リポジトリの **Settings → Pages**
+1. Repository **Settings → Pages**
 2. **Source**: `Deploy from a branch`
 3. **Branch**: `main` / `/ (root)` → **Save**
 
-数分後に `https://0x5da3.github.io/emoji-niwa/` で公開され、以降は `main` への push で自動更新されます。
+It goes live at `https://0x5da3.github.io/emoji-niwa/` within a few minutes, and auto-updates on every push to `main`.
