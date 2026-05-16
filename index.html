@@ -95,6 +95,7 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 #mpc-log{height:54px;overflow-y:auto;font-size:12px;line-height:1.45;color:#e9f5e5;word-break:break-word;scrollbar-width:thin}
 #mp-chat.exp #mpc-log{height:min(42vh,260px)}
 #mp-chat.min #mpc-log,#mp-chat.min #mpc-inrow{display:none}
+#mpc-log .ts{color:rgba(180,220,180,.5);margin-right:5px;font-variant-numeric:tabular-nums}
 #mpc-log .nm{color:#a8e063;font-weight:700;margin-right:4px}
 #mpc-inrow{display:flex;gap:5px}
 #mpc-in{flex:1;min-width:0;background:rgba(0,0,0,.3);border:1px solid rgba(120,210,130,.3);color:#fff;border-radius:6px;font-size:13px;padding:5px 7px}
@@ -3957,9 +3958,14 @@ function mpChatAppend(name, text){
   if(!log) return;
   const near = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
   const line=document.createElement('div');
+  const d=new Date();
+  const ts=document.createElement('span');
+  ts.className='ts';
+  ts.textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
   const nm=document.createElement('span');
   nm.className='nm';
   nm.textContent=(name && String(name).trim()) ? name : 'ゲスト';
+  line.appendChild(ts);
   line.appendChild(nm);
   line.appendChild(document.createTextNode(String(text==null?'':text)));
   log.appendChild(line);
@@ -4012,7 +4018,7 @@ function mpJoin(roomId, name){
   const log=document.getElementById('mpc-log'); if(log) log.textContent='';
   mpChatShow(true);
   mpConnect();
-  mpBar('room');
+  mpBar('hide');                 // メニューは折りたたみ既定（👥 で展開）
   if(mpOwnerTimer) clearInterval(mpOwnerTimer);
   mpOwnerTimer=setInterval(()=>{ if(mpActive && mpOwner) mpSend(); }, 2500);  // 動物/時間の定期再同期
 }
