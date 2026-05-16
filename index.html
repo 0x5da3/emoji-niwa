@@ -4851,9 +4851,11 @@ applyLang();
 // ═══════════════════════════════════════════
 const DAY_SPEED=0.00008;
 let last=performance.now(), mmTimer=0;
+let fpsCap=30; // 描画フレーム上限（電力削減）。0で無制限。dt連続なので演算は影響なし
 
 function loop(now){
   requestAnimationFrame(loop);
+  if(fpsCap>0 && now-last < 1000/fpsCap - 1) return; // フレーム間引き（rAFは自走）
   const dt=Math.min((now-last)/1000,.05); last=now;
   animT+=dt;
 
