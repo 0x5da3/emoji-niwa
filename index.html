@@ -154,7 +154,9 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 #map-btns{position:fixed;right:10px;top:60px;z-index:27;display:flex;flex-direction:column;gap:6px}
 #corner-btns{position:fixed;left:8px;top:56px;z-index:27;display:flex;flex-direction:column;gap:6px}
-#corner-btns .tbtn{min-width:42px;text-align:center}
+#corner-btns .tbtn{width:46px;text-align:center;background:var(--panel);backdrop-filter:blur(10px)}
+#btn-save{position:relative}
+#btn-save.saved::after{content:"✅";position:absolute;top:-7px;right:-7px;font-size:11px;line-height:1;pointer-events:none}
 .mapbtn{width:36px;height:36px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s}
 .mapbtn:active{background:rgba(93,186,106,.3)}
 </style>
@@ -166,7 +168,7 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 <div id="topbar">
   <button class="tbtn" id="clock-display">☀️ 12:00</button>
   <button class="tbtn" id="weather-btn">☀️ 天気</button>
-  <button class="tbtn" id="btn-undo">↩</button>
+  <button class="tbtn" id="btn-undo">↩ 戻す</button>
   <button class="tbtn" id="btn-gen">🎲 生成</button>
   <button class="tbtn" id="btn-effects">✨ 演出</button>
 </div>
@@ -3568,11 +3570,12 @@ let autosaveTimerId = null;
 const btnSave = document.getElementById('btn-save');
 let saveFlashTid = null;
 
-// Briefly mark the 💾 button with ✅ to signal an autosave fired
+// Briefly badge the 💾 button with ✅ to signal an autosave fired.
+// Uses an absolutely-positioned ::after so button/column width never shifts.
 function flashSaved(){
-  btnSave.textContent = '💾✅';
+  btnSave.classList.add('saved');
   clearTimeout(saveFlashTid);
-  saveFlashTid = setTimeout(() => { btnSave.textContent = '💾'; }, 1600);
+  saveFlashTid = setTimeout(() => btnSave.classList.remove('saved'), 1600);
 }
 // (Re)create the autosave interval from autosaveMs; 0 = off
 function restartAutosave(){
