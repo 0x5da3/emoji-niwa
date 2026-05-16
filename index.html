@@ -163,6 +163,7 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
   <button class="tbtn" id="clock-display">☀️ 12:00</button>
   <button class="tbtn" id="weather-btn">☀️ 天気</button>
   <button class="tbtn" id="btn-menu">⚙️</button>
+  <button class="tbtn" id="btn-save">💾</button>
   <button class="tbtn" id="sound-btn">🔇</button>
   <button class="tbtn" id="btn-undo">↩</button>
   <button class="tbtn" id="btn-gen">🎲 生成</button>
@@ -3649,6 +3650,12 @@ loadState();
 setInterval(saveState, 60000); // autosave every 1 minute
 window.addEventListener('pagehide', saveState);
 document.addEventListener('visibilitychange', () => { if(document.hidden) saveState(); });
+
+// Manual save button (💾, next to ⚙️ settings)
+document.getElementById('btn-save').addEventListener('click', () => {
+  saveState();
+  showToast('💾 セーブしました');
+});
 
 // ═══════════════════════════════════════════
 // ANIMATE LOOP
