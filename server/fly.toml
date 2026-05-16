@@ -1,9 +1,9 @@
 # Fly.io app config for the emoji-niwa multiplayer server.
-# Replace <app-name> after `fly launch`. Set secrets (not committed):
+# `app` must match the created Fly app. Set secrets (not committed):
 #   fly secrets set GH_CLIENT_ID=... GH_CLIENT_SECRET=... \
 #                    APP_URL=https://0x5da3.github.io/emoji-niwa \
-#                    PUBLIC_BASE=https://<app>.fly.dev
-app = "emoji-niwa-mp"
+#                    PUBLIC_BASE=https://emoji-niwa.fly.dev
+app = "emoji-niwa"
 primary_region = "nrt"
 
 [build]
