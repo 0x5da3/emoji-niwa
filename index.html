@@ -3517,7 +3517,7 @@ btnFullscreen.addEventListener('click',()=>{
 document.getElementById('btn-palette').addEventListener('click',e=>{
   e.stopPropagation();
   const on=document.body.classList.toggle('palette-collapsed');
-  e.currentTarget.classList.toggle('active', on);
+  e.currentTarget.textContent = on ? '🙈' : '🎨';   // 色つけずアイコンで状態表示
 });
 
 // 3D toggle
