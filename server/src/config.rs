@@ -11,6 +11,7 @@ pub struct Config {
     pub data_path: String,
     pub dev: bool,         // DEV=1 → also allow localhost origins (off in production)
     pub max_snap_bytes: usize, // reject oversize world snapshots (abuse/amplification guard)
+    pub allowed_logins: Vec<String>, // GitHub logins (lowercased) allowed to log in; empty = open
 }
 
 fn env(key: &str) -> String {
@@ -42,6 +43,14 @@ impl Config {
                 .ok()
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(262144), // 256 KB; raise via env, or chunk if ever needed
+            // ALLOWED_LOGINS = comma-separated GitHub usernames allowed to log in.
+            // Empty/unset = open to any GitHub account (backward compatible).
+            allowed_logins: std::env::var("ALLOWED_LOGINS")
+                .unwrap_or_default()
+                .split(',')
+                .map(|s| s.trim().to_lowercase())
+                .filter(|s| !s.is_empty())
+                .collect(),
         }
     }
 }

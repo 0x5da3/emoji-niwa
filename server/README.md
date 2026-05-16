@@ -104,3 +104,8 @@ Security knobs:
   stored/relayed); grossly oversize (> 2×) drops the connection. Guards
   memory/bandwidth and broadcast amplification. Raise via env, or move to
   chunked snapshots if a legitimate world ever exceeds it.
+- `ALLOWED_LOGINS` — comma-separated GitHub usernames allowed to sign in
+  (case-insensitive). Empty/unset = any GitHub account may log in. Enforced
+  both at OAuth callback (no session issued) and on every authenticated
+  request (existing sessions for non-allowed users stop working). e.g.
+  `ALLOWED_LOGINS=0x5da3`.
