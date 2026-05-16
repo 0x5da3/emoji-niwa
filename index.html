@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>🌿 絵文字箱庭</title>
+<title>🌿 絵文字庭</title>
 <style>
 :root{--panel:rgba(8,16,10,.93);--border:rgba(120,210,130,.18);--accent:#5dba6a;--accent2:#a8e063;--text:rgba(220,255,220,.88);--dim:rgba(180,220,180,.4)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -70,6 +70,8 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .sc-src-btn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .sound-opt{padding:6px 4px;font-size:10px;line-height:1.2}
 .sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.autosave-opt{padding:6px 2px;font-size:10px;line-height:1.2}
+.autosave-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:215px;z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
 #minimap.visible{display:block}
 #btn-3d.dim-toggle{position:fixed;right:10px;bottom:215px;z-index:27}
@@ -219,6 +221,10 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
   <div style="display:flex;flex-direction:column;gap:6px">
     <button class="tbtn" id="btn-newmap">🆕 新規マップ</button>
     <button class="tbtn" id="btn-clear-all">🗑 全リセット</button>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">💾 オートセーブ間隔</div>
+    <div id="autosave-opts" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px"></div>
   </div>
 </div>
 
@@ -3544,6 +3550,36 @@ document.getElementById('btn-scatter').addEventListener('click',()=>{
 const SAVE_KEY = 'emoji-niwa-save';
 const SAVE_VERSION = 1;
 const HISTORY_SAVE_CAP = 1000; // bound persisted undo stack so it can't exceed the storage quota
+const AUTOSAVE_PRESETS = [
+  {ms:0,      label:'オフ'},
+  {ms:30000,  label:'30秒'},
+  {ms:60000,  label:'1分'},
+  {ms:180000, label:'3分'},
+  {ms:300000, label:'5分'},
+];
+let autosaveMs = 60000;
+let autosaveTimerId = null;
+const btnSave = document.getElementById('btn-save');
+let saveFlashTid = null;
+
+// Briefly mark the 💾 button with ✅ to signal an autosave fired
+function flashSaved(){
+  btnSave.textContent = '💾✅';
+  clearTimeout(saveFlashTid);
+  saveFlashTid = setTimeout(() => { btnSave.textContent = '💾'; }, 1600);
+}
+// (Re)create the autosave interval from autosaveMs; 0 = off
+function restartAutosave(){
+  if(autosaveTimerId !== null){ clearInterval(autosaveTimerId); autosaveTimerId = null; }
+  if(autosaveMs > 0){
+    autosaveTimerId = setInterval(() => { saveState(); flashSaved(); }, autosaveMs);
+  }
+}
+function refreshAutosaveUI(){
+  document.querySelectorAll('#autosave-opts .autosave-opt').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.ms) === autosaveMs);
+  });
+}
 
 function saveState(){
   try{
@@ -3560,6 +3596,7 @@ function saveState(){
       weatherRandomOn,
       weatherRandomPool: [...weatherRandomPool],
       fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
+      autosaveMs,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   }catch(e){ /* quota exceeded or storage disabled — keep running */ }
@@ -3620,6 +3657,10 @@ function loadState(){
     weatherRandomPool = new Set(Array.isArray(data.weatherRandomPool) ? data.weatherRandomPool : []);
     weatherRandomTimer = 30 + Math.random() * 30;
 
+    if(typeof data.autosaveMs === 'number' && AUTOSAVE_PRESETS.some(p => p.ms === data.autosaveMs)){
+      autosaveMs = data.autosaveMs;
+    }
+
     if(data.fx){
       auroraOn    = !!data.fx.aurora;
       fireworksOn = !!data.fx.fireworks;
@@ -3638,6 +3679,7 @@ function loadState(){
     refreshAllFxToggles();
     applyWeather(typeof data.weather === 'string' ? data.weather : weather);
     refreshRandomToggle(); refreshWeatherChecks();
+    refreshAutosaveUI();
     refreshScatterUI();
     resetView(); // refit camera to the restored grid size
     return true;
@@ -3646,8 +3688,26 @@ function loadState(){
   }
 }
 
+// Build autosave-interval options into the ⚙️ settings menu
+AUTOSAVE_PRESETS.forEach(({ms,label}) => {
+  const b = document.createElement('button');
+  b.className = 'tbtn autosave-opt';
+  b.dataset.ms = ms;
+  b.textContent = label;
+  b.addEventListener('click', e => {
+    e.stopPropagation();
+    autosaveMs = ms;
+    restartAutosave();
+    refreshAutosaveUI();
+    saveState();
+    showToast(ms === 0 ? '💾 オートセーブ：オフ' : `💾 オートセーブ：${label}ごと`);
+  });
+  document.getElementById('autosave-opts').appendChild(b);
+});
+refreshAutosaveUI();
+
 loadState();
-setInterval(saveState, 60000); // autosave every 1 minute
+restartAutosave();
 window.addEventListener('pagehide', saveState);
 document.addEventListener('visibilitychange', () => { if(document.hidden) saveState(); });
 
