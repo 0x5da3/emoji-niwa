@@ -80,16 +80,29 @@ impl Room {
 struct Config {
     gh_client_id: String,
     gh_client_secret: String,
-    app_origin: String,  // where the browser app lives (GitHub Pages), for post-auth redirect
+    app_url: String,     // full browser app URL incl. path (post-login redirect target)
+    app_origin: String,  // origin (scheme://host[:port]) derived from app_url, for CORS/WS match
     public_base: String, // this server's external base URL, for the OAuth redirect_uri
     data_path: String,
     dev: bool,           // DEV=1 → also allow localhost origins (off in production)
     max_snap_bytes: usize, // reject oversize world snapshots (abuse/amplification guard)
 }
 
+/// Origin (scheme://host[:port], no path) of an http(s) URL.
+/// e.g. `https://0x5da3.github.io/emoji-niwa` → `https://0x5da3.github.io`.
+fn url_origin(u: &str) -> String {
+    if let Some(i) = u.find("://") {
+        let after = &u[i + 3..];
+        let host = after.split('/').next().unwrap_or(after);
+        return format!("{}://{}", &u[..i], host);
+    }
+    u.to_string()
+}
+
 /// Single source of truth for allowed browser origins (CORS + WS handshake).
-/// Production = exactly APP_ORIGIN. localhost/127.0.0.1 (any port) only when DEV.
-/// Exact host match — no loose prefix (avoids `http://localhost.evil.com`).
+/// Production = exactly the app origin (derived from APP_URL). localhost/
+/// 127.0.0.1 (any port) only when DEV. Exact host match — no loose prefix
+/// (avoids `http://localhost.evil.com`).
 fn origin_ok(origin: &str, app_origin: &str, dev: bool) -> bool {
     if origin == app_origin {
         return true;
@@ -336,7 +349,7 @@ async fn auth_callback(state: Data, q: web::Query<CallbackQ>) -> HttpResponse {
         },
     );
     // Deliver token via fragment (not query → not logged), client stores & strips.
-    let dest = format!("{}/#auth={}", state.cfg.app_origin, token);
+    let dest = format!("{}/#auth={}", state.cfg.app_url, token);
     HttpResponse::Found()
         .insert_header(("Location", dest))
         .finish()
@@ -526,11 +539,18 @@ fn env(key: &str) -> String {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // APP_URL = full app URL incl. path (post-login redirect target).
+    // APP_ORIGIN is a deprecated alias accepted for backward compatibility.
+    let app_url = std::env::var("APP_URL")
+        .or_else(|_| std::env::var("APP_ORIGIN"))
+        .unwrap_or_else(|_| "http://localhost:8000".into())
+        .trim_end_matches('/')
+        .to_string();
     let cfg = Config {
         gh_client_id: env("GH_CLIENT_ID"),
         gh_client_secret: env("GH_CLIENT_SECRET"),
-        app_origin: std::env::var("APP_ORIGIN")
-            .unwrap_or_else(|_| "http://localhost:8000".into()),
+        app_origin: url_origin(&app_url), // scheme://host[:port] for CORS/WS match
+        app_url,
         public_base: std::env::var("PUBLIC_BASE")
             .unwrap_or_else(|_| "http://localhost:8080".into()),
         data_path: std::env::var("DATA_PATH").unwrap_or_else(|_| "./data/state.json".into()),

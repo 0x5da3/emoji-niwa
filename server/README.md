@@ -36,43 +36,68 @@ Wire: C→S `{"t":"snap","d":<encoded>}` · S→C `{"t":"snap","d"}`
 ```bash
 cd server
 GH_CLIENT_ID=xxx GH_CLIENT_SECRET=yyy \
-APP_ORIGIN=http://localhost:8000 PUBLIC_BASE=http://localhost:8080 \
-DATA_PATH=./data/state.json cargo run
+APP_URL=http://localhost:8000 PUBLIC_BASE=http://localhost:8080 \
+DEV=1 DATA_PATH=./data/state.json cargo run
 ```
 Serve the client (`python3 -m http.server 8000` in repo root) and temporarily
 set `MP_HTTP`/`MP_WS` in `index.html` to `http://localhost:8080` /
 `ws://localhost:8080`.
 
-## Deploy (Fly.io + Cloudflare front)
+## Deploy A — GitHub Actions (no local CLI; works from iOS)
 
-1. Create a **GitHub OAuth App**; Authorization callback URL =
-   `https://<api-domain>/auth/callback`.
-2. `fly launch` (uses `Dockerfile`/`fly.toml`); create the volume:
-   `fly volumes create niwa_data --size 1 --region nrt`.
-3. Set secrets:
-   ```bash
-   fly secrets set GH_CLIENT_ID=... GH_CLIENT_SECRET=... \
-     APP_ORIGIN=https://0x5da3.github.io/emoji-niwa \
-     PUBLIC_BASE=https://<api-domain>
-   ```
-4. `fly deploy`.
-5. In Cloudflare, point/proxy `<api-domain>` at the Fly app (orange-cloud;
-   WebSockets enabled).
-6. In `../index.html` set `MP_HTTP='https://<api-domain>'` and
-   `MP_WS='wss://<api-domain>'`, commit.
+`.github/workflows/fly-deploy.yml` deploys `server/` with
+`flyctl deploy --remote-only`. One-time setup, then push (or run the
+workflow) — all doable from a phone browser.
+
+1. **GitHub OAuth App** — Authorization callback URL =
+   `<PUBLIC_BASE>/auth/callback` (e.g. `https://<app>.fly.dev/auth/callback`).
+2. **Create the Fly app + volume once** (the workflow only *deploys*; it does
+   not create them). Easiest from any shell / Fly dashboard:
+   `fly apps create <app>` then
+   `fly volumes create niwa_data --size 1 --region nrt`
+   (volume name + region must match `fly.toml`).
+3. **Fly app secrets** (Fly dashboard → app → Secrets, or `fly secrets set`):
+   `GH_CLIENT_ID`, `GH_CLIENT_SECRET`,
+   `APP_URL=https://0x5da3.github.io/emoji-niwa`,
+   `PUBLIC_BASE=https://<app>.fly.dev`.
+4. **GitHub repo secret** (Settings → Secrets and variables → Actions):
+   `FLY_API_TOKEN` — an **app-scoped Deploy token** (`~90d` expiry
+   recommended; an org token, short-lived, is only needed for the very
+   first `fly apps create`).
+5. Push a change under `server/**` to `main`, or run the workflow manually
+   (Actions tab → *Deploy server to Fly.io* → Run).
+6. In `../index.html` set `MP_HTTP='https://<app>.fly.dev'` and
+   `MP_WS='wss://<app>.fly.dev'`, commit.
+
+## Deploy B — local CLI (alternative)
+
+```bash
+cd server
+fly launch --no-deploy        # creates the app from fly.toml/Dockerfile
+fly volumes create niwa_data --size 1 --region nrt
+fly secrets set GH_CLIENT_ID=... GH_CLIENT_SECRET=... \
+  APP_URL=https://0x5da3.github.io/emoji-niwa PUBLIC_BASE=https://<app>.fly.dev
+fly deploy
+```
+Optional: put a custom domain in front via Cloudflare (orange-cloud, WS
+enabled) and use it for `PUBLIC_BASE`/`MP_*`/the OAuth callback. `*.fly.dev`
+alone (HTTPS already) works without Cloudflare.
 
 ## Env
 
-`GH_CLIENT_ID`, `GH_CLIENT_SECRET`, `APP_ORIGIN` (browser app origin, for the
-post-login redirect + CORS), `PUBLIC_BASE` (this server's external base, for
-the OAuth `redirect_uri`), `BIND_ADDR` (default `0.0.0.0:8080`), `DATA_PATH`
-(default `./data/state.json`).
+`GH_CLIENT_ID`, `GH_CLIENT_SECRET`, `APP_URL` (full browser app URL **incl.
+path**, e.g. `https://0x5da3.github.io/emoji-niwa` — used for the post-login
+redirect, and its origin `scheme://host` is derived for CORS/WS matching;
+`APP_ORIGIN` is accepted as a deprecated alias), `PUBLIC_BASE` (this server's
+external base, must equal the OAuth callback host, for `redirect_uri`),
+`BIND_ADDR` (default `0.0.0.0:8080`), `DATA_PATH` (default
+`./data/state.json`).
 
 Security knobs:
 
 - `DEV` — set `1`/`true` **only for local dev**. When unset (production),
-  only `APP_ORIGIN` is an allowed origin (CORS **and** the WebSocket
-  handshake). In dev it additionally allows `http://localhost` /
+  only the app origin derived from `APP_URL` is allowed (CORS **and** the
+  WebSocket handshake). In dev it additionally allows `http://localhost` /
   `http://127.0.0.1` on any port (exact host match — no loose prefix).
 - `MAX_SNAP_BYTES` — max accepted world-snapshot size in bytes
   (default `262144` = 256 KB). Oversize `snap` messages are dropped (not
