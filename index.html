@@ -206,6 +206,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
   <button class="tbtn" id="btn-menu" data-i18n-title="ttSettings" title="設定">⚙️</button>
   <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
   <button class="tbtn" id="sound-btn" data-i18n-title="ttSound" title="サウンド">🔇</button>
+  <button class="tbtn" id="btn-gif" data-i18n-title="ttGif" title="GIF書き出し">📸</button>
   <button class="tbtn" id="btn-share" data-i18n-title="share" title="共有">🔗</button>
   <button class="tbtn" id="btn-room" data-i18n-title="ttRoom" title="多人数">👥<span id="mp-count-badge"></span></button>
 </div>
@@ -1015,7 +1016,9 @@ let lang = 'ja';
 const I18N = {
   ja: {
     weatherBtn:'☀️ 天気', undo:'↩ 戻す', gen:'🎲 生成', effects:'✨ 演出',
-    ttSettings:'設定', ttSave:'保存', ttSound:'サウンド',
+    ttSettings:'設定', ttSave:'保存', ttSound:'サウンド', ttGif:'GIF書き出し',
+    'toast.gifMaking':'🎞️ GIFを生成中…', 'toast.gifError':'⚠️ GIF生成に失敗しました',
+    'toast.gifHint':'💾 保存後、iOSのショートカット/対応アプリでGIF→Live Photoに変換できます',
     weatherRandom:'🎲 ランダム切替',
     weatherRandomHint:'候補から30〜60秒ごとに切替（タップで候補を選択）',
     weatherSelect:'天気を選択',
@@ -1079,7 +1082,9 @@ const I18N = {
   },
   en: {
     weatherBtn:'☀️ Weather', undo:'↩ Undo', gen:'🎲 Generate', effects:'✨ Effects',
-    ttSettings:'Settings', ttSave:'Save', ttSound:'Sound',
+    ttSettings:'Settings', ttSave:'Save', ttSound:'Sound', ttGif:'Export GIF',
+    'toast.gifMaking':'🎞️ Making GIF…', 'toast.gifError':'⚠️ GIF export failed',
+    'toast.gifHint':'💾 After saving, convert GIF→Live Photo via an iOS Shortcut/app',
     weatherRandom:'🎲 Random switch',
     weatherRandomHint:'Switches among picks every 30–60s (tap to choose picks)',
     weatherSelect:'Select weather',
@@ -3815,6 +3820,157 @@ document.getElementById('btn-share').addEventListener('click', async e=>{
   }catch(err){
     window.prompt(tr('share'), url);   // clipboard 不可（非secure等）はURL提示
   }
+});
+
+// ═══════════════════════════════════════════
+// 📸 箱庭GIF書き出し（依存ゼロ・自前GIF89aエンコーダ）
+//   現在の視点・拡大率のまま正方形クリップ。UIは cv 非描画ゆえ含まれない。
+//   Live Photo 化は端末側の Shortcut/アプリで（埋め込み不可・文言案内のみ）。
+// ═══════════════════════════════════════════
+const GIF_SECONDS = 3, GIF_FPS = 12, GIF_SIZE = 320;
+let gifBusy = false;
+
+// 全フレームを median-cut で ≤256 色に量子化
+function _gifQuantize(frames, n){
+  const samp = [];
+  const stride = Math.max(4, (Math.floor(frames[0].length / 4 / 6000)) * 4); // ~6k/frame
+  for(const f of frames)
+    for(let p = 0; p < f.length; p += stride) samp.push([f[p], f[p+1], f[p+2]]);
+  const mkBox = pts => {
+    let r0=255,g0=255,b0=255,r1=0,g1=0,b1=0;
+    for(const c of pts){
+      if(c[0]<r0)r0=c[0]; if(c[0]>r1)r1=c[0];
+      if(c[1]<g0)g0=c[1]; if(c[1]>g1)g1=c[1];
+      if(c[2]<b0)b0=c[2]; if(c[2]>b1)b1=c[2];
+    }
+    return { pts, r:r1-r0, g:g1-g0, b:b1-b0 };
+  };
+  let boxes = [mkBox(samp)];
+  while(boxes.length < n){
+    let bi=-1, best=-1;
+    for(let i=0;i<boxes.length;i++){
+      const bx=boxes[i]; if(bx.pts.length<2) continue;
+      const m=Math.max(bx.r,bx.g,bx.b); if(m>best){best=m;bi=i;}
+    }
+    if(bi<0) break;
+    const bx=boxes[bi];
+    const ch = bx.r>=bx.g && bx.r>=bx.b ? 0 : (bx.g>=bx.b ? 1 : 2);
+    bx.pts.sort((a,b)=>a[ch]-b[ch]);
+    const mid=bx.pts.length>>1;
+    boxes.splice(bi,1, mkBox(bx.pts.slice(0,mid)), mkBox(bx.pts.slice(mid)));
+  }
+  const pal=[];
+  for(const bx of boxes){
+    const L=bx.pts.length||1; let r=0,g=0,b=0;
+    for(const c of bx.pts){ r+=c[0]; g+=c[1]; b+=c[2]; }
+    pal.push([Math.round(r/L),Math.round(g/L),Math.round(b/L)]);
+  }
+  while(pal.length<256) pal.push([0,0,0]);
+  return pal.slice(0,256);
+}
+
+// GIF 可変長 LZW（最小コードサイズ8）
+function _gifLZW(idx){
+  const MIN=8, CLR=256, EOI=257;
+  const out=[]; let acc=0, nb=0;
+  const put=(c,s)=>{ acc|=c<<nb; nb+=s; while(nb>=8){ out.push(acc&255); acc>>>=8; nb-=8; } };
+  let cs=MIN+1, dict=new Map(), next=EOI+1;
+  put(CLR,cs);
+  let cur=idx[0];
+  for(let i=1;i<idx.length;i++){
+    const k=idx[i], key=(cur<<8)|k, got=dict.get(key);
+    if(got!==undefined){ cur=got; continue; }
+    put(cur,cs);
+    dict.set(key,next);
+    if(next===(1<<cs)){ if(cs<12) cs++; }
+    next++;
+    cur=k;
+    if(next===4096){ put(CLR,cs); dict=new Map(); next=EOI+1; cs=MIN+1; }
+  }
+  put(cur,cs); put(EOI,cs);
+  if(nb>0) out.push(acc&255);
+  return out;
+}
+
+function _gifEncode(frames, size, delayCs){
+  const pal=_gifQuantize(frames,256);
+  const cache=new Int16Array(32768).fill(-1);
+  const near=(r,g,b)=>{
+    const key=((r>>3)<<10)|((g>>3)<<5)|(b>>3);
+    let v=cache[key]; if(v>=0) return v;
+    let bi=0,bd=1e12;
+    for(let i=0;i<256;i++){ const p=pal[i],dr=p[0]-r,dg=p[1]-g,db=p[2]-b,d=dr*dr+dg*dg+db*db; if(d<bd){bd=d;bi=i;} }
+    cache[key]=bi; return bi;
+  };
+  const b=[]; const w16=v=>b.push(v&255,(v>>8)&255);
+  for(const c of 'GIF89a') b.push(c.charCodeAt(0));
+  w16(size); w16(size); b.push(0xF7,0,0);
+  for(let i=0;i<256;i++){ const p=pal[i]; b.push(p[0],p[1],p[2]); }
+  b.push(0x21,0xFF,0x0B);
+  for(const c of 'NETSCAPE2.0') b.push(c.charCodeAt(0));
+  b.push(0x03,0x01,0,0,0x00);
+  const px=size*size;
+  for(const f of frames){
+    b.push(0x21,0xF9,0x04,0x00, delayCs&255,(delayCs>>8)&255, 0x00,0x00);
+    b.push(0x2C); w16(0); w16(0); w16(size); w16(size); b.push(0x00, 0x08);
+    const idx=new Uint8Array(px);
+    for(let p=0,q=0;p<px;p++,q+=4) idx[p]=near(f[q],f[q+1],f[q+2]);
+    const lz=_gifLZW(idx);
+    for(let i=0;i<lz.length;i+=255){
+      const m=Math.min(255,lz.length-i); b.push(m);
+      for(let j=0;j<m;j++) b.push(lz[i+j]);
+    }
+    b.push(0x00);
+  }
+  b.push(0x3B);
+  return new Blob([new Uint8Array(b)],{type:'image/gif'});
+}
+
+// 現在の視点・拡大率のまま正方形フレームを GIF_FPS で収集（同期＝rAFと非干渉）
+function _gifCapture(){
+  const W0=cv.width,H0=cv.height;
+  const sOX=OX,sOY=OY,sSc=scale,tOX=targetOX,tOY=targetOY,tSc=targetScale;
+  const sT=animT, sDay=timeOfDay, sAn=JSON.stringify(animals), sAid=animalId;
+  cv.width=GIF_SIZE; cv.height=GIF_SIZE;
+  OX = sOX + GIF_SIZE/2 - W0/2; OY = sOY + GIF_SIZE/2 - H0/2;
+  scale=sSc; targetOX=OX; targetOY=OY; targetScale=sSc;   // ズーム維持
+  const n=Math.round(GIF_SECONDS*GIF_FPS), dt=1/GIF_FPS, frames=[];
+  for(let i=0;i<n;i++){
+    updateAnimals(dt); animT+=dt;          // timeOfDay/天気は据え置き
+    render();
+    frames.push(ctx.getImageData(0,0,GIF_SIZE,GIF_SIZE).data);
+  }
+  cv.width=W0; cv.height=H0;
+  OX=sOX;OY=sOY;scale=sSc;targetOX=tOX;targetOY=tOY;targetScale=tSc;
+  animT=sT; timeOfDay=sDay; animalId=sAid;
+  for(const k in animals) delete animals[k];
+  Object.assign(animals, JSON.parse(sAn));
+  return frames;
+}
+
+document.getElementById('btn-gif').addEventListener('click', async e=>{
+  e.stopPropagation();
+  if(gifBusy) return;
+  gifBusy=true;
+  try{
+    closeAllPopups();
+    showToast(tr('toast.gifMaking'));
+    await new Promise(r=>setTimeout(r,50));      // トースト描画を待つ
+    const frames=_gifCapture();
+    await new Promise(r=>setTimeout(r,0));
+    const blob=_gifEncode(frames, GIF_SIZE, Math.round(100/GIF_FPS));
+    const file=new File([blob], 'emoji-niwa-'+Date.now()+'.gif', {type:'image/gif'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:'emoji-niwa'}); }catch(_){ }
+    } else {
+      const u=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=u; a.download=file.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u),4000);
+    }
+    showToast(tr('toast.gifHint'));
+  }catch(err){ showToast(tr('toast.gifError')); }
+  finally{ gifBusy=false; }
 });
 
 // 共有URL閲覧バーの表示と操作
