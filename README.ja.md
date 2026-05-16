@@ -64,7 +64,7 @@ python3 -m http.server 8000   # → http://localhost:8000
 emoji-niwa/
 ├── index.html   # アプリ本体（HTML + CSS + JS すべて）
 ├── README.md       # 英語版
-└── readme.ja.md    # 日本語版（このファイル）
+└── README.ja.md    # 日本語版（このファイル）
 ```
 
 ## 🌐 デプロイ（GitHub Pages）
