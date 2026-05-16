@@ -23,6 +23,7 @@ Generate terrain, arrange emoji, change the weather and time of day, and watch f
 - **Language switch** — Toggle Japanese / English from the settings menu (your choice is saved)
 - **Saving** — Autosave to localStorage (configurable interval) plus manual save; your garden survives reloads
 - **Share via URL** — the “🔗” button in the left button column encodes your world into a URL (no server). Opening one starts a read-but-editable visiting mode that never touches the viewer's own garden or autosave (with “Back to my garden” / “Make this mine”)
+- **Multiplayer (optional, shared play)** — “👥” issues an invite URL for real-time co-editing with friends. **Issuing requires a GitHub-login member**; anyone with the invite URL can join. While in a room your offline garden / autosave is never touched. Needs the optional backend (Rust/Actix, see `server/`). If unconfigured, offline play and `🔗` sharing work as before
 - **Helpers** — Zoom, minimap, fullscreen, undo, new map (5×5–50×50)
 
 ## 🕹 Controls
@@ -66,6 +67,7 @@ python3 -m http.server 8000   # → http://localhost:8000
 ```
 emoji-niwa/
 ├── index.html      # The whole app (HTML + CSS + JS)
+├── server/         # optional multiplayer backend (Rust/Actix, deployed separately — see server/README.md)
 ├── assets/
 │   └── screenshot.jpg  # image used in the README
 ├── README.md       # English (this file)
