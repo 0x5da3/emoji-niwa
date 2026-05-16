@@ -89,9 +89,9 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
 #palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;grid-auto-rows:42px;height:136px;overflow-y:auto;align-content:start;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:rgba(168,224,99,.4) transparent;-webkit-overflow-scrolling:touch}
 /* 共有プレイ用チャット（パレット上・既定3行・最小化/拡大可） */
 #mp-chat{display:none;flex-direction:column;gap:4px;margin-bottom:6px;border:1px solid rgba(120,210,130,.3);border-radius:10px;background:rgba(8,20,10,.55);padding:5px 6px}
-#mpc-head{display:flex;align-items:center;gap:6px;font-size:11px;color:#a8e063}
+#mpc-head{display:flex;align-items:center;gap:10px;font-size:11px;color:#a8e063}
 #mpc-head .mpc-t{flex:1;font-weight:700}
-#mpc-head button{background:rgba(120,210,130,.18);border:1px solid rgba(120,210,130,.3);color:#cfeecb;border-radius:6px;font-size:11px;line-height:1;padding:3px 7px;cursor:pointer}
+#mpc-head button{background:rgba(120,210,130,.18);border:1px solid rgba(120,210,130,.3);color:#cfeecb;border-radius:6px;font-size:11px;line-height:1;padding:3px 14px;min-width:36px;text-align:center;cursor:pointer}
 #mpc-log{height:54px;overflow-y:auto;font-size:12px;line-height:1.45;color:#e9f5e5;word-break:break-word;scrollbar-width:thin}
 #mp-chat.exp #mpc-log{height:min(42vh,260px)}
 #mp-chat.min #mpc-log,#mp-chat.min #mpc-inrow{display:none}
