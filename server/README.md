@@ -30,7 +30,7 @@ room (`#r=<id>`). Offline play and `#w=` snapshot sharing never touch it.
 
 Wire: C→S `{"t":"snap","d":<encoded>}` `{"t":"hello","name":str}`
 `{"t":"chat","text":str}` · S→C `{"t":"snap","d"}`
-`{"t":"role","owner":bool}` `{"t":"peers","n":int,"names":[str]}`
+`{"t":"role","owner":bool}` `{"t":"peers","n":int,"cap":int,"names":[str]}`
 `{"t":"chat","name":str,"text":str}` `{"t":"full"}`. Chat is relayed
 (not persisted; no backlog).
 

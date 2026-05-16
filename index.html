@@ -97,6 +97,7 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
 #mp-chat.min #mpc-log,#mp-chat.min #mpc-inrow{display:none}
 #mpc-log .ts{color:rgba(180,220,180,.5);margin-right:5px;font-variant-numeric:tabular-nums}
 #mpc-log .nm{color:#a8e063;font-weight:700;margin-right:4px}
+#mpc-log .sys{color:rgba(168,224,99,.7);font-style:italic}
 #mpc-inrow{display:flex;gap:5px}
 #mpc-in{flex:1;min-width:0;background:rgba(0,0,0,.3);border:1px solid rgba(120,210,130,.3);color:#fff;border-radius:6px;font-size:13px;padding:5px 7px}
 #mpc-send{background:rgba(93,186,106,.5);border:1px solid rgba(168,224,99,.6);color:#fff;border-radius:6px;font-size:12px;padding:5px 10px;cursor:pointer}
@@ -178,6 +179,8 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
 #map-btns #btn-3d{grid-column:1/-1;width:auto;height:30px;justify-self:center;margin-top:2px}
 #corner-btns{position:fixed;left:8px;top:56px;z-index:27;display:flex;flex-direction:column;gap:6px}
 #corner-btns .tbtn{width:46px;text-align:center;background:var(--panel);backdrop-filter:blur(10px)}
+#btn-room{position:relative}
+#mp-count-badge{display:none;position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;line-height:1;padding:1px 5px;border-radius:7px;background:rgba(8,16,10,.94);color:#a8e063;border:1px solid rgba(168,224,99,.55);pointer-events:none;white-space:nowrap;z-index:2}
 #btn-save{position:relative}
 #btn-save.saved::after{content:"✅";position:absolute;top:-7px;right:-7px;font-size:11px;line-height:1;pointer-events:none}
 .mapbtn{width:36px;height:36px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s}
@@ -202,7 +205,7 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
   <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
   <button class="tbtn" id="sound-btn" data-i18n-title="ttSound" title="サウンド">🔇</button>
   <button class="tbtn" id="btn-share" data-i18n-title="share" title="共有">🔗</button>
-  <button class="tbtn" id="btn-room" data-i18n-title="ttRoom" title="多人数">👥</button>
+  <button class="tbtn" id="btn-room" data-i18n-title="ttRoom" title="多人数">👥<span id="mp-count-badge"></span></button>
 </div>
 
 <!-- WEATHER POPUP -->
@@ -1066,7 +1069,7 @@ const I18N = {
     'toast.roomCreated':'👥 ルームを作成しました（招待URLをコピー）','toast.roomJoined':'👥 共有ルームに参加しました',
     'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
     'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ 多人数サーバー未設定です',
-    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出','mp.namePrompt':'共有プレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信',
+    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出','mp.namePrompt':'共有プレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信','chat.joined':'{name} が参加しました',
     'share':'🔗 共有', 'toast.shareCopied':'🔗 共有URLをコピーしました！', 'toast.shareError':'⚠️ 共有データを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
@@ -1130,7 +1133,7 @@ const I18N = {
     'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined shared room',
     'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
-    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for shared play','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send',
+    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for shared play','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send','chat.joined':'{name} joined',
     'share':'🔗 Share', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read shared data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
@@ -3839,7 +3842,7 @@ const MP_AUTH_KEY = 'emoji-niwa-auth';
 const MP_NAME_KEY = 'emoji-niwa-name';
 let mpActive=false, mpOwner=false, mpWs=null, mpGotSnap=false, mpSeeded=false;
 let mpApplying=false, mpRoomId='', mpPeers=0, mpRetry=0, mpSendT=null, mpOwnerTimer=null;
-let mpMyName='', mpNames=[];
+let mpMyName='', mpNames=[], mpCap=0, mpRosterInit=false;
 
 function mpName(){ try{ return localStorage.getItem(MP_NAME_KEY)||''; }catch(_){ return ''; } }
 // 表示名入力フロー（ゲスト・オーナー共通）。キャンセルで null
@@ -3945,7 +3948,14 @@ async function mpOnMsg(ev){
     mpOwner=!!m.owner;
     if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
   } else if(m.t==='peers'){
-    mpPeers=m.n|0; mpNames=Array.isArray(m.names)?m.names:[]; mpRefreshBar();
+    const next=Array.isArray(m.names)?m.names:[];
+    if(mpRosterInit){
+      for(const nm of next){
+        if(nm && nm!==mpMyName && mpNames.indexOf(nm)<0) mpChatSystem(tr('chat.joined',{name:nm}));
+      }
+    } else { mpRosterInit=true; }   // 初回（自分の入室時点のroster）は告知しない
+    mpPeers=m.n|0; if(m.cap!=null) mpCap=m.cap|0; mpNames=next;
+    mpUpdateCountBadge(); mpRefreshBar();
   } else if(m.t==='chat'){
     mpChatAppend(m.name, m.text);
   } else if(m.t==='full'){
@@ -3954,7 +3964,7 @@ async function mpOnMsg(ev){
     if(mpOwnerTimer){ clearInterval(mpOwnerTimer); mpOwnerTimer=null; }
     try{ if(mpWs){ mpWs.onclose=null; mpWs.close(); } }catch(_){ }
     mpWs=null;
-    mpBar('hide'); mpChatShow(false);
+    mpBar('hide'); mpChatShow(false); mpUpdateCountBadge();
     try{ history.replaceState(null,'',location.pathname); }catch(_){ }
     showToast(tr('toast.roomFull'));
   }
@@ -3996,6 +4006,33 @@ function mpChatAppend(name, text){
   while(log.childElementCount>200) log.removeChild(log.firstChild);
   if(near) log.scrollTop=log.scrollHeight;
 }
+function mpChatSystem(text){
+  const log=document.getElementById('mpc-log');
+  if(!log) return;
+  const near = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+  const line=document.createElement('div');
+  line.className='sys';
+  const d=new Date();
+  const ts=document.createElement('span');
+  ts.className='ts';
+  ts.textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+  line.appendChild(ts);
+  line.appendChild(document.createTextNode(String(text==null?'':text)));
+  log.appendChild(line);
+  while(log.childElementCount>200) log.removeChild(log.firstChild);
+  if(near) log.scrollTop=log.scrollHeight;
+}
+// 👥 ボタンに現在人数を常時表示（room参加中のみ。定員不明時は人数のみ）
+function mpUpdateCountBadge(){
+  const b=document.getElementById('mp-count-badge');
+  if(!b) return;
+  if(mpActive && mpPeers>0){
+    b.textContent = mpCap>0 ? (mpPeers+'/'+mpCap) : String(mpPeers);
+    b.style.display='block';
+  } else {
+    b.style.display='none';
+  }
+}
 function mpChatSend(){
   const inp=document.getElementById('mpc-in');
   if(!inp) return;
@@ -4023,6 +4060,7 @@ function mpChatSend(){
 })();
 function mpConnect(){
   if(!MP_WS || !mpRoomId) return;
+  mpRosterInit=false;   // (再)接続後の最初の peers は基準化（再接続で既存者を誤告知しない）
   let ws; try{ ws=new WebSocket(MP_WS + '/room/' + encodeURIComponent(mpRoomId)); }catch(_){ return; }
   mpWs=ws;
   ws.onopen=()=>{ mpRetry=0; try{ if(mpMyName) ws.send(JSON.stringify({t:'hello',name:mpMyName})); }catch(_){ } };
@@ -4039,6 +4077,7 @@ function mpConnect(){
 function mpJoin(roomId, name){
   mpRoomId=roomId; mpMyName=name||mpName()||'ゲスト';
   mpActive=true; mpGotSnap=false; mpSeeded=false;
+  mpPeers=0; mpNames=[]; mpUpdateCountBadge();
   const log=document.getElementById('mpc-log'); if(log) log.textContent='';
   mpChatShow(true);
   mpConnect();
