@@ -924,6 +924,7 @@ const I18N = {
     'evt:🎃 ハロウィン':'🎃 ハロウィン','evt:🐰 イースター':'🐰 イースター','evt:🎉 お祝い':'🎉 お祝い',
     'map:🌿 草原':'草原','map:🏝 島':'島','map:🏔 山岳':'山岳','map:🏜 砂漠':'砂漠','map:❄️ 雪原':'雪原',
     'map:🌊 群島':'群島','map:🌳 森':'森','map:🌋 火山':'火山','map:🏖 環礁':'環礁','map:🏞 谷':'谷',
+    'map:🏙 都市':'都市','map:🏘 街':'街','map:💧 川':'川','map:💦 滝':'滝','map:🌊 海':'海',
     'solid:🌿 草':'🌿 草','solid:🏜 砂':'🏜 砂','solid:🌊 水':'🌊 水','solid:❄️ 雪':'❄️ 雪',
     'solid:⬛ 岩':'⬛ 岩','solid:🟫 土':'🟫 土','solid:🟪 紫':'🟪 紫','solid:🟥 赤':'🟥 赤',
     'ta:paint':'塗る','ta:up':'高さ+','ta:down':'高さ-',
@@ -976,6 +977,7 @@ const I18N = {
     'evt:🎃 ハロウィン':'🎃 Halloween','evt:🐰 イースター':'🐰 Easter','evt:🎉 お祝い':'🎉 Celebration',
     'map:🌿 草原':'Grassland','map:🏝 島':'Island','map:🏔 山岳':'Mountains','map:🏜 砂漠':'Desert','map:❄️ 雪原':'Snowfield',
     'map:🌊 群島':'Archipelago','map:🌳 森':'Forest','map:🌋 火山':'Volcano','map:🏖 環礁':'Atoll','map:🏞 谷':'Valley',
+    'map:🏙 都市':'City','map:🏘 街':'Town','map:💧 川':'River','map:💦 滝':'Waterfall','map:🌊 海':'Ocean',
     'solid:🌿 草':'🌿 Grass','solid:🏜 砂':'🏜 Sand','solid:🌊 水':'🌊 Water','solid:❄️ 雪':'❄️ Snow',
     'solid:⬛ 岩':'⬛ Rock','solid:🟫 土':'🟫 Soil','solid:🟪 紫':'🟪 Purple','solid:🟥 赤':'🟥 Red',
     'ta:paint':'Paint','ta:up':'Height +','ta:down':'Height -',
@@ -2674,6 +2676,109 @@ function genValley(s){
   return {terrain:t, heights:h};
 }
 
+// NEW: City — dense street grid with raised building blocks
+function genCity(s){
+  const rng=mulberry32(s), t={}, h={};
+  const blk=4; // block pitch (1-tile road + interior)
+  // Per-block building height, precomputed
+  const bh={};
+  const bcols=Math.ceil(GRID/blk), brows=Math.ceil(GRID/blk);
+  for(let by=0;by<brows;by++)for(let bx=0;bx<bcols;bx++) bh[`${bx},${by}`]=1+Math.floor(rng()*4);
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    if(c%blk===0||r%blk===0){ t[k]='dark'; h[k]=0; }       // road
+    else { t[k]='dark'; h[k]=bh[`${Math.floor(c/blk)},${Math.floor(r/blk)}`]||1; }
+  }
+  // Central green park (one block)
+  const px=Math.floor(bcols/2)*blk+1, py=Math.floor(brows/2)*blk+1;
+  for(let dr=0;dr<blk-1;dr++)for(let dc=0;dc<blk-1;dc++){
+    const cc=px+dc, rr=py+dr;
+    if(cc<GRID&&rr<GRID){ const k=`${cc},${rr}`; t[k]='grass'; h[k]=0; }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Town — grassy with cross streets and scattered low houses
+function genTown(s){
+  const n=makeNoise(s), rng=mulberry32(s+5), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){ const k=`${c},${r}`; t[k]='grass'; h[k]=0; }
+  const rv=Math.floor(GRID/2), cv=Math.floor(GRID/2);
+  for(let i=0;i<GRID;i++){ t[`${i},${rv}`]='sand'; t[`${cv},${i}`]='sand'; }   // main streets
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    if(r===rv||c===cv) continue;
+    if(n(c/3,r/3)>0.12 && rng()<0.45){ const k=`${c},${r}`; t[k]='dark'; h[k]=1+(rng()<0.25?1:0); }
+  }
+  // Small pond
+  if(rng()<0.7){
+    const px=2+Math.floor(rng()*(GRID-4)), py=2+Math.floor(rng()*(GRID-4));
+    for(let dr=0;dr<=1;dr++)for(let dc=0;dc<=1;dc++){
+      const k=`${px+dc},${py+dr}`; if(t[k]){ t[k]='water'; delete h[k]; }
+    }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: River — rolling grassland split by a wide meandering river
+function genRiver(s){
+  const n=makeNoise(s), n2=makeNoise(s+3), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v=n(c/8,r/8)*0.6 + n2(c/4,r/4)*0.4;
+    h[`${c},${r}`]=Math.max(0,Math.round((v+0.5)*4));
+  }
+  smoothHeights(h,1);
+  classifyByHeight(t,h,[[4,'dark'],[2,'grass'],[1,'grass'],[0,'sand']]);
+  const mid=GRID/2;
+  for(let c=0;c<GRID;c++){
+    const rr=Math.round(mid + n(c/5,0)*GRID*0.18);
+    for(let w=-2;w<=2;w++){
+      const r2=rr+w; if(r2<0||r2>=GRID) continue;
+      const k=`${c},${r2}`;
+      if(Math.abs(w)<=1){ t[k]='water'; delete h[k]; }       // channel
+      else { t[k]='sand'; h[k]=0; }                          // bank
+    }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Waterfall — high plateau dropping over a cliff into a plunge pool
+function genWaterfall(s){
+  const n=makeNoise(s), t={}, h={};
+  const cliff=Math.floor(GRID*0.45);
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    if(r<cliff){ const hh=6+Math.round(n(c/5,r/5)*2); h[k]=hh; t[k]= hh>=8?'snow':'dark'; }
+    else { const hh=Math.max(0,Math.round(n(c/5,r/5)*2)); h[k]=hh; t[k]= hh>=2?'grass':'sand'; }
+  }
+  smoothHeights(h,1);
+  const wc=Math.floor(GRID/2);
+  for(let r=0;r<cliff;r++){                                   // feeder river on the plateau
+    for(let w=-1;w<=1;w++){ const c2=wc+w; if(c2<0||c2>=GRID) continue; t[`${c2},${r}`]='water'; }
+  }
+  for(let r=cliff;r<GRID;r++)for(let c=0;c<GRID;c++){          // plunge pool / outflow basin
+    const k=`${c},${r}`;
+    if(r<cliff+3 || Math.abs(c-wc)<=1){ t[k]='water'; delete h[k]; }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Ocean — open sea with a small central island, open at the borders
+function genOcean(s){
+  const n=makeNoise(s), n2=makeNoise(s+9), t={}, h={};
+  const cx=GRID*0.5, cy=GRID*0.55;
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const dx=(c-cx)/(GRID*0.5), dy=(r-cy)/(GRID*0.5);
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const v=n(c/6,r/6)*0.5 + n2(c/3,r/3)*0.2 - dist*0.95 + 0.18;
+    h[`${c},${r}`]=Math.max(0,Math.round(v*7));
+  }
+  smoothHeights(h,1);
+  classifyByHeight(t,h,[[5,'dark'],[2,'grass'],[1,'sand'],[0,'water']]);
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    if(c===0||r===0||c===GRID-1||r===GRID-1){ const k=`${c},${r}`; t[k]='water'; delete h[k]; }
+  }
+  return {terrain:t, heights:h};
+}
+
 const MAP_PRESETS={
   '🌿 草原':genGrassland,
   '🏝 島':genIsland,
@@ -2685,6 +2790,11 @@ const MAP_PRESETS={
   '🌋 火山':genVolcano,
   '🏖 環礁':genAtoll,
   '🏞 谷':genValley,
+  '🏙 都市':genCity,
+  '🏘 街':genTown,
+  '💧 川':genRiver,
+  '💦 滝':genWaterfall,
+  '🌊 海':genOcean,
 };
 
 function applyTerrainMap(result){
