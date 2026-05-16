@@ -74,10 +74,10 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .autosave-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .lang-opt{padding:7px 4px;font-size:11px}
 .lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
-#minimap{position:fixed;left:10px;bottom:215px;z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
+#minimap{position:fixed;left:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
 #minimap.visible{display:block}
-#btn-3d.dim-toggle{position:fixed;right:10px;bottom:215px;z-index:27}
-#btn-heights{position:fixed;right:10px;bottom:255px;z-index:27}
+#btn-3d.dim-toggle{position:fixed;right:10px;bottom:calc(215px + var(--mpch,0px));z-index:27}
+#btn-heights{position:fixed;right:10px;bottom:calc(255px + var(--mpch,0px));z-index:27}
 #modebar{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:29;display:flex;background:var(--panel);border:1px solid var(--border);border-radius:20px;overflow:hidden}
 .mbtn{padding:5px 13px;font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:all .12s}
 .mbtn.active{background:rgba(93,186,106,.25);color:var(--accent2)}
@@ -3935,6 +3935,12 @@ async function mpOnMsg(ev){
   }
 }
 // ── 共有プレイ チャット ──────────────────────────────────
+// チャットの高さぶん、下部の 3D/高さ/ミニマップを持ち上げて隠れを防ぐ
+function mpChatLift(){
+  const el=document.getElementById('mp-chat');
+  const h=(el && el.style.display!=='none') ? Math.ceil(el.getBoundingClientRect().height)+6 : 0;
+  document.documentElement.style.setProperty('--mpch', h+'px');
+}
 function mpChatShow(on){
   const el=document.getElementById('mp-chat');
   if(!el) return;
@@ -3944,6 +3950,7 @@ function mpChatShow(on){
     if(inp) inp.placeholder=tr('chat.ph');
     el.style.display='flex';
   } else { el.style.display='none'; }
+  mpChatLift();
 }
 function mpChatAppend(name, text){
   const log=document.getElementById('mpc-log');
@@ -3973,15 +3980,16 @@ function mpChatSend(){
         el=document.getElementById('mp-chat');
   if(!el) return;
   exp.addEventListener('click',e=>{ e.stopPropagation();
-    el.classList.remove('min'); el.classList.toggle('exp'); });
+    el.classList.remove('min'); el.classList.toggle('exp'); mpChatLift(); });
   min.addEventListener('click',e=>{ e.stopPropagation();
     el.classList.remove('exp'); el.classList.toggle('min');
-    min.textContent = el.classList.contains('min') ? '▴' : '▾'; });
+    min.textContent = el.classList.contains('min') ? '▴' : '▾'; mpChatLift(); });
   snd.addEventListener('click',e=>{ e.stopPropagation(); mpChatSend(); });
   inp.addEventListener('keydown',e=>{
     e.stopPropagation();
     if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); mpChatSend(); }
   });
+  window.addEventListener('resize', mpChatLift);
 })();
 function mpConnect(){
   if(!MP_WS || !mpRoomId) return;
