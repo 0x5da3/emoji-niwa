@@ -2,6 +2,8 @@
 
 🌐 **日本語** | [English](README.md)
 
+<p align="center"><img src="assets/screenshot.jpg" alt="絵文字庭 — オーロラと月と流星の夜の箱庭" width="420"></p>
+
 絵文字を置いて自分だけの箱庭をつくる、ブラウザだけで動く箱庭シミュレーター。
 
 地形を生成して、絵文字を並べて、天気と時間を変えて、夜には花火やオーロラを眺める ── インストール不要、依存ゼロの単一 HTML ファイルで完結します。
@@ -62,7 +64,9 @@ python3 -m http.server 8000   # → http://localhost:8000
 
 ```
 emoji-niwa/
-├── index.html   # アプリ本体（HTML + CSS + JS すべて）
+├── index.html      # アプリ本体（HTML + CSS + JS すべて）
+├── assets/
+│   └── screenshot.jpg  # README で使用する画像
 ├── README.md       # 英語版
 └── README.ja.md    # 日本語版（このファイル）
 ```

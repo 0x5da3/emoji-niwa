@@ -2,6 +2,8 @@
 
 🌐 **English** | [日本語](README.ja.md)
 
+<p align="center"><img src="assets/screenshot.jpg" alt="emoji-niwa — a night garden with aurora, moon and a meteor" width="420"></p>
+
 Place emoji to build your own little garden — a sandbox that runs entirely in the browser.
 
 Generate terrain, arrange emoji, change the weather and time of day, and watch fireworks or auroras at night. No install, zero dependencies, all in a single HTML file.
@@ -62,7 +64,9 @@ python3 -m http.server 8000   # → http://localhost:8000
 
 ```
 emoji-niwa/
-├── index.html   # The whole app (HTML + CSS + JS)
+├── index.html      # The whole app (HTML + CSS + JS)
+├── assets/
+│   └── screenshot.jpg  # image used in the README
 ├── README.md       # English (this file)
 └── README.ja.md    # Japanese
 ```
