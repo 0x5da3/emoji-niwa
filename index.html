@@ -911,7 +911,8 @@ const EMOJI_FX = {
   // 🎅 🤶 🧑‍🎄 🦌 ⛪ 🧦 は演出なし（人物・動物・建物・小物）
 };
 function fxType(e){ return EMOJI_FX[e] || null; }
-const ANIMALS = new Set(['🦋','🐸','🐇','🦊','🐿️','🐝','🦔','🐟','🐠','🐡','🦞','🦀','🐌','🐛','🐞','🐜','🐈','🐈‍⬛','🐕','🐩','🐦','🐦‍⬛','🦆','🦉','🦝','🦌','🐢','🐍','🦎','🚶','🏃','💃','🕺','🤸','🧑','👶','🐉']);
+// 人カテゴリは全員「動く人物」として扱う（🏪 へ向かわせるため、静止アイテムにしない）
+const ANIMALS = new Set(['🦋','🐸','🐇','🦊','🐿️','🐝','🦔','🐟','🐠','🐡','🦞','🦀','🐌','🐛','🐞','🐜','🐈','🐈‍⬛','🐕','🐩','🐦','🐦‍⬛','🦆','🦉','🦝','🦌','🐢','🐍','🦎','🐉', ...CATEGORIES['🧑 人']]);
 // 食べ物（動物・人が食べて消費する対象）。食器類は食べられないので除外。
 const NON_FOOD = new Set(['🍽️','🍴','🥄','🔪']);
 const FOOD = new Set(CATEGORIES['🍎 食べ物'].filter(e => !NON_FOOD.has(e)));
@@ -2976,7 +2977,8 @@ function spawnAnimal(emoji,c,r){
 }
 function removeAnimal(id){delete animals[id];}
 // 人（徘徊する人物絵文字）が 🏪 に入店する
-const PEOPLE = new Set(['🚶','🏃','💃','🕺','🤸','🧑','👶']);
+// 人カテゴリ全絵文字を「人」として 🏪 へ誘引（カテゴリ定義を唯一の真実源に）
+const PEOPLE = new Set(CATEGORIES['🧑 人']);
 const STORE_RADIUS = 8;   // 人が 🏪 に吸い寄せられる半径（セル）
 function storeAnchorKey(){ for(const k in items) if(items[k].emoji==='🏪') return k; return null; }
 function nearestStoreCell(a, key){
