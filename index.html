@@ -3038,17 +3038,20 @@ function tryStoreTap(sx, sy){
   const [ac,ar] = anchor.split(',').map(Number);
   const cur = storeSize(it), old = cur;
 
-  // next size that fits, cycling 1→2→3→1; clamp anchor inward if needed
-  let applied = null, newAnchor = anchor;
-  for(let step=1; step<=3; step++){
-    const n = ((cur - 1 + step) % 3) + 1;
-    if(n === 1){ applied = 1; newAnchor = anchor; break; }   // 1×1 always valid
-    if(storeFits(ac,ar,n)){ applied = n; newAnchor = anchor; break; }
-    const ca = Math.max(0, Math.min(ac, GRID-n));
-    const cr = Math.max(0, Math.min(ar, GRID-n));
-    if((ca!==ac||cr!==ar) && storeFits(ca,cr,n)){ applied = n; newAnchor = `${ca},${cr}`; break; }
+  // Toggle 1×1 ↔ 3×3 (no intermediate size); clamp anchor inward at edges
+  let applied, newAnchor = anchor;
+  if(cur > 1){
+    applied = 1; newAnchor = anchor;                       // shrink — always valid
+  } else {
+    const n = 3;
+    if(storeFits(ac,ar,n)){ applied = n; newAnchor = anchor; }
+    else {
+      const ca = Math.max(0, Math.min(ac, GRID-n));
+      const cr = Math.max(0, Math.min(ar, GRID-n));
+      if((ca!==ac||cr!==ar) && storeFits(ca,cr,n)){ applied = n; newAnchor = `${ca},${cr}`; }
+      else return true;                                    // 3×3 can't fit here — keep 1×1, consume tap
+    }
   }
-  if(applied === null) return true;            // tap consumed; nothing fit (shouldn't happen)
 
   if(newAnchor !== anchor){ delete items[anchor]; items[newAnchor] = it; }
   if(applied > 1) it.size = applied; else delete it.size;     // keep 1×1 clean
