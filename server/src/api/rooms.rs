@@ -49,6 +49,7 @@ pub async fn ws(
     }
 
     let max_snap = state.cfg.max_snap_bytes;
+    let cap = state.cfg.max_room_peers;
     let (response, mut session, msg_stream) = actix_ws::handle(&req, body)?;
     let mut msg_stream = msg_stream
         .aggregate_continuations()
@@ -189,7 +190,7 @@ pub async fn ws(
                             };
                             let _ = session
                                 .text(
-                                    serde_json::json!({ "t": "peers", "n": n, "names": names })
+                                    serde_json::json!({ "t": "peers", "n": n, "cap": cap, "names": names })
                                         .to_string(),
                                 )
                                 .await;

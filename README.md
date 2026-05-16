@@ -23,7 +23,7 @@ Generate terrain, arrange emoji, change the weather and time of day, and watch f
 - **Language switch** — Toggle Japanese / English from the settings menu (your choice is saved)
 - **Saving** — Autosave to localStorage (configurable interval) plus manual save; your garden survives reloads
 - **Share via URL** — the “🔗” button in the left button column encodes your world into a URL (no server). Opening one starts a read-but-editable visiting mode that never touches the viewer's own garden or autosave (with “Back to my garden” / “Make this mine”)
-- **Multiplayer (optional, shared play)** — “👥” issues an invite URL for real-time co-editing with friends. **Issuing requires a GitHub-login member**; anyone with the invite URL can join. While in a room you can chat (a 3-line box above the palette, collapsible/expandable) and your offline garden / autosave is never touched. Needs the optional backend (Rust/Actix, see `server/`). If unconfigured, offline play and `🔗` sharing work as before
+- **Multiplayer (optional, shared play)** — “👥” issues an invite URL for real-time co-editing with friends. **Issuing requires a GitHub-login member**; anyone with the invite URL can join. While in a room the “👥” button shows live occupancy (e.g. 2/8), a chat box (3 lines above the palette, collapsible/expandable) lets you talk, joins are announced in chat, and your offline garden / autosave is never touched. Needs the optional backend (Rust/Actix, see `server/`). If unconfigured, offline play and `🔗` sharing work as before
 - **Helpers** — Zoom, minimap, fullscreen, undo, new map (5×5–50×50)
 
 ## 🕹 Controls
