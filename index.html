@@ -3811,13 +3811,13 @@ const WEATHER_ICONS = {clear:'☀️',rain:'🌧',snow:'❄️',thunder:'⛈',ha
 const WEATHER_LABELS = {clear:'晴',rain:'雨',snow:'雪',thunder:'雷',hail:'雹',sandstorm:'砂',sakura:'桜',leaves:'紅'};
 
 // Random weather state
-let weatherRandomOn = false;
-let weatherRandomPool = new Set(); // weather keys checked as candidates
-let weatherRandomTimer = 0; // seconds until next change
+let weatherRandomOn = true;                                  // 既定でランダム切替ON
+let weatherRandomPool = new Set(['clear','rain','snow']);    // 既定の候補
+let weatherRandomTimer = 30 + Math.random() * 30;            // 初回切替まで30〜60秒
 
 function refreshWeatherBtn(){
   document.getElementById('weather-btn').textContent =
-    `${WEATHER_ICONS[weather]||'☀️'} ${tr('wlabel:'+(weather||''))}`;
+    `${weatherRandomOn?'🎲 ':''}${WEATHER_ICONS[weather]||'☀️'} ${tr('wlabel:'+(weather||''))}`;
 }
 function applyWeather(w){
   weather = w;
@@ -3866,6 +3866,7 @@ document.getElementById('weather-random-toggle').addEventListener('click',e=>{
   }
   refreshRandomToggle();
   refreshWeatherChecks();
+  refreshWeatherBtn();   // 🎲 表示を即時反映
 });
 
 document.getElementById('weather-btn').addEventListener('click',e=>{
