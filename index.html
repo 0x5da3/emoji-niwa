@@ -1055,10 +1055,11 @@ const I18N = {
     'evt:🎄 クリスマス':'🎄 クリスマス','evt:🎍 お正月':'🎍 お正月','evt:💝 バレンタイン':'💝 バレンタイン',
     'evt:🎃 ハロウィン':'🎃 ハロウィン','evt:🐰 イースター':'🐰 イースター','evt:🎉 お祝い':'🎉 お祝い',
     'map:🌿 草原':'草原','map:🏝 島':'島','map:🏔 山岳':'山岳','map:🏜 砂漠':'砂漠','map:❄️ 雪原':'雪原',
-    'map:🌊 群島':'群島','map:🌳 森':'森','map:🌋 火山':'火山','map:🏖 環礁':'環礁','map:🏞 谷':'谷',
-    'map:🏙 都市':'都市','map:🏘 街':'街','map:💧 川':'川','map:💦 滝':'滝','map:🌊 海':'海',
-    'map:🗻 雪山':'雪山','map:🌴 アマゾン':'アマゾン','map:🐊 湿地':'湿地','map:🪨 峡谷':'峡谷','map:🌄 高原':'高原',
-    'genGrpGreen':'🌿 みどり','genGrpMtn':'⛰ 山・雪','genGrpArid':'🏜 乾燥・岩','genGrpWater':'🌊 水辺','genGrpBuilt':'🏙 人の場所',
+    'map:🌳 森':'森','map:🌋 火山':'火山','map:🏖 環礁':'環礁','map:🏞 谷':'谷','map:🏙 都市':'都市',
+    'map:🏘 街':'街','map:💧 川':'川','map:💦 滝':'滝','map:🌊 海辺':'海辺','map:🗻 雪山':'雪山',
+    'map:🌴 アマゾン':'アマゾン','map:🐊 湿地':'湿地','map:🪨 峡谷':'峡谷','map:🗿 メサ':'メサ','map:🌵 サバンナ':'サバンナ',
+    'map:🏰 城':'城','map:🌾 農村':'農村',
+    'genGrpGreen':'🌿 みどり','genGrpMtn':'⛰ 山・雪','genGrpArid':'🏜 荒野','genGrpWater':'🌊 水辺','genGrpBuilt':'🏙 人の場所',
     'solid:🌿 草':'🌿 草','solid:🏜 砂':'🏜 砂','solid:🌊 水':'🌊 水','solid:❄️ 雪':'❄️ 雪',
     'solid:⬛ 岩':'⬛ 岩','solid:🟫 土':'🟫 土','solid:🟪 紫':'🟪 紫','solid:🟥 赤':'🟥 赤',
     'ta:paint':'塗る','ta:up':'高さ+','ta:down':'高さ-',
@@ -1123,10 +1124,11 @@ const I18N = {
     'evt:🎄 クリスマス':'🎄 Christmas','evt:🎍 お正月':'🎍 New Year','evt:💝 バレンタイン':'💝 Valentine',
     'evt:🎃 ハロウィン':'🎃 Halloween','evt:🐰 イースター':'🐰 Easter','evt:🎉 お祝い':'🎉 Celebration',
     'map:🌿 草原':'Grassland','map:🏝 島':'Island','map:🏔 山岳':'Mountains','map:🏜 砂漠':'Desert','map:❄️ 雪原':'Snowfield',
-    'map:🌊 群島':'Archipelago','map:🌳 森':'Forest','map:🌋 火山':'Volcano','map:🏖 環礁':'Atoll','map:🏞 谷':'Valley',
-    'map:🏙 都市':'City','map:🏘 街':'Town','map:💧 川':'River','map:💦 滝':'Waterfall','map:🌊 海':'Ocean',
-    'map:🗻 雪山':'Snowy Peaks','map:🌴 アマゾン':'Amazon','map:🐊 湿地':'Wetland','map:🪨 峡谷':'Canyon','map:🌄 高原':'Plateau',
-    'genGrpGreen':'🌿 Green','genGrpMtn':'⛰ Mountain & Snow','genGrpArid':'🏜 Arid & Rock','genGrpWater':'🌊 Water','genGrpBuilt':'🏙 Built',
+    'map:🌳 森':'Forest','map:🌋 火山':'Volcano','map:🏖 環礁':'Atoll','map:🏞 谷':'Valley','map:🏙 都市':'City',
+    'map:🏘 街':'Town','map:💧 川':'River','map:💦 滝':'Waterfall','map:🌊 海辺':'Seaside','map:🗻 雪山':'Snowy Peaks',
+    'map:🌴 アマゾン':'Amazon','map:🐊 湿地':'Wetland','map:🪨 峡谷':'Canyon','map:🗿 メサ':'Mesa','map:🌵 サバンナ':'Savanna',
+    'map:🏰 城':'Castle','map:🌾 農村':'Farmland',
+    'genGrpGreen':'🌿 Green','genGrpMtn':'⛰ Mountain & Snow','genGrpArid':'🏜 Wilds','genGrpWater':'🌊 Water','genGrpBuilt':'🏙 Built',
     'solid:🌿 草':'🌿 Grass','solid:🏜 砂':'🏜 Sand','solid:🌊 水':'🌊 Water','solid:❄️ 雪':'❄️ Snow',
     'solid:⬛ 岩':'⬛ Rock','solid:🟫 土':'🟫 Soil','solid:🟪 紫':'🟪 Purple','solid:🟥 赤':'🟥 Red',
     'ta:paint':'Paint','ta:up':'Height +','ta:down':'Height -',
@@ -2808,17 +2810,6 @@ function genSnow(s){
   return {terrain:t, heights:h};
 }
 
-function genArchipelago(s){
-  const n=makeNoise(s), n2=makeNoise(s+42), n3=makeNoise(s+123), t={}, h={};
-  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
-    const v = n(c/4, r/4)*0.55 + n2(c/2.2, r/2.2)*0.30 + n3(c/8, r/8)*0.15;
-    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.15) * 6));
-  }
-  smoothHeights(h, 1);
-  classifyByHeight(t, h, [[5,'dark'],[2,'grass'],[1,'sand'],[0,'water']]);
-  return {terrain:t, heights:h};
-}
-
 // NEW: Forest — dense rolling green with rare clearings
 function genForest(s){
   const n=makeNoise(s), n2=makeNoise(s+13), t={}, h={};
@@ -3017,20 +3008,25 @@ function genWaterfall(s){
   return {terrain:t, heights:h};
 }
 
-// NEW: Ocean — open sea with a small central island, open at the borders
-function genOcean(s){
+// NEW: Seaside — wavy coastline with a sandy beach band, sea on one side
+function genCoast(s){
   const n=makeNoise(s), n2=makeNoise(s+9), t={}, h={};
-  const cx=GRID*0.5, cy=GRID*0.55;
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
-    const dx=(c-cx)/(GRID*0.5), dy=(r-cy)/(GRID*0.5);
-    const dist=Math.sqrt(dx*dx+dy*dy);
-    const v=n(c/6,r/6)*0.5 + n2(c/3,r/3)*0.2 - dist*0.95 + 0.18;
-    h[`${c},${r}`]=Math.max(0,Math.round(v*7));
+    const k=`${c},${r}`;
+    const shore = GRID*0.55 + n(c/7,0)*GRID*0.10;     // 波打ち際（うねる）
+    const d = r - shore;
+    const v = d < 0
+      ? 2 + (-d)*0.45 + n2(c/5,r/5)*1.5                // 内陸ほど高く
+      : -0.6 - d*0.5 + n(c/4,r/4)*0.6;                 // 沖ほど深く
+    h[k] = Math.round(v);
   }
   smoothHeights(h,1);
-  classifyByHeight(t,h,[[5,'dark'],[2,'grass'],[1,'sand'],[0,'water']]);
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
-    if(c===0||r===0||c===GRID-1||r===GRID-1){ const k=`${c},${r}`; t[k]='water'; delete h[k]; }
+    const k=`${c},${r}`, v=h[k];
+    if(v <= 0){ t[k]='water'; delete h[k]; }           // 海
+    else if(v <= 1){ t[k]='sand'; }                    // ビーチ（砂浜）
+    else if(v <= 4){ t[k]='grass'; }                   // 海辺の草地
+    else { t[k]='dark'; }                              // 内陸の丘
   }
   return {terrain:t, heights:h};
 }
@@ -3117,18 +3113,64 @@ function genCanyon(s){
   return {terrain:t, heights:h};
 }
 
-// NEW: Plateau — flat grassy tableland with steep cliffs over a low ring
-function genPlateau(s){
+// NEW: Mesa — flat-topped rock buttes rising from sand flats
+function genMesa(s){
   const n=makeNoise(s), t={}, h={};
-  const cx=GRID/2, cy=GRID/2;
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
-    const dx=(c-cx)/cx, dy=(r-cy)/cy;
-    const d=Math.sqrt(dx*dx+dy*dy);
-    const mesa = d<0.62 ? 6 : (d<0.78 ? 3 : 0);
-    h[`${c},${r}`] = Math.max(0, Math.round(mesa + n(c/5,r/5)*1.2));
+    const base = n(c/5,r/5);
+    const v = base > 0.18 ? 4 + base*5 : base*1.5;     // ビュート or 砂の平地
+    h[`${c},${r}`] = Math.max(0, Math.round(v));
   }
   smoothHeights(h,1);
-  classifyByHeight(t,h,[[6,'grass'],[4,'dark'],[2,'sand'],[1,'sand'],[0,'water']]);
+  classifyByHeight(t,h,[[5,'dark'],[3,'dark'],[1,'sand'],[0,'sand']]);
+  return {terrain:t, heights:h};
+}
+
+// NEW: Savanna — flat patchy dry grass & dirt with a rare waterhole
+function genSavanna(s){
+  const n=makeNoise(s), n2=makeNoise(s+4), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    const v = n(c/7,r/7)*0.6 + n2(c/3,r/3)*0.4;
+    h[k] = Math.max(0, Math.round((v+0.4)*2));
+    t[k] = v > 0.05 ? 'grass' : 'sand';
+  }
+  if(Math.random()<0.5){
+    const px=3+Math.floor(Math.random()*(GRID-6)), py=3+Math.floor(Math.random()*(GRID-6));
+    for(let dr=0;dr<=1;dr++)for(let dc=0;dc<=1;dc++){ const kk=`${px+dc},${py+dr}`; t[kk]='water'; delete h[kk]; }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Castle — central keep with concentric ward, moat, and castle town
+function genCastle(s){
+  const rng=mulberry32(s+2), t={}, h={};
+  const cx=GRID/2, cy=GRID/2;
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    const d=Math.max(Math.abs(c-cx),Math.abs(r-cy));   // 四角いリング（チェビシェフ距離）
+    if(d < GRID*0.10){ t[k]='dark'; h[k]=5; }          // 天守
+    else if(d < GRID*0.16){ t[k]='dark'; h[k]=3; }     // 本丸
+    else if(d < GRID*0.22){ t[k]='water'; }            // 堀
+    else if(d < GRID*0.40){ t[k]='dark'; h[k]= rng()<0.5?1:0; } // 城下町
+    else { t[k]='grass'; h[k]=0; }                     // 郊外
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Farmland — checkerboard fields with lanes, farmhouses and a pond
+function genFarm(s){
+  const rng=mulberry32(s+3), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    if((r%3===2)||(c%3===2)){ t[k]='sand'; h[k]=0; }   // あぜ道
+    else { t[k]=((Math.floor(r/3)+Math.floor(c/3))%2===0)?'grass':'sand'; h[k]=0; } // 田畑の市松
+  }
+  for(let i=0;i<3;i++){ const k=`${1+Math.floor(rng()*(GRID-2))},${1+Math.floor(rng()*(GRID-2))}`; t[k]='dark'; h[k]=1; } // 農家
+  if(rng()<0.7){
+    const px=2+Math.floor(rng()*(GRID-4)), py=2+Math.floor(rng()*(GRID-4));
+    for(let dr=0;dr<=1;dr++)for(let dc=0;dc<=1;dc++){ const kk=`${px+dc},${py+dr}`; t[kk]='water'; delete h[kk]; }
+  }
   return {terrain:t, heights:h};
 }
 
@@ -3138,7 +3180,6 @@ const MAP_PRESETS={
   '🏔 山岳':genMountain,
   '🏜 砂漠':genDesert,
   '❄️ 雪原':genSnow,
-  '🌊 群島':genArchipelago,
   '🌳 森':genForest,
   '🌋 火山':genVolcano,
   '🏖 環礁':genAtoll,
@@ -3147,21 +3188,24 @@ const MAP_PRESETS={
   '🏘 街':genTown,
   '💧 川':genRiver,
   '💦 滝':genWaterfall,
-  '🌊 海':genOcean,
+  '🌊 海辺':genCoast,
   '🗻 雪山':genSnowMountain,
   '🌴 アマゾン':genAmazon,
   '🐊 湿地':genWetland,
   '🪨 峡谷':genCanyon,
-  '🌄 高原':genPlateau,
+  '🗿 メサ':genMesa,
+  '🌵 サバンナ':genSavanna,
+  '🏰 城':genCastle,
+  '🌾 農村':genFarm,
 };
 
 // 種類が増えたのでカテゴリ分けして見やすく表示（全プリセットを過不足なく網羅）
 const MAP_GROUPS=[
-  {key:'genGrpGreen', names:['🌿 草原','🌳 森','🌴 アマゾン','🏞 谷','🌄 高原','🐊 湿地']},
+  {key:'genGrpGreen', names:['🌿 草原','🌳 森','🌴 アマゾン','🏞 谷','🐊 湿地']},
   {key:'genGrpMtn',   names:['🏔 山岳','🗻 雪山','❄️ 雪原','🌋 火山']},
-  {key:'genGrpArid',  names:['🏜 砂漠','🪨 峡谷']},
-  {key:'genGrpWater', names:['🏝 島','🌊 群島','🏖 環礁','💧 川','💦 滝','🌊 海']},
-  {key:'genGrpBuilt', names:['🏙 都市','🏘 街']},
+  {key:'genGrpArid',  names:['🏜 砂漠','🪨 峡谷','🗿 メサ','🌵 サバンナ']},
+  {key:'genGrpWater', names:['🏝 島','🏖 環礁','💧 川','💦 滝','🌊 海辺']},
+  {key:'genGrpBuilt', names:['🏙 都市','🏘 街','🏰 城','🌾 農村']},
 ];
 
 function applyTerrainMap(result){
