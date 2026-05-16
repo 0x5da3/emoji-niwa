@@ -62,7 +62,7 @@ pub async fn ws(
         if c.len() >= state.cfg.max_room_peers {
             true
         } else {
-            c.insert(conn_id);
+            c.insert(conn_id, String::new()); // name set on `hello`
             false
         }
     };
@@ -93,17 +93,38 @@ pub async fn ws(
                             if t.len() > 2 * max_snap { break; }     // egregious → drop connection
                             if t.len() <= max_snap {
                                 if let Ok(v) = serde_json::from_str::<serde_json::Value>(&t) {
-                                    if v.get("t").and_then(|x| x.as_str()) == Some("snap") {
-                                        if let Some(d) = v.get("d").and_then(|x| x.as_str()) {
-                                            if d.len() <= max_snap {
-                                                *room2.snap.lock().unwrap() = Some(d.to_string());
-                                                room2.touch();
-                                                let _ = room2.tx.send(Bcast::Snap {
-                                                    from: conn_id,
-                                                    d: d.to_string(),
-                                                });
+                                    match v.get("t").and_then(|x| x.as_str()) {
+                                        Some("snap") => {
+                                            if let Some(d) = v.get("d").and_then(|x| x.as_str()) {
+                                                if d.len() <= max_snap {
+                                                    *room2.snap.lock().unwrap() = Some(d.to_string());
+                                                    room2.touch();
+                                                    let _ = room2.tx.send(Bcast::Snap {
+                                                        from: conn_id,
+                                                        d: d.to_string(),
+                                                    });
+                                                }
                                             }
                                         }
+                                        Some("hello") => {
+                                            let nm: String = v
+                                                .get("name")
+                                                .and_then(|x| x.as_str())
+                                                .unwrap_or("")
+                                                .chars()
+                                                .filter(|c| !c.is_control())
+                                                .take(24)
+                                                .collect::<String>()
+                                                .trim()
+                                                .to_string();
+                                            if let Some(slot) =
+                                                room2.conns.lock().unwrap().get_mut(&conn_id)
+                                            {
+                                                *slot = nm;
+                                            }
+                                            let _ = room2.tx.send(Bcast::Refresh);
+                                        }
+                                        _ => {}
                                     }
                                 }
                             }
@@ -129,12 +150,24 @@ pub async fn ws(
                             }
                         }
                         Ok(Bcast::Refresh) => {
-                            let (n, owner) = {
+                            let (n, owner, names) = {
                                 let c = room2.conns.lock().unwrap();
-                                (c.len(), c.iter().next().copied() == Some(conn_id))
+                                let names: Vec<String> = c
+                                    .values()
+                                    .filter(|s| !s.is_empty())
+                                    .cloned()
+                                    .collect();
+                                (
+                                    c.len(),
+                                    c.keys().next().copied() == Some(conn_id),
+                                    names,
+                                )
                             };
                             let _ = session
-                                .text(serde_json::json!({ "t": "peers", "n": n }).to_string())
+                                .text(
+                                    serde_json::json!({ "t": "peers", "n": n, "names": names })
+                                        .to_string(),
+                                )
                                 .await;
                             if session
                                 .text(serde_json::json!({ "t": "role", "owner": owner }).to_string())
