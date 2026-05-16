@@ -88,7 +88,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 .cattab.active{background:rgba(93,186,106,.22);color:var(--accent2);border-color:var(--accent)}
 #palette-wrap{position:fixed;bottom:0;left:0;right:0;z-index:28;background:var(--panel);border-top:1px solid var(--border);backdrop-filter:blur(14px);padding:6px 8px 14px}
 #palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;grid-auto-rows:42px;height:136px;overflow-y:auto;align-content:start;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:rgba(168,224,99,.4) transparent;-webkit-overflow-scrolling:touch}
-/* 共有プレイ用チャット（パレット上・既定3行・最小化/拡大可） */
+/* マルチプレイ用チャット（パレット上・既定3行・最小化/拡大可） */
 #mp-chat{display:none;flex-direction:column;gap:4px;margin-bottom:6px;border:1px solid rgba(120,210,130,.3);border-radius:10px;background:rgba(8,20,10,.55);padding:5px 6px}
 #mpc-head{display:flex;align-items:center;gap:10px;font-size:11px;color:#a8e063}
 #mpc-head .mpc-t{flex:1;font-weight:700}
@@ -207,8 +207,8 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
   <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
   <button class="tbtn" id="sound-btn" data-i18n-title="ttSound" title="サウンド">🔇</button>
   <button class="tbtn" id="btn-gif" data-i18n-title="ttGif" title="GIF書き出し">📸</button>
-  <button class="tbtn" id="btn-share" data-i18n-title="share" title="共有">🔗</button>
-  <button class="tbtn" id="btn-room" data-i18n-title="ttRoom" title="多人数">👥<span id="mp-count-badge"></span></button>
+  <button class="tbtn" id="btn-share" data-i18n-title="share" title="共有リンク">🔗</button>
+  <button class="tbtn" id="btn-room" data-i18n-title="ttRoom" title="マルチプレイ">👥<span id="mp-count-badge"></span></button>
 </div>
 
 <!-- WEATHER POPUP -->
@@ -1069,14 +1069,14 @@ const I18N = {
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
     'toast.scatter':'🎲 {count}個をランダム配置！', 'toast.saved':'💾 セーブしました',
-    'ttRoom':'多人数（共有プレイ）',
+    'ttRoom':'マルチプレイ',
     'auth.loginNeeded':'ルーム発行には会員ログインが必要です','auth.loginGitHub':'GitHubでログイン','auth.logout':'ログアウト','auth.denied':'⛔ このGitHubアカウントはログインを許可されていません',
     'toast.loggedIn':'✅ ログインしました','toast.loggedOut':'👋 ログアウトしました',
-    'toast.roomCreated':'👥 ルームを作成しました（招待URLをコピー）','toast.roomJoined':'👥 共有ルームに参加しました',
-    'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
-    'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ 多人数サーバー未設定です',
-    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出','mp.namePrompt':'共有プレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信','chat.joined':'{name} が参加しました',
-    'share':'🔗 共有', 'toast.shareCopied':'🔗 共有URLをコピーしました！', 'toast.shareError':'⚠️ 共有データを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
+    'toast.roomCreated':'👥 ルームを作成しました（招待リンクをコピー）','toast.roomJoined':'👥 マルチプレイに参加しました',
+    'toast.inviteCopied':'👥 招待リンクをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
+    'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ マルチプレイサーバー未設定です',
+    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'👥 招待リンクをコピー','mp.leave':'↩ 退出','mp.namePrompt':'マルチプレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信','chat.joined':'{name} が参加しました',
+    'share':'🔗 共有リンク', 'toast.shareCopied':'🔗 共有リンクをコピーしました！', 'toast.shareError':'⚠️ 共有リンクのデータを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
     'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
@@ -1137,14 +1137,14 @@ const I18N = {
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
     'toast.scatter':'🎲 Scattered {count}!', 'toast.saved':'💾 Saved',
-    'ttRoom':'Multiplayer (shared play)',
+    'ttRoom':'Multiplayer',
     'auth.loginNeeded':'Sign in (member) to create a room','auth.loginGitHub':'Sign in with GitHub','auth.logout':'Sign out','auth.denied':'⛔ This GitHub account is not allowed to sign in',
     'toast.loggedIn':'✅ Signed in','toast.loggedOut':'👋 Signed out',
-    'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined shared room',
-    'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
+    'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined multiplayer',
+    'toast.inviteCopied':'👥 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
-    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for shared play','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send','chat.joined':'{name} joined',
-    'share':'🔗 Share', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read shared data', 'toast.kept':'💾 Saved this world as your own',
+    'mp.bar':'👥 Room {room} ({n})','mp.copy':'👥 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for multiplayer','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send','chat.joined':'{name} joined',
+    'share':'🔗 Share link', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read share link data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
     'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
@@ -4107,8 +4107,8 @@ document.getElementById('btn-visit-keep').addEventListener('click', e=>{
   saveState(); restartAutosave();
 });
 
-// ── 多人数（共有プレイ）─ オプトイン。MP_* 未設定なら無効＝オフライン従来動作 ──
-const MP_HTTP = 'https://emoji-niwa.fly.dev';   // 多人数APIサーバー（Fly.io）
+// ── マルチプレイ ─ オプトイン。MP_* 未設定なら無効＝オフライン従来動作 ──
+const MP_HTTP = 'https://emoji-niwa.fly.dev';   // マルチプレイAPIサーバー（Fly.io）
 const MP_WS   = 'wss://emoji-niwa.fly.dev';     // 同 WebSocket
 const MP_AUTH_KEY = 'emoji-niwa-auth';
 const MP_NAME_KEY = 'emoji-niwa-name';
@@ -4132,7 +4132,7 @@ function mpSetToken(t){ try{ localStorage.setItem(MP_AUTH_KEY, t); }catch(_){ } 
 function mpClearToken(){ try{ localStorage.removeItem(MP_AUTH_KEY); }catch(_){ } }
 function mpInviteUrl(){ return location.origin + location.pathname + '#r=' + mpRoomId; }
 
-// 共有プレイメニューを 👥 アイコン列の直下（画面左）に配置
+// マルチプレイメニューを 👥 アイコン列の直下（画面左）に配置
 function mpPlace(){
   const bar=document.getElementById('mp-bar'), cb=document.getElementById('corner-btns');
   if(!bar||!cb) return;
@@ -4235,7 +4235,7 @@ async function mpOnMsg(ev){
   } else if(m.t==='chat'){
     mpChatAppend(m.name, m.text);
   } else if(m.t==='full'){
-    // 満員：再接続せず多人数を停止し、自分の世界に留まる
+    // 満員：再接続せずマルチプレイを停止し、自分の世界に留まる
     mpActive=false;
     if(mpOwnerTimer){ clearInterval(mpOwnerTimer); mpOwnerTimer=null; }
     try{ if(mpWs){ mpWs.onclose=null; mpWs.close(); } }catch(_){ }
@@ -4245,7 +4245,7 @@ async function mpOnMsg(ev){
     showToast(tr('toast.roomFull'));
   }
 }
-// ── 共有プレイ チャット ──────────────────────────────────
+// ── マルチプレイ チャット ──────────────────────────────────
 // チャットの高さぶん、下部の 3D/高さ/ミニマップを持ち上げて隠れを防ぐ
 function mpChatLift(){
   const el=document.getElementById('mp-chat');
@@ -4992,7 +4992,7 @@ async function decodeWorld(str){
 }
 
 function saveState(){
-  if(visiting||mpActive) return;   // 閲覧/多人数中は保存しない（オートセーブ非干渉）
+  if(visiting||mpActive) return;   // 閲覧/マルチプレイ中は保存しない（オートセーブ非干渉）
   try{
     const data = {
       v: SAVE_VERSION,
@@ -5017,7 +5017,7 @@ function saveState(){
 }
 
 function clearSave(){
-  if(visiting||mpActive) return;   // 閲覧/多人数中は自分のセーブを消さない
+  if(visiting||mpActive) return;   // 閲覧/マルチプレイ中は自分のセーブを消さない
   try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
 }
 
@@ -5152,7 +5152,7 @@ FPS_PRESETS.forEach(v => {
 });
 refreshFpsUI();
 
-// 起動分岐: #auth=（ログイン受領）→ #r=（多人数ルーム）→ #w=（共有閲覧）→ 通常ロード
+// 起動分岐: #auth=（ログイン受領）→ #r=（マルチプレイルーム）→ #w=（共有リンク閲覧）→ 通常ロード
 (async () => {
   let h = location.hash || '';
   if(h.startsWith('#auth=')){
