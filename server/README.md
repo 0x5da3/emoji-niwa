@@ -65,3 +65,15 @@ set `MP_HTTP`/`MP_WS` in `index.html` to `http://localhost:8080` /
 post-login redirect + CORS), `PUBLIC_BASE` (this server's external base, for
 the OAuth `redirect_uri`), `BIND_ADDR` (default `0.0.0.0:8080`), `DATA_PATH`
 (default `./data/state.json`).
+
+Security knobs:
+
+- `DEV` — set `1`/`true` **only for local dev**. When unset (production),
+  only `APP_ORIGIN` is an allowed origin (CORS **and** the WebSocket
+  handshake). In dev it additionally allows `http://localhost` /
+  `http://127.0.0.1` on any port (exact host match — no loose prefix).
+- `MAX_SNAP_BYTES` — max accepted world-snapshot size in bytes
+  (default `262144` = 256 KB). Oversize `snap` messages are dropped (not
+  stored/relayed); grossly oversize (> 2×) drops the connection. Guards
+  memory/bandwidth and broadcast amplification. Raise via env, or move to
+  chunked snapshots if a legitimate world ever exceeds it.

@@ -14,6 +14,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use actix_cors::Cors;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer};
+use actix_ws::AggregatedMessage;
 use dashmap::DashMap;
 use futures_util::StreamExt;
 use rand::Rng;
@@ -82,6 +83,25 @@ struct Config {
     app_origin: String,  // where the browser app lives (GitHub Pages), for post-auth redirect
     public_base: String, // this server's external base URL, for the OAuth redirect_uri
     data_path: String,
+    dev: bool,           // DEV=1 → also allow localhost origins (off in production)
+    max_snap_bytes: usize, // reject oversize world snapshots (abuse/amplification guard)
+}
+
+/// Single source of truth for allowed browser origins (CORS + WS handshake).
+/// Production = exactly APP_ORIGIN. localhost/127.0.0.1 (any port) only when DEV.
+/// Exact host match — no loose prefix (avoids `http://localhost.evil.com`).
+fn origin_ok(origin: &str, app_origin: &str, dev: bool) -> bool {
+    if origin == app_origin {
+        return true;
+    }
+    if dev {
+        if let Some(rest) = origin.strip_prefix("http://") {
+            let host = rest.split('/').next().unwrap_or("");
+            let host = host.split(':').next().unwrap_or("");
+            return host == "localhost" || host == "127.0.0.1";
+        }
+    }
+    false
 }
 
 struct AppState {
@@ -373,7 +393,20 @@ async fn room_ws(
         }
     };
 
-    let (response, mut session, mut msg_stream) = actix_ws::handle(&req, body)?;
+    // WebSocket is not covered by CORS — enforce the same origin allowlist here.
+    let origin_allowed = match req.headers().get("origin").and_then(|h| h.to_str().ok()) {
+        Some(o) => origin_ok(o, &state.cfg.app_origin, state.cfg.dev),
+        None => state.cfg.dev, // browsers always send Origin for WS; blank only ok in dev
+    };
+    if !origin_allowed {
+        return Ok(HttpResponse::Forbidden().body("origin not allowed"));
+    }
+
+    let max_snap = state.cfg.max_snap_bytes;
+    let (response, mut session, msg_stream) = actix_ws::handle(&req, body)?;
+    let mut msg_stream = msg_stream
+        .aggregate_continuations()
+        .max_continuation_size(max_snap.max(64 * 1024) + 4096);
     let conn_id = state.conn_seq.fetch_add(1, Ordering::Relaxed);
     let mut rx = room.tx.subscribe();
 
@@ -397,24 +430,30 @@ async fn room_ws(
             tokio::select! {
                 msg = msg_stream.next() => {
                     match msg {
-                        Some(Ok(actix_ws::Message::Text(t))) => {
-                            if let Ok(v) = serde_json::from_str::<serde_json::Value>(&t) {
-                                if v.get("t").and_then(|x| x.as_str()) == Some("snap") {
-                                    if let Some(d) = v.get("d").and_then(|x| x.as_str()) {
-                                        *room2.snap.lock().unwrap() = Some(d.to_string());
-                                        room2.touch();
-                                        let _ = room2.tx.send(Bcast::Snap {
-                                            from: conn_id,
-                                            d: d.to_string(),
-                                        });
+                        Some(Ok(AggregatedMessage::Text(t))) => {
+                            if t.len() > 2 * max_snap { break; }     // egregious → drop connection
+                            if t.len() <= max_snap {
+                                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&t) {
+                                    if v.get("t").and_then(|x| x.as_str()) == Some("snap") {
+                                        if let Some(d) = v.get("d").and_then(|x| x.as_str()) {
+                                            if d.len() <= max_snap {
+                                                *room2.snap.lock().unwrap() = Some(d.to_string());
+                                                room2.touch();
+                                                let _ = room2.tx.send(Bcast::Snap {
+                                                    from: conn_id,
+                                                    d: d.to_string(),
+                                                });
+                                            }
+                                        }
                                     }
                                 }
                             }
+                            // max_snap < len <= 2*max_snap → ignore silently
                         }
-                        Some(Ok(actix_ws::Message::Ping(p))) => {
+                        Some(Ok(AggregatedMessage::Ping(p))) => {
                             let _ = session.pong(&p).await;
                         }
-                        Some(Ok(actix_ws::Message::Close(_))) | None => break,
+                        Some(Ok(AggregatedMessage::Close(_))) | None => break,
                         Some(Err(_)) => break,
                         _ => {}
                     }
@@ -495,6 +534,13 @@ async fn main() -> std::io::Result<()> {
         public_base: std::env::var("PUBLIC_BASE")
             .unwrap_or_else(|_| "http://localhost:8080".into()),
         data_path: std::env::var("DATA_PATH").unwrap_or_else(|_| "./data/state.json".into()),
+        dev: std::env::var("DEV")
+            .map(|v| v == "1" || v == "true")
+            .unwrap_or(false),
+        max_snap_bytes: std::env::var("MAX_SNAP_BYTES")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(262144), // 256 KB; raise via env, or chunk if ever needed
     };
     let bind = std::env::var("BIND_ADDR").unwrap_or_else(|_| "0.0.0.0:8080".into());
     if cfg.gh_client_id.is_empty() || cfg.gh_client_secret.is_empty() {
@@ -539,15 +585,20 @@ async fn main() -> std::io::Result<()> {
     });
 
     let app_origin = state.cfg.app_origin.clone();
-    eprintln!("emoji-niwa-server listening on {bind} (app_origin={app_origin})");
+    let dev = state.cfg.dev;
+    eprintln!(
+        "emoji-niwa-server listening on {bind} (app_origin={app_origin}, dev={dev})"
+    );
 
     HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin_fn({
                 let ao = app_origin.clone();
                 move |origin, _req| {
-                    origin.as_bytes() == ao.as_bytes()
-                        || origin.as_bytes().starts_with(b"http://localhost")
+                    origin
+                        .to_str()
+                        .map(|o| origin_ok(o, &ao, dev))
+                        .unwrap_or(false)
                 }
             })
             .allow_any_method()
