@@ -3906,9 +3906,16 @@ async function mpSend(){
 async function mpOnMsg(ev){
   let m; try{ m=JSON.parse(ev.data); }catch(_){ return; }
   if(m.t==='snap' && typeof m.d==='string'){
+    // 受信スナップ適用で applyState→resetView がカメラを奪うため、
+    // ローカルの視点を保持（初回フレーミングとグリッド変化時のみ再フィット）
+    const first=!mpGotSnap;
+    const _g=GRID,_s=scale,_ox=OX,_oy=OY,_ts=targetScale,_tox=targetOX,_toy=targetOY;
     mpGotSnap=true; mpApplying=true;
     try{ const d=await decodeWorld(m.d); if(d && d.v===SAVE_VERSION) applyState(d); }catch(_){ }
     mpApplying=false;
+    if(!first && GRID===_g){
+      scale=_s; OX=_ox; OY=_oy; targetScale=_ts; targetOX=_tox; targetOY=_toy;
+    }
   } else if(m.t==='role'){
     mpOwner=!!m.owner;
     if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
