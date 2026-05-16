@@ -29,7 +29,7 @@ body{background:#0a150b;overflow:hidden;font-family:'Hiragino Kaku Gothic ProN',
 .acc-section.open .acc-summary{display:none}
 .acc-content{display:none;padding:0 12px 12px}
 .acc-section.open .acc-content{display:block;padding-top:10px}
-body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast,body.fullscreen #btn-palette,body.fullscreen #low-toggles{display:none !important}
+body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast,body.fullscreen #btn-palette{display:none !important}
 body.fullscreen #map-btns{top:auto;bottom:14px;right:14px}
 body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 .mapbtn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
@@ -71,12 +71,11 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .sound-opt{padding:6px 4px;font-size:10px;line-height:1.2}
 .sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .autosave-opt{padding:6px 2px;font-size:10px;line-height:1.2}
-.autosave-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.autosave-opt.active,.fps-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .lang-opt{padding:7px 4px;font-size:11px}
 .lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
 #minimap.visible{display:block}
-#low-toggles{position:fixed;right:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;display:flex;gap:6px;align-items:center}
 body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:none!important}
 #modebar{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:29;display:flex;background:var(--panel);border:1px solid var(--border);border-radius:20px;overflow:hidden}
 .mbtn{padding:5px 13px;font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;transition:all .12s}
@@ -177,6 +176,7 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 #map-btns{position:fixed;right:10px;top:60px;z-index:27;display:grid;grid-template-columns:repeat(2,36px);gap:6px;justify-items:center}
 #map-btns #btn-3d{grid-column:1/-1;width:auto;height:30px;justify-self:center;margin-top:2px}
+#map-btns #btn-heights{grid-column:1/-1;width:auto;height:30px;justify-self:center}
 #corner-btns{position:fixed;left:8px;top:56px;z-index:27;display:flex;flex-direction:column;gap:6px}
 #corner-btns .tbtn{width:46px;text-align:center;background:var(--panel);backdrop-filter:blur(10px)}
 #btn-room{position:relative}
@@ -262,6 +262,10 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="autosaveInterval" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">💾 オートセーブ間隔</div>
     <div id="autosave-opts" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px"></div>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="fpsLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🎞️ フレームレート</div>
+    <div id="fps-opts" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px"></div>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="langLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🌐 言語 / Language</div>
@@ -438,9 +442,6 @@ body.palette-collapsed #cattabs,body.palette-collapsed #palette,body.palette-col
     <span class="dim-track"><span class="dim-thumb"></span></span>
     <span class="dim-label dim-3d">3D</span>
   </button>
-</div>
-
-<div id="low-toggles">
   <button class="mapbtn h-toggle" id="btn-heights" data-i18n-title="ttHeights" title="高さを表示">
     <span class="h-label">#️⃣</span>
     <span class="h-track"><span class="h-thumb"></span></span>
@@ -1020,7 +1021,7 @@ const I18N = {
     'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
     settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
-    autosaveInterval:'💾 オートセーブ間隔', langLabel:'🌐 言語 / Language',
+    autosaveInterval:'💾 オートセーブ間隔', fpsLabel:'🎞️ フレームレート', langLabel:'🌐 言語 / Language',
     placementSound:'配置時の効果音',
     's.pon':'🫧 ポンッ','s.koto':'🪵 コトッ','s.poyon':'🟢 ぽよん','s.fuwa':'☁️ ふわっ',
     's.tin':'🔔 ティン','s.pata':'📄 ぱた','s.pofu':'🧸 ぽふ','s.chari':'🪙 ちゃり','s.none':'🚫 なし',
@@ -1054,6 +1055,7 @@ const I18N = {
     'ta:paint':'塗る','ta:up':'高さ+','ta:down':'高さ-',
     'tt:grass':'草','tt:sand':'砂','tt:water':'水','tt:snow':'雪','tt:dark':'岩','tt:custom':'色',
     'as:0':'オフ','as:30000':'30秒','as:60000':'1分','as:180000':'3分','as:300000':'5分',
+    'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 全リセットしました', 'toast.newMap':'🆕 {n}×{n} マップを作成しました',
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
@@ -1083,7 +1085,7 @@ const I18N = {
     'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
     settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
-    autosaveInterval:'💾 Autosave interval', langLabel:'🌐 言語 / Language',
+    autosaveInterval:'💾 Autosave interval', fpsLabel:'🎞️ Frame rate', langLabel:'🌐 言語 / Language',
     placementSound:'Placement sound',
     's.pon':'🫧 Pop','s.koto':'🪵 Knock','s.poyon':'🟢 Boing','s.fuwa':'☁️ Floaty',
     's.tin':'🔔 Ting','s.pata':'📄 Pata','s.pofu':'🧸 Pofu','s.chari':'🪙 Clink','s.none':'🚫 None',
@@ -1117,6 +1119,7 @@ const I18N = {
     'ta:paint':'Paint','ta:up':'Height +','ta:down':'Height -',
     'tt:grass':'Grass','tt:sand':'Sand','tt:water':'Water','tt:snow':'Snow','tt:dark':'Rock','tt:custom':'Color',
     'as:0':'Off','as:30000':'30s','as:60000':'1m','as:180000':'3m','as:300000':'5m',
+    'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 Reset everything', 'toast.newMap':'🆕 Created a {n}×{n} map',
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
@@ -4564,6 +4567,8 @@ const AUTOSAVE_PRESETS = [
   {ms:180000, label:'3分'},
   {ms:300000, label:'5分'},
 ];
+const FPS_PRESETS = [30, 60]; // 描画FPS上限候補（30=省電力）
+let fpsCap = 30; // 既定30。dt連続なので演算は不変、描画頻度のみ
 let autosaveMs = 60000;
 let autosaveTimerId = null;
 const btnSave = document.getElementById('btn-save');
@@ -4586,6 +4591,11 @@ function restartAutosave(){
 function refreshAutosaveUI(){
   document.querySelectorAll('#autosave-opts .autosave-opt').forEach(b => {
     b.classList.toggle('active', Number(b.dataset.ms) === autosaveMs);
+  });
+}
+function refreshFpsUI(){
+  document.querySelectorAll('#fps-opts .fps-opt').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.v) === fpsCap);
   });
 }
 
@@ -4700,6 +4710,7 @@ function saveState(){
       weatherRandomPool: [...weatherRandomPool],
       fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
       autosaveMs,
+      fpsCap,
       lang,
       lastStoreSize,
     };
@@ -4775,6 +4786,7 @@ function applyState(data){
     if(typeof data.autosaveMs === 'number' && AUTOSAVE_PRESETS.some(p => p.ms === data.autosaveMs)){
       autosaveMs = data.autosaveMs;
     }
+    if(FPS_PRESETS.includes(data.fpsCap)) fpsCap = data.fpsCap;
 
     if(data.lang === 'en' || data.lang === 'ja') lang = data.lang;
     if(data.lastStoreSize === 3 || data.lastStoreSize === 1) lastStoreSize = data.lastStoreSize;
@@ -4798,6 +4810,7 @@ function applyState(data){
     applyWeather(typeof data.weather === 'string' ? data.weather : weather);
     refreshRandomToggle(); refreshWeatherChecks();
     refreshAutosaveUI();
+    refreshFpsUI();
     refreshScatterUI();
     resetView(); // refit camera to the restored grid size
     return true;
@@ -4824,6 +4837,22 @@ AUTOSAVE_PRESETS.forEach(({ms,label}) => {
   document.getElementById('autosave-opts').appendChild(b);
 });
 refreshAutosaveUI();
+
+FPS_PRESETS.forEach(v => {
+  const b = document.createElement('button');
+  b.className = 'tbtn fps-opt';
+  b.dataset.v = v;
+  b.dataset.i18n = 'fps:'+v;
+  b.textContent = tr('fps:'+v);
+  b.addEventListener('click', e => {
+    e.stopPropagation();
+    fpsCap = v;
+    refreshFpsUI();   // 選択を色づけ表示（トーストなし）
+    saveState();
+  });
+  document.getElementById('fps-opts').appendChild(b);
+});
+refreshFpsUI();
 
 // 起動分岐: #auth=（ログイン受領）→ #r=（多人数ルーム）→ #w=（共有閲覧）→ 通常ロード
 (async () => {
@@ -4886,7 +4915,6 @@ applyLang();
 // ═══════════════════════════════════════════
 const DAY_SPEED=0.00008;
 let last=performance.now(), mmTimer=0;
-let fpsCap=30; // 描画フレーム上限（電力削減）。0で無制限。dt連続なので演算は影響なし
 
 function loop(now){
   requestAnimationFrame(loop);
