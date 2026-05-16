@@ -946,6 +946,9 @@ let timeOfDay = (function(){
   const now = new Date();
   return (now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds()) / 86400;
 })();
+// 昼夜で生き物が変わる：夜行性は夜に活動・昼に就寝、それ以外は逆（夜判定は既存 isNight() を再利用）
+const NOCTURNAL = new Set(['🦉','🦊','🦝','🦔','🐍','🐈‍⬛']);
+function isAsleep(a){ const noc = NOCTURNAL.has(a.emoji); return isNight() ? !noc : noc; }
 let dayPaused = false;
 let weather   = 'clear';
 let animT     = 0;
@@ -2364,6 +2367,13 @@ function render(){
       if(a.flip){ctx.translate(x,0);ctx.scale(-1,1);ctx.drawImage(img,-eSize/2,y-eSize*0.7-hop-lift,eSize,eSize);}
       else{ctx.drawImage(img,x-eSize/2,y-eSize*0.7-hop-lift,eSize,eSize);}
       ctx.restore();
+      if(isAsleep(a)){
+        const zs=Math.max(8,Math.floor(eSize*0.45));
+        const zb=Math.sin(animT*2+a.id)*1.5*scale;
+        ctx.globalAlpha=0.55+0.25*Math.sin(animT*3+a.id);
+        ctx.drawImage(getEmojiImg('💤',zs), x+eSize*0.18, y-eSize*0.95-lift+zb, zs, zs);
+        ctx.globalAlpha=1;
+      }
     }
   } else {
     // 2D top-down order
@@ -2427,6 +2437,13 @@ function render(){
       if(a.flip){ctx.translate(ax,0);ctx.scale(-1,1);ctx.drawImage(img,-eSize/2,ay-eSize/2-hop,eSize,eSize);}
       else{ctx.drawImage(img,ax-eSize/2,ay-eSize/2-hop,eSize,eSize);}
       ctx.restore();
+      if(isAsleep(a)){
+        const zs=Math.max(8,Math.floor(eSize*0.45));
+        const zb=Math.sin(animT*2+a.id)*1.5*scale;
+        ctx.globalAlpha=0.55+0.25*Math.sin(animT*3+a.id);
+        ctx.drawImage(getEmojiImg('💤',zs), ax+eSize*0.18, ay-eSize*0.7+zb, zs, zs);
+        ctx.globalAlpha=1;
+      }
     }
   }
 
@@ -3035,6 +3052,8 @@ function updateAnimals(dt){
     if(!a.moving){
       a.waitTimer-=dt;
       if(a.waitTimer<=0){
+        // 就寝中は徘徊・採餌・入店をせずその場で休む（移動中の個体は到達後に就寝）
+        if(isAsleep(a)){ a.waitTimer=.8+Math.random()*2.5; continue; }
         let picked=false;
         if(PEOPLE.has(a.emoji)){
           const sk=storeAnchorKey();
