@@ -3284,7 +3284,10 @@ syncTargets();
 window.addEventListener('load', resetView);
 
 function zoomToward(mx, my, newScale){
-  newScale = Math.max(.3, Math.min(3.5, newScale));
+  // 最小ズームはマップ全体が収まる fit スケール基準（リセット視点と整合）。
+  // 小さいマップでは従来の 0.3 を下限に保つ。
+  const minScale = Math.min(.3, getFitScale() * 0.85);
+  newScale = Math.max(minScale, Math.min(3.5, newScale));
   targetOX = mx - (mx - targetOX) * (newScale / targetScale);
   targetOY = my - (my - targetOY) * (newScale / targetScale);
   targetScale = newScale;
@@ -3435,21 +3438,26 @@ function applyZoom(factor){
 document.getElementById('btn-zoom-in') .addEventListener('click',()=>applyZoom(1.25));
 document.getElementById('btn-zoom-out').addEventListener('click',()=>applyZoom(0.8));
 
-// Reset view: fit entire map on screen
-function resetView(){
+// マップ全体が画面に収まるスケール（resetView と最小ズームで共有）
+function getFitScale(){
   const {TW,TH} = getTileDims();
   const maxW = cv.width  * 0.88;
   const maxH = (cv.height - 120) * 0.88;
-  let fitScale, ox, oy;
+  let fs = Math.min(maxW / (GRID * TW), maxH / (GRID * TH));
+  if(drawMode!=='3d') fs *= 0.8; // 2D は full-fit から 1 段引く
+  return fs;
+}
+
+// Reset view: fit entire map on screen
+function resetView(){
+  const {TW,TH} = getTileDims();
+  const fitScale = getFitScale();
+  let ox, oy;
   if(drawMode==='3d'){
-    // Isometric map: width = GRID*TW, height = GRID*TH (diamond shape)
-    fitScale = Math.min(maxW / (GRID * TW), maxH / (GRID * TH));
     // OX = screen center (iso origin is center-top of diamond)
     ox = cv.width / 2;
     oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
   } else {
-    // 2D square: simple rect, scaled down 1 step from full-fit
-    fitScale = Math.min(maxW / (GRID * TW), maxH / (GRID * TH)) * 0.8;
     ox = cv.width  / 2 - (GRID * TW / 2) * fitScale - 30;
     oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
   }
