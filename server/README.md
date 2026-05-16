@@ -1,5 +1,7 @@
 # emoji-niwa multiplayer server (optional)
 
+🌐 **English** | [日本語](README.ja.md)
+
 Rust + Actix Web backend powering **opt-in** real-time room co-editing for
 emoji-niwa. The browser app (`../index.html`) stays a single zero-dependency
 file; this service is only contacted when a member issues / someone joins a
