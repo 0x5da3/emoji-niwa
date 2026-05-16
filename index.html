@@ -566,6 +566,34 @@ const KawaiiSounds = (function(){
       src.connect(lp).connect(ng).connect(getMaster());
       src.start(t); src.stop(t + 0.18);
     },
+    // むしゃむしゃ — soft chewing / mastication (small bites)
+    munch(){
+      const a = ac(), t0 = a.currentTime;
+      const bites = 3;
+      for(let i = 0; i < bites; i++){
+        const t = t0 + i * (0.085 + Math.random() * 0.03);
+        // Wet crunch: short band-limited noise burst
+        const src = a.createBufferSource(); src.buffer = noiseBuffer();
+        const bp = a.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 850 + Math.random() * 500;
+        bp.Q.value = 1.4;
+        const ng = a.createGain();
+        env(ng, t, { a: 0.004, d: 0.05 + Math.random() * 0.02, peak: 0.20 });
+        src.connect(bp).connect(ng).connect(getMaster());
+        src.start(t); src.stop(t + 0.1);
+        // Soft jaw thud: low triangle with a quick downward glide
+        const osc = a.createOscillator();
+        const g = a.createGain();
+        osc.type = 'triangle';
+        const f = 120 + Math.random() * 30;
+        osc.frequency.setValueAtTime(f, t);
+        osc.frequency.exponentialRampToValueAtTime(f * 0.6, t + 0.06);
+        env(g, t, { a: 0.004, d: 0.06, peak: 0.16 });
+        osc.connect(g).connect(getMaster());
+        osc.start(t); osc.stop(t + 0.12);
+      }
+    },
     // ちゃり — light coin/clink
     chari(){
       const a = ac(), t = a.currentTime;
@@ -794,7 +822,7 @@ function playPlaceSound(){
   KawaiiSounds.play(selectedSound);
 }
 // 動物・人が食べ物を食べたときの効果音（配置音設定とは独立、ミュート尊重）
-function playEatSound(){ if(muted) return; KawaiiSounds.play('pofu'); }
+function playEatSound(){ if(muted) return; KawaiiSounds.play('munch'); }
 // 真夜中FM入店音 B→G — drop-in (no deps)。呼び出し側で muted を尊重する
 let _c;const _a=()=>_c||=new(window.AudioContext||webkitAudioContext)();
 let _m,_w,_v;
