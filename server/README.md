@@ -109,3 +109,7 @@ Security knobs:
   both at OAuth callback (no session issued) and on every authenticated
   request (existing sessions for non-allowed users stop working). e.g.
   `ALLOWED_LOGINS=0x5da3`.
+- `MAX_ROOM_PEERS` — max concurrent participants per room incl. the creator
+  (default `8`, min `1`). A join beyond the cap gets a `{"t":"full"}`
+  message then the socket is closed (client shows a “room full” toast and
+  stays on its own world; no reconnect).

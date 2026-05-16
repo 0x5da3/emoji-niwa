@@ -1031,7 +1031,7 @@ const I18N = {
     'auth.loginNeeded':'ルーム発行には会員ログインが必要です','auth.loginGitHub':'GitHubでログイン','auth.logout':'ログアウト','auth.denied':'⛔ このGitHubアカウントはログインを許可されていません',
     'toast.loggedIn':'✅ ログインしました','toast.loggedOut':'👋 ログアウトしました',
     'toast.roomCreated':'👥 ルームを作成しました（招待URLをコピー）','toast.roomJoined':'👥 共有ルームに参加しました',
-    'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました',
+    'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
     'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ 多人数サーバー未設定です',
     'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出',
     'share':'🔗 共有', 'toast.shareCopied':'🔗 共有URLをコピーしました！', 'toast.shareError':'⚠️ 共有データを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
@@ -1094,7 +1094,7 @@ const I18N = {
     'auth.loginNeeded':'Sign in (member) to create a room','auth.loginGitHub':'Sign in with GitHub','auth.logout':'Sign out','auth.denied':'⛔ This GitHub account is not allowed to sign in',
     'toast.loggedIn':'✅ Signed in','toast.loggedOut':'👋 Signed out',
     'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined shared room',
-    'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room',
+    'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
     'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave',
     'share':'🔗 Share', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read shared data', 'toast.kept':'💾 Saved this world as your own',
@@ -3877,6 +3877,15 @@ async function mpOnMsg(ev){
     if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
   } else if(m.t==='peers'){
     mpPeers=m.n|0; mpRefreshBar();
+  } else if(m.t==='full'){
+    // 満員：再接続せず多人数を停止し、自分の世界に留まる
+    mpActive=false;
+    if(mpOwnerTimer){ clearInterval(mpOwnerTimer); mpOwnerTimer=null; }
+    try{ if(mpWs){ mpWs.onclose=null; mpWs.close(); } }catch(_){ }
+    mpWs=null;
+    mpBar('hide');
+    try{ history.replaceState(null,'',location.pathname); }catch(_){ }
+    showToast(tr('toast.roomFull'));
   }
 }
 function mpConnect(){
