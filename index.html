@@ -72,6 +72,8 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .autosave-opt{padding:6px 2px;font-size:10px;line-height:1.2}
 .autosave-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.lang-opt{padding:7px 4px;font-size:11px}
+.lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:215px;z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
 #minimap.visible{display:block}
 #btn-3d.dim-toggle{position:fixed;right:10px;bottom:215px;z-index:27}
@@ -167,17 +169,17 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 
 <div id="topbar">
   <button class="tbtn" id="clock-display">☀️ 12:00</button>
-  <button class="tbtn" id="weather-btn">☀️ 天気</button>
-  <button class="tbtn" id="btn-undo">↩ 戻す</button>
-  <button class="tbtn" id="btn-gen">🎲 生成</button>
-  <button class="tbtn" id="btn-effects">✨ 演出</button>
+  <button class="tbtn" id="weather-btn" data-i18n="weatherBtn">☀️ 天気</button>
+  <button class="tbtn" id="btn-undo" data-i18n="undo">↩ 戻す</button>
+  <button class="tbtn" id="btn-gen" data-i18n="gen">🎲 生成</button>
+  <button class="tbtn" id="btn-effects" data-i18n="effects">✨ 演出</button>
 </div>
 
 <!-- Settings / Save / Sound — vertical stack under the top-left -->
 <div id="corner-btns">
-  <button class="tbtn" id="btn-menu">⚙️</button>
-  <button class="tbtn" id="btn-save">💾</button>
-  <button class="tbtn" id="sound-btn">🔇</button>
+  <button class="tbtn" id="btn-menu" data-i18n-title="ttSettings" title="設定">⚙️</button>
+  <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
+  <button class="tbtn" id="sound-btn" data-i18n-title="ttSound" title="サウンド">🔇</button>
 </div>
 
 <!-- WEATHER POPUP -->
@@ -185,27 +187,27 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 <div id="weather-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:280px;max-height:80vh;overflow-y:auto">
   <!-- Random toggle -->
   <button class="h-toggle" id="weather-random-toggle" style="width:100%;justify-content:space-between;padding:8px 12px;height:36px;margin-bottom:10px">
-    <span style="font-size:12px;font-weight:600;color:var(--accent2)">🎲 ランダム切替</span>
+    <span style="font-size:12px;font-weight:600;color:var(--accent2)" data-i18n="weatherRandom">🎲 ランダム切替</span>
     <span class="h-track"><span class="h-thumb"></span></span>
   </button>
-  <div id="weather-random-hint" style="font-size:10px;color:rgba(180,220,180,.5);margin:-6px 2px 8px;display:none">候補から30〜60秒ごとに切替（タップで候補を選択）</div>
-  <div style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:10px;text-align:center">天気を選択</div>
+  <div id="weather-random-hint" data-i18n="weatherRandomHint" style="font-size:10px;color:rgba(180,220,180,.5);margin:-6px 2px 8px;display:none">候補から30〜60秒ごとに切替（タップで候補を選択）</div>
+  <div data-i18n="weatherSelect" style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:10px;text-align:center">天気を選択</div>
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">
-    <button class="tbtn weather-opt" data-weather="clear"><span class="w-check"></span>☀️ 晴れ</button>
-    <button class="tbtn weather-opt" data-weather="rain"><span class="w-check"></span>🌧 雨</button>
-    <button class="tbtn weather-opt" data-weather="snow"><span class="w-check"></span>❄️ 雪</button>
-    <button class="tbtn weather-opt" data-weather="thunder"><span class="w-check"></span>⛈ 雷雨</button>
-    <button class="tbtn weather-opt" data-weather="hail"><span class="w-check"></span>🧊 雹</button>
-    <button class="tbtn weather-opt" data-weather="sandstorm"><span class="w-check"></span>🏜 砂嵐</button>
-    <button class="tbtn weather-opt" data-weather="sakura"><span class="w-check"></span>🌸 桜吹雪</button>
-    <button class="tbtn weather-opt" data-weather="leaves"><span class="w-check"></span>🍂 紅葉</button>
+    <button class="tbtn weather-opt" data-weather="clear"><span class="w-check"></span><span data-i18n="w.clear">☀️ 晴れ</span></button>
+    <button class="tbtn weather-opt" data-weather="rain"><span class="w-check"></span><span data-i18n="w.rain">🌧 雨</span></button>
+    <button class="tbtn weather-opt" data-weather="snow"><span class="w-check"></span><span data-i18n="w.snow">❄️ 雪</span></button>
+    <button class="tbtn weather-opt" data-weather="thunder"><span class="w-check"></span><span data-i18n="w.thunder">⛈ 雷雨</span></button>
+    <button class="tbtn weather-opt" data-weather="hail"><span class="w-check"></span><span data-i18n="w.hail">🧊 雹</span></button>
+    <button class="tbtn weather-opt" data-weather="sandstorm"><span class="w-check"></span><span data-i18n="w.sandstorm">🏜 砂嵐</span></button>
+    <button class="tbtn weather-opt" data-weather="sakura"><span class="w-check"></span><span data-i18n="w.sakura">🌸 桜吹雪</span></button>
+    <button class="tbtn weather-opt" data-weather="leaves"><span class="w-check"></span><span data-i18n="w.leaves">🍂 紅葉</span></button>
   </div>
 </div>
 
 <!-- TIME POPUP -->
 
 <div id="time-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw">
-  <div style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:6px;text-align:center">時刻を選択</div>
+  <div data-i18n="timeSelect" style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:6px;text-align:center">時刻を選択</div>
   <div id="time-display-big" style="font-size:24px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">☀️ 12:00</div>
   <input type="range" id="time-slider" min="0" max="1439" value="720" step="10" style="width:100%;accent-color:#5dba6a;margin-bottom:10px">
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px">
@@ -226,13 +228,21 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 <!-- SETTINGS MENU POPUP -->
 
 <div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
+  <div data-i18n="settingsTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">⚙️ 設定</div>
   <div style="display:flex;flex-direction:column;gap:6px">
-    <button class="tbtn" id="btn-newmap">🆕 新規マップ</button>
-    <button class="tbtn" id="btn-clear-all">🗑 全リセット</button>
+    <button class="tbtn" id="btn-newmap" data-i18n="newMap">🆕 新規マップ</button>
+    <button class="tbtn" id="btn-clear-all" data-i18n="clearAll">🗑 全リセット</button>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
-    <div style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">💾 オートセーブ間隔</div>
+    <div data-i18n="autosaveInterval" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">💾 オートセーブ間隔</div>
     <div id="autosave-opts" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px"></div>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="langLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🌐 言語 / Language</div>
+    <div id="lang-opts" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px">
+      <button class="tbtn lang-opt" data-lang="ja">🇯🇵 日本語</button>
+      <button class="tbtn lang-opt" data-lang="en">🇺🇸 English</button>
+    </div>
   </div>
 </div>
 
@@ -244,17 +254,17 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
     <span style="font-size:12px;font-weight:600;color:var(--accent2)" id="mute-toggle-label">🔇 ミュート中</span>
     <span class="h-track"><span class="h-thumb"></span></span>
   </button>
-  <div style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:10px;text-align:center">配置時の効果音</div>
+  <div data-i18n="placementSound" style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:10px;text-align:center">配置時の効果音</div>
   <div id="sound-options" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
-    <button class="tbtn sound-opt active" data-sound="pon">🫧 ポンッ</button>
-    <button class="tbtn sound-opt" data-sound="koto">🪵 コトッ</button>
-    <button class="tbtn sound-opt" data-sound="poyon">🟢 ぽよん</button>
-    <button class="tbtn sound-opt" data-sound="fuwa">☁️ ふわっ</button>
-    <button class="tbtn sound-opt" data-sound="tin">🔔 ティン</button>
-    <button class="tbtn sound-opt" data-sound="pata">📄 ぱた</button>
-    <button class="tbtn sound-opt" data-sound="pofu">🧸 ぽふ</button>
-    <button class="tbtn sound-opt" data-sound="chari">🪙 ちゃり</button>
-    <button class="tbtn sound-opt" data-sound="none">🚫 なし</button>
+    <button class="tbtn sound-opt active" data-sound="pon" data-i18n="s.pon">🫧 ポンッ</button>
+    <button class="tbtn sound-opt" data-sound="koto" data-i18n="s.koto">🪵 コトッ</button>
+    <button class="tbtn sound-opt" data-sound="poyon" data-i18n="s.poyon">🟢 ぽよん</button>
+    <button class="tbtn sound-opt" data-sound="fuwa" data-i18n="s.fuwa">☁️ ふわっ</button>
+    <button class="tbtn sound-opt" data-sound="tin" data-i18n="s.tin">🔔 ティン</button>
+    <button class="tbtn sound-opt" data-sound="pata" data-i18n="s.pata">📄 ぱた</button>
+    <button class="tbtn sound-opt" data-sound="pofu" data-i18n="s.pofu">🧸 ぽふ</button>
+    <button class="tbtn sound-opt" data-sound="chari" data-i18n="s.chari">🪙 ちゃり</button>
+    <button class="tbtn sound-opt" data-sound="none" data-i18n="s.none">🚫 なし</button>
   </div>
 </div>
 
@@ -263,20 +273,20 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 <div id="fx-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:12px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw;max-height:80vh;overflow-y:auto">
   <div id="fx-night-label" style="font-size:11px;color:rgba(180,220,180,.5);margin-bottom:6px">🌙 夜の演出</div>
   <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
-    <button class="fx-toggle fx-night" id="fx-aurora"><span class="fx-toggle-label">🌌 オーロラ</span><span class="fx-toggle-switch"></span></button>
-    <button class="fx-toggle fx-night" id="fx-fireworks"><span class="fx-toggle-label">🎆 花火 <span style="font-size:9px;opacity:.7;margin-left:2px">🎵</span></span><span class="fx-toggle-switch"></span></button>
+    <button class="fx-toggle fx-night" id="fx-aurora"><span class="fx-toggle-label"><span data-i18n="fx.aurora">🌌 オーロラ</span></span><span class="fx-toggle-switch"></span></button>
+    <button class="fx-toggle fx-night" id="fx-fireworks"><span class="fx-toggle-label"><span data-i18n="fx.fireworks">🎆 花火</span> <span style="font-size:9px;opacity:.7;margin-left:2px">🎵</span></span><span class="fx-toggle-switch"></span></button>
   </div>
   <div id="fx-day-label" style="font-size:11px;color:rgba(180,220,180,.5);margin-bottom:6px">☀️ 昼の演出</div>
   <div style="display:flex;flex-direction:column;gap:6px">
-    <button class="fx-toggle fx-day" id="fx-bubbles"><span class="fx-toggle-label">🫧 シャボン玉 <span style="font-size:9px;opacity:.7;margin-left:2px">👆🎵</span></span><span class="fx-toggle-switch"></span></button>
-    <button class="fx-toggle fx-day" id="fx-mist"><span class="fx-toggle-label">🌫 朝霧</span><span class="fx-toggle-switch"></span></button>
+    <button class="fx-toggle fx-day" id="fx-bubbles"><span class="fx-toggle-label"><span data-i18n="fx.bubbles">🫧 シャボン玉</span> <span style="font-size:9px;opacity:.7;margin-left:2px">👆🎵</span></span><span class="fx-toggle-switch"></span></button>
+    <button class="fx-toggle fx-day" id="fx-mist"><span class="fx-toggle-label"><span data-i18n="fx.mist">🌫 朝霧</span></span><span class="fx-toggle-switch"></span></button>
   </div>
 </div>
 
 <!-- NEW MAP POPUP -->
 
 <div id="newmap-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:16px;padding:16px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto">
-  <div style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:14px">🆕 新規マップを作成</div>
+  <div data-i18n="newMapTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:14px">🆕 新規マップを作成</div>
   <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.03);border:1px solid rgba(120,210,130,.12);border-radius:12px;padding:12px;margin-bottom:14px">
     <canvas id="nm-preview" width="100" height="100" style="background:#1a2a1d;border-radius:6px;display:block"></canvas>
     <div style="flex:1">
@@ -286,18 +296,18 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
     </div>
   </div>
   <input type="range" id="nm-slider" min="5" max="50" value="10" step="1" style="width:100%;accent-color:#5dba6a;margin-bottom:14px">
-  <div style="font-size:10px;color:rgba(180,220,180,.5);margin-bottom:6px">プリセット</div>
+  <div data-i18n="presets" style="font-size:10px;color:rgba(180,220,180,.5);margin-bottom:6px">プリセット</div>
   <div id="nm-presets" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:16px"></div>
   <div style="display:flex;gap:8px;border-top:1px solid rgba(120,210,130,.12);padding-top:12px">
-    <button class="tbtn" id="nm-cancel" style="flex:1;padding:9px">キャンセル</button>
-    <button class="tbtn" id="nm-create" style="flex:2;padding:9px;background:rgba(93,186,106,.45);border-color:rgba(168,224,99,.6);color:#fff;font-weight:700">✨ 作成する</button>
+    <button class="tbtn" id="nm-cancel" data-i18n="cancel" style="flex:1;padding:9px">キャンセル</button>
+    <button class="tbtn" id="nm-create" data-i18n="create" style="flex:2;padding:9px;background:rgba(93,186,106,.45);border-color:rgba(168,224,99,.6);color:#fff;font-weight:700">✨ 作成する</button>
   </div>
 </div>
 
 <div id="modebar">
-  <button class="mbtn active" id="mode-place">✏️ 配置</button>
-  <button class="mbtn" id="mode-terrain">🎨 地形</button>
-  <button class="mbtn" id="mode-erase">🧹 消去</button>
+  <button class="mbtn active" id="mode-place" data-i18n="modePlace">✏️ 配置</button>
+  <button class="mbtn" id="mode-terrain" data-i18n="modeTerrain">🎨 地形</button>
+  <button class="mbtn" id="mode-erase" data-i18n="modeErase">🧹 消去</button>
 </div>
 
 <div id="toast"></div>
@@ -306,33 +316,33 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
   <div class="acc-section open">
     <button class="acc-header" data-acc="land">
       <span class="acc-arrow">▶</span>
-      <span class="acc-title">🗺 土地の生成</span>
+      <span class="acc-title" data-i18n="genLand">🗺 土地の生成</span>
       <span class="acc-summary" id="acc-summary-land">平らな地形</span>
     </button>
     <div class="acc-content">
-      <div style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">地形のタイプ</div>
+      <div data-i18n="terrainTypeLabel" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">地形のタイプ</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
-        <button class="tbtn gen-mode-btn" id="gen-mode-flat">⬜ 平らな地形</button>
-        <button class="tbtn gen-mode-btn active" id="gen-mode-height">⛰ 起伏あり</button>
+        <button class="tbtn gen-mode-btn" id="gen-mode-flat" data-i18n="genFlat">⬜ 平らな地形</button>
+        <button class="tbtn gen-mode-btn active" id="gen-mode-height" data-i18n="genHilly">⛰ 起伏あり</button>
       </div>
-      <div style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
+      <div data-i18n="selectMap" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
       <div id="gen-btns" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px"></div>
-      <button class="tbtn" id="btn-gen-random" style="width:100%;padding:8px">🎲 完全ランダム</button>
+      <button class="tbtn" id="btn-gen-random" data-i18n="genRandom" style="width:100%;padding:8px">🎲 完全ランダム</button>
     </div>
   </div>
 
   <div class="acc-section">
     <button class="acc-header" data-acc="solid">
       <span class="acc-arrow">▶</span>
-      <span class="acc-title">🎨 単色で塗りつぶす</span>
-      <span class="acc-summary">8色＋カスタム</span>
+      <span class="acc-title" data-i18n="solidFill">🎨 単色で塗りつぶす</span>
+      <span class="acc-summary" data-i18n="solidSummary">8色＋カスタム</span>
     </button>
     <div class="acc-content">
       <div id="solid-presets" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px"></div>
       <div style="display:flex;align-items:center;gap:6px">
         <input type="color" id="color-picker" value="#4a8a3a" style="width:32px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0">
-        <span style="font-size:11px;color:rgba(180,220,180,.5);flex:1">カスタム色</span>
-        <button class="tbtn" id="btn-solid-custom">塗る</button>
+        <span data-i18n="customColor" style="font-size:11px;color:rgba(180,220,180,.5);flex:1">カスタム色</span>
+        <button class="tbtn" id="btn-solid-custom" data-i18n="paint">塗る</button>
       </div>
     </div>
   </div>
@@ -340,14 +350,14 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
   <div class="acc-section">
     <button class="acc-header" data-acc="scatter">
       <span class="acc-arrow">▶</span>
-      <span class="acc-title">🎲 ランダム配置</span>
+      <span class="acc-title" data-i18n="scatterTitle">🎲 ランダム配置</span>
       <span class="acc-summary" id="acc-summary-scatter">20個</span>
     </button>
     <div class="acc-content">
-      <div style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">どこから絵文字を選ぶ？</div>
+      <div data-i18n="scatterSource" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">どこから絵文字を選ぶ？</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
-        <button class="tbtn sc-src-btn active" id="sc-src-all">🗂 全カテゴリ</button>
-        <button class="tbtn sc-src-btn" id="sc-src-recent">📌 履歴から</button>
+        <button class="tbtn sc-src-btn active" id="sc-src-all" data-i18n="scAll">🗂 全カテゴリ</button>
+        <button class="tbtn sc-src-btn" id="sc-src-recent" data-i18n="scRecent">📌 履歴から</button>
       </div>
       <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
         <span id="sc-count" style="font-size:22px;font-weight:800;color:#a8e063">20</span>
@@ -355,7 +365,7 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
       </div>
       <input type="range" id="sc-slider" min="1" max="100" value="20" step="1" style="width:100%;accent-color:#5dba6a;margin-bottom:8px">
       <div id="sc-presets" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:10px"></div>
-      <button class="tbtn" id="btn-scatter" style="width:100%;padding:9px;background:rgba(93,186,106,.45);border-color:rgba(168,224,99,.6);color:#fff;font-weight:700">🎲 ランダム配置</button>
+      <button class="tbtn" id="btn-scatter" data-i18n="scatterBtn" style="width:100%;padding:9px;background:rgba(93,186,106,.45);border-color:rgba(168,224,99,.6);color:#fff;font-weight:700">🎲 ランダム配置</button>
     </div>
   </div>
 </div>
@@ -375,13 +385,13 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
   <button class="mapbtn" id="btn-fullscreen">⛶</button>
 </div>
 
-<button class="mapbtn dim-toggle" id="btn-3d" title="2D/3D 切り替え">
+<button class="mapbtn dim-toggle" id="btn-3d" data-i18n-title="tt3d" title="2D/3D 切り替え">
   <span class="dim-label dim-2d">2D</span>
   <span class="dim-track"><span class="dim-thumb"></span></span>
   <span class="dim-label dim-3d">3D</span>
 </button>
 
-<button class="mapbtn h-toggle" id="btn-heights" title="高さを表示">
+<button class="mapbtn h-toggle" id="btn-heights" data-i18n-title="ttHeights" title="高さを表示">
   <span class="h-label">#️⃣</span>
   <span class="h-track"><span class="h-thumb"></span></span>
 </button>
@@ -868,6 +878,146 @@ let moonScreenPos = null; // {x, y, r} or null when moon not visible
 let sunScreenPos = null;  // {x, y, r} or null when sun not visible
 let showHeights = true; // toggle for 2D height number overlay (default ON in 2D)
 let heightsTouched = false; // user has manually toggled at least once
+
+// ═══════════════════════════════════════════
+// I18N (ja / en)  — display text only; data keys stay Japanese
+// ═══════════════════════════════════════════
+let lang = 'ja';
+const I18N = {
+  ja: {
+    weatherBtn:'☀️ 天気', undo:'↩ 戻す', gen:'🎲 生成', effects:'✨ 演出',
+    ttSettings:'設定', ttSave:'保存', ttSound:'サウンド',
+    weatherRandom:'🎲 ランダム切替',
+    weatherRandomHint:'候補から30〜60秒ごとに切替（タップで候補を選択）',
+    weatherSelect:'天気を選択',
+    'w.clear':'☀️ 晴れ','w.rain':'🌧 雨','w.snow':'❄️ 雪','w.thunder':'⛈ 雷雨',
+    'w.hail':'🧊 雹','w.sandstorm':'🏜 砂嵐','w.sakura':'🌸 桜吹雪','w.leaves':'🍂 紅葉',
+    'wlabel:clear':'晴','wlabel:rain':'雨','wlabel:snow':'雪','wlabel:thunder':'雷',
+    'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
+    timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
+    settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
+    autosaveInterval:'💾 オートセーブ間隔', langLabel:'🌐 言語 / Language',
+    placementSound:'配置時の効果音',
+    's.pon':'🫧 ポンッ','s.koto':'🪵 コトッ','s.poyon':'🟢 ぽよん','s.fuwa':'☁️ ふわっ',
+    's.tin':'🔔 ティン','s.pata':'📄 ぱた','s.pofu':'🧸 ぽふ','s.chari':'🪙 ちゃり','s.none':'🚫 なし',
+    muteOn:'🔇 ミュート中', muteOff:'🔊 サウンド ON',
+    fxNight:'🌙 夜の演出', fxNightLocked:'🌙 夜の演出（日没後に使えます）',
+    fxDay:'☀️ 昼の演出', fxDayLocked:'☀️ 昼の演出（日の出後に使えます）',
+    'fx.aurora':'🌌 オーロラ','fx.fireworks':'🎆 花火','fx.bubbles':'🫧 シャボン玉','fx.mist':'🌫 朝霧',
+    newMapTitle:'🆕 新規マップを作成', presets:'プリセット', cancel:'キャンセル', create:'✨ 作成する',
+    nmCells:'{n} マス', nmMini:'🌱 ミニ', nmSmall:'🌾 小さめ', nmJust:'🏞 ちょうどよい',
+    nmWide:'🗺 広め', nmHuge:'🌏 巨大',
+    modePlace:'✏️ 配置', modeTerrain:'🎨 地形', modeErase:'🧹 消去',
+    genLand:'🗺 土地の生成', landFlat:'平らな地形', landHilly:'起伏のある地形',
+    terrainTypeLabel:'地形のタイプ', genFlat:'⬜ 平らな地形', genHilly:'⛰ 起伏あり',
+    selectMap:'マップを選択', genRandom:'🎲 完全ランダム',
+    solidFill:'🎨 単色で塗りつぶす', solidSummary:'8色＋カスタム', customColor:'カスタム色', paint:'塗る',
+    scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
+    scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
+    scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
+    tt3d:'2D/3D 切り替え', ttHeights:'高さを表示',
+    empty:'使った絵文字がここに記録されます',
+    'cat:📌 履歴':'📌 履歴','cat:🌿 自然':'🌿 自然','cat:🐾 動物':'🐾 動物','cat:🏗 建物':'🏗 建物',
+    'cat:🌍 地形':'🌍 地形','cat:✨ 空':'✨ 空','cat:🍎 食べ物':'🍎 食べ物','cat:🚗 乗り物':'🚗 乗り物',
+    'cat:🧑 人':'🧑 人','cat:🎪 その他':'🎪 その他','cat:🎄 イベント':'🎄 イベント',
+    'evt:🎄 クリスマス':'🎄 クリスマス','evt:🎍 お正月':'🎍 お正月','evt:💝 バレンタイン':'💝 バレンタイン',
+    'evt:🎃 ハロウィン':'🎃 ハロウィン','evt:🐰 イースター':'🐰 イースター','evt:🎉 お祝い':'🎉 お祝い',
+    'map:🌿 草原':'草原','map:🏝 島':'島','map:🏔 山岳':'山岳','map:🏜 砂漠':'砂漠','map:❄️ 雪原':'雪原',
+    'map:🌊 群島':'群島','map:🌳 森':'森','map:🌋 火山':'火山','map:🏖 環礁':'環礁','map:🏞 谷':'谷',
+    'solid:🌿 草':'🌿 草','solid:🏜 砂':'🏜 砂','solid:🌊 水':'🌊 水','solid:❄️ 雪':'❄️ 雪',
+    'solid:⬛ 岩':'⬛ 岩','solid:🟫 土':'🟫 土','solid:🟪 紫':'🟪 紫','solid:🟥 赤':'🟥 赤',
+    'ta:paint':'塗る','ta:up':'高さ+','ta:down':'高さ-',
+    'tt:grass':'草','tt:sand':'砂','tt:water':'水','tt:snow':'雪','tt:dark':'岩','tt:custom':'色',
+    'as:0':'オフ','as:30000':'30秒','as:60000':'1分','as:180000':'3分','as:300000':'5分',
+    'toast.clearAll':'🗑 全リセットしました', 'toast.newMap':'🆕 {n}×{n} マップを作成しました',
+    'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
+    'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
+    'toast.scatter':'🎲 {count}個をランダム配置！', 'toast.saved':'💾 セーブしました',
+    'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
+    'toast.langSet':'🌐 言語を日本語にしました',
+  },
+  en: {
+    weatherBtn:'☀️ Weather', undo:'↩ Undo', gen:'🎲 Generate', effects:'✨ Effects',
+    ttSettings:'Settings', ttSave:'Save', ttSound:'Sound',
+    weatherRandom:'🎲 Random switch',
+    weatherRandomHint:'Switches among picks every 30–60s (tap to choose picks)',
+    weatherSelect:'Select weather',
+    'w.clear':'☀️ Clear','w.rain':'🌧 Rain','w.snow':'❄️ Snow','w.thunder':'⛈ Thunderstorm',
+    'w.hail':'🧊 Hail','w.sandstorm':'🏜 Sandstorm','w.sakura':'🌸 Cherry blossoms','w.leaves':'🍂 Autumn leaves',
+    'wlabel:clear':'Clear','wlabel:rain':'Rain','wlabel:snow':'Snow','wlabel:thunder':'Storm',
+    'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
+    timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
+    settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
+    autosaveInterval:'💾 Autosave interval', langLabel:'🌐 言語 / Language',
+    placementSound:'Placement sound',
+    's.pon':'🫧 Pop','s.koto':'🪵 Knock','s.poyon':'🟢 Boing','s.fuwa':'☁️ Floaty',
+    's.tin':'🔔 Ting','s.pata':'📄 Pata','s.pofu':'🧸 Pofu','s.chari':'🪙 Clink','s.none':'🚫 None',
+    muteOn:'🔇 Muted', muteOff:'🔊 Sound on',
+    fxNight:'🌙 Night effects', fxNightLocked:'🌙 Night effects (after sunset)',
+    fxDay:'☀️ Day effects', fxDayLocked:'☀️ Day effects (after sunrise)',
+    'fx.aurora':'🌌 Aurora','fx.fireworks':'🎆 Fireworks','fx.bubbles':'🫧 Bubbles','fx.mist':'🌫 Morning mist',
+    newMapTitle:'🆕 Create new map', presets:'Presets', cancel:'Cancel', create:'✨ Create',
+    nmCells:'{n} cells', nmMini:'🌱 Mini', nmSmall:'🌾 Small', nmJust:'🏞 Just right',
+    nmWide:'🗺 Wide', nmHuge:'🌏 Huge',
+    modePlace:'✏️ Place', modeTerrain:'🎨 Terrain', modeErase:'🧹 Erase',
+    genLand:'🗺 Land generation', landFlat:'Flat terrain', landHilly:'Hilly terrain',
+    terrainTypeLabel:'Terrain type', genFlat:'⬜ Flat', genHilly:'⛰ Hilly',
+    selectMap:'Select a map', genRandom:'🎲 Fully random',
+    solidFill:'🎨 Fill with solid color', solidSummary:'8 colors + custom', customColor:'Custom color', paint:'Paint',
+    scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
+    scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
+    scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
+    tt3d:'Toggle 2D/3D', ttHeights:'Show heights',
+    empty:'Used emoji are recorded here',
+    'cat:📌 履歴':'📌 History','cat:🌿 自然':'🌿 Nature','cat:🐾 動物':'🐾 Animals','cat:🏗 建物':'🏗 Buildings',
+    'cat:🌍 地形':'🌍 Terrain','cat:✨ 空':'✨ Sky','cat:🍎 食べ物':'🍎 Food','cat:🚗 乗り物':'🚗 Vehicles',
+    'cat:🧑 人':'🧑 People','cat:🎪 その他':'🎪 Other','cat:🎄 イベント':'🎄 Events',
+    'evt:🎄 クリスマス':'🎄 Christmas','evt:🎍 お正月':'🎍 New Year','evt:💝 バレンタイン':'💝 Valentine',
+    'evt:🎃 ハロウィン':'🎃 Halloween','evt:🐰 イースター':'🐰 Easter','evt:🎉 お祝い':'🎉 Celebration',
+    'map:🌿 草原':'Grassland','map:🏝 島':'Island','map:🏔 山岳':'Mountains','map:🏜 砂漠':'Desert','map:❄️ 雪原':'Snowfield',
+    'map:🌊 群島':'Archipelago','map:🌳 森':'Forest','map:🌋 火山':'Volcano','map:🏖 環礁':'Atoll','map:🏞 谷':'Valley',
+    'solid:🌿 草':'🌿 Grass','solid:🏜 砂':'🏜 Sand','solid:🌊 水':'🌊 Water','solid:❄️ 雪':'❄️ Snow',
+    'solid:⬛ 岩':'⬛ Rock','solid:🟫 土':'🟫 Soil','solid:🟪 紫':'🟪 Purple','solid:🟥 赤':'🟥 Red',
+    'ta:paint':'Paint','ta:up':'Height +','ta:down':'Height -',
+    'tt:grass':'Grass','tt:sand':'Sand','tt:water':'Water','tt:snow':'Snow','tt:dark':'Rock','tt:custom':'Color',
+    'as:0':'Off','as:30000':'30s','as:60000':'1m','as:180000':'3m','as:300000':'5m',
+    'toast.clearAll':'🗑 Reset everything', 'toast.newMap':'🆕 Created a {n}×{n} map',
+    'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
+    'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
+    'toast.scatter':'🎲 Scattered {count}!', 'toast.saved':'💾 Saved',
+    'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
+    'toast.langSet':'🌐 Language set to English',
+  },
+};
+function tr(key, vars){
+  let s = (I18N[lang] && I18N[lang][key]);
+  if(s == null) s = I18N.ja[key];
+  if(s == null) s = key;
+  if(vars) s = s.replace(/\{(\w+)\}/g, (m,k) => (vars[k] != null ? vars[k] : m));
+  return s;
+}
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = tr(el.dataset.i18nTitle); });
+  document.documentElement.lang = lang;
+  // Dynamic / JS-driven text that the generic pass above can't cover
+  if(typeof refreshWeatherBtn === 'function') refreshWeatherBtn();
+  if(typeof refreshMuteToggle === 'function') refreshMuteToggle();
+  if(typeof updateFxAvailability === 'function') updateFxAvailability();
+  if(typeof updateLandSummary === 'function') updateLandSummary();
+  if(typeof refreshScatterUI === 'function') refreshScatterUI();
+  if(typeof refreshTimePopupUI === 'function') refreshTimePopupUI();
+  if(typeof updateNmLabel === 'function') updateNmLabel();
+  if(typeof buildCatTabs === 'function'){ buildCatTabs(); buildPalette(); }
+  document.querySelectorAll('#lang-opts .lang-opt').forEach(b =>
+    b.classList.toggle('active', b.dataset.lang === lang));
+}
+function setLang(l){
+  lang = (l === 'en') ? 'en' : 'ja';
+  applyLang();
+  if(typeof saveState === 'function') saveState();
+  if(typeof showToast === 'function') showToast(tr('toast.langSet'));
+}
 
 // ═══════════════════════════════════════════
 // NOISE (for terrain gen)
@@ -2709,7 +2859,7 @@ function updateRainFade(dt){
   if(allGone || particles.length === 0){
     weather = 'clear';
     initWeather('clear');
-    document.getElementById('weather-btn').textContent = '☀️ 晴';
+    refreshWeatherBtn();
     rainFading = false;
     rainbowOn = true;
   }
@@ -2910,7 +3060,7 @@ function buildCatTabs(){
   const el=document.getElementById('cattabs');el.innerHTML='';
   sortedCats().forEach(cat=>{
     const t=document.createElement('button');t.className='cattab'+(cat===selCat?' active':'');
-    t.textContent=cat;t.addEventListener('click',()=>{selCat=cat;buildCatTabs();buildPalette();});
+    t.textContent=tr('cat:'+cat);t.addEventListener('click',()=>{selCat=cat;buildCatTabs();buildPalette();});
     el.appendChild(t);
   });
 }
@@ -2931,7 +3081,7 @@ function buildPalette(){
     EVENT_SECTIONS.forEach(sec=>{
       const h=document.createElement('div');
       h.className='pal-section';
-      h.textContent=sec.title;
+      h.textContent=tr('evt:'+sec.title);
       el.appendChild(h);
       sec.emojis.forEach(e=>el.appendChild(makeEbtn(e)));
     });
@@ -2942,7 +3092,7 @@ function buildPalette(){
   if(list.length === 0){
     const msg = document.createElement('div');
     msg.style.cssText = 'grid-column:1/-1;text-align:center;color:rgba(180,220,180,.45);font-size:11px;padding:20px 10px;line-height:1.6';
-    msg.textContent = '使った絵文字がここに記録されます';
+    msg.textContent = tr('empty');
     el.appendChild(msg);
     return;
   }
@@ -2968,7 +3118,7 @@ TERRAIN_ACTIONS.forEach(({key,icon,label})=>{
   const btn=document.createElement('button');
   btn.className='tp-btn'+(key===terrainAction?' active':'');
   btn.dataset.action=key;
-  btn.innerHTML=`<span class="tp-icon">${icon}</span><span class="tp-label">${label}</span>`;
+  btn.innerHTML=`<span class="tp-icon">${icon}</span><span class="tp-label" data-i18n="ta:${key}">${tr('ta:'+key)}</span>`;
   btn.addEventListener('click',()=>{
     terrainAction=key;
     tpActionRow.querySelectorAll('.tp-btn').forEach(b=>b.classList.toggle('active',b.dataset.action===key));
@@ -2993,7 +3143,7 @@ TERRAIN_TYPES.forEach(t=>{
   const btn=document.createElement('button');
   btn.className='tp-btn'+(t===selTerrain?' active':'');
   btn.dataset.terrain=t;
-  btn.innerHTML=`<span class="tp-swatch" style="background:${m.color}"></span><span class="tp-label">${m.label}</span>`;
+  btn.innerHTML=`<span class="tp-swatch" style="background:${m.color}"></span><span class="tp-label" data-i18n="tt:${t}">${tr('tt:'+t)}</span>`;
   btn.addEventListener('click',()=>{
     selTerrain=t;
     terrainAction='paint';
@@ -3011,7 +3161,7 @@ tpCustomBtn.className = 'tp-btn tp-btn-custom';
 tpCustomBtn.dataset.terrain = 'custom';
 tpCustomBtn.innerHTML = `
   <input type="color" id="tp-custom-picker" value="${customPaintColor}" class="tp-custom-input">
-  <span class="tp-label">色</span>
+  <span class="tp-label" data-i18n="tt:custom">色</span>
 `;
 const tpCustomPicker = tpCustomBtn.querySelector('#tp-custom-picker');
 
@@ -3064,7 +3214,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   history=[];
   clearSave();
   document.getElementById('menu-popup').style.display = 'none';
-  showToast('🗑 全リセットしました');
+  showToast(tr('toast.clearAll'));
 });
 
 // Sound: master mute + placement sound selection
@@ -3074,7 +3224,7 @@ function refreshSoundBtn(){
 function refreshMuteToggle(){
   const tog = document.getElementById('mute-toggle');
   tog.classList.toggle('is-on', !muted);
-  document.getElementById('mute-toggle-label').textContent = muted ? '🔇 ミュート中' : '🔊 サウンド ON';
+  document.getElementById('mute-toggle-label').textContent = muted ? tr('muteOn') : tr('muteOff');
 }
 document.getElementById('sound-btn').addEventListener('click',e=>{
   e.stopPropagation();
@@ -3135,11 +3285,11 @@ const nmPreview = document.getElementById('nm-preview');
 const nmPctx = nmPreview.getContext('2d');
 
 function nmSizeLabel(s){
-  if(s<=8) return '🌱 ミニ';
-  if(s<=15) return '🌾 小さめ';
-  if(s<=25) return '🏞 ちょうどよい';
-  if(s<=35) return '🗺 広め';
-  return '🌏 巨大';
+  if(s<=8) return tr('nmMini');
+  if(s<=15) return tr('nmSmall');
+  if(s<=25) return tr('nmJust');
+  if(s<=35) return tr('nmWide');
+  return tr('nmHuge');
 }
 function drawNmPreview(){
   const W=nmPreview.width,H=nmPreview.height;
@@ -3155,7 +3305,7 @@ function drawNmPreview(){
 }
 function updateNmLabel(){
   nmSizeEl.textContent=`${nmSize}×${nmSize}`;
-  nmCellsEl.textContent=`${nmSize*nmSize} マス`;
+  nmCellsEl.textContent=tr('nmCells',{n:nmSize*nmSize});
   nmLabelEl.textContent=nmSizeLabel(nmSize);
   nmSlider.value=nmSize;
   document.querySelectorAll('#nm-presets .nm-preset').forEach(b=>{
@@ -3192,7 +3342,7 @@ document.getElementById('nm-create').addEventListener('click',()=>{
   resetView();
   if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
   saveState();
-  showToast(`🆕 ${GRID}×${GRID} マップを作成しました`);
+  showToast(tr('toast.newMap',{n:GRID}));
 });
 
 // Clock - time picker
@@ -3206,7 +3356,7 @@ function refreshTimePopupUI(){
   const min = Math.round(timeOfDay*1440);
   timeSlider.value = min;
   timeDisplayBig.textContent = `${tIcon(min)} ${fmtTime(min)}`;
-  timeTogglePause.textContent = dayPaused ? '▶ 時間を進める' : '⏸ 時間を止める';
+  timeTogglePause.textContent = dayPaused ? tr('timeResume') : tr('timePause');
 }
 document.getElementById('clock-display').addEventListener('click',e=>{
   e.stopPropagation();
@@ -3243,12 +3393,16 @@ let weatherRandomOn = false;
 let weatherRandomPool = new Set(); // weather keys checked as candidates
 let weatherRandomTimer = 0; // seconds until next change
 
+function refreshWeatherBtn(){
+  document.getElementById('weather-btn').textContent =
+    `${WEATHER_ICONS[weather]||'☀️'} ${tr('wlabel:'+(weather||''))}`;
+}
 function applyWeather(w){
   weather = w;
   initWeather(w);
   rainbowOn = false;
   rainFading = false;
-  document.getElementById('weather-btn').textContent = `${WEATHER_ICONS[w]||'☀️'} ${WEATHER_LABELS[w]||'天気'}`;
+  refreshWeatherBtn();
 }
 
 function pickRandomWeather(){
@@ -3349,18 +3503,18 @@ Object.keys(MAP_PRESETS).forEach(name=>{
   btn.className='tbtn';
   btn.style.cssText='font-size:9px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1';
   const parts=name.split(' ');
-  btn.innerHTML=`<span style="font-size:16px">${parts[0]}</span><span style="font-weight:600">${parts.slice(1).join(' ')}</span>`;
-  btn.addEventListener('click',()=>{applyGenResult(MAP_PRESETS[name](Math.floor(Math.random()*99999)));genPopup.style.display='none';showToast(`🗺 ${name}を生成しました`);});
+  btn.innerHTML=`<span style="font-size:16px">${parts[0]}</span><span style="font-weight:600" data-i18n="map:${name}">${tr('map:'+name)}</span>`;
+  btn.addEventListener('click',()=>{applyGenResult(MAP_PRESETS[name](Math.floor(Math.random()*99999)));genPopup.style.display='none';showToast(tr('toast.genMap',{name:parts[0]+' '+tr('map:'+name)}));});
   document.getElementById('gen-btns').appendChild(btn);
 });
 document.getElementById('btn-gen-random').addEventListener('click',()=>{
   const fns=Object.values(MAP_PRESETS);applyGenResult(fns[Math.floor(Math.random()*fns.length)](Math.floor(Math.random()*99999)));
-  genPopup.style.display='none';showToast('🎲 ランダムマップ生成！');
+  genPopup.style.display='none';showToast(tr('toast.genRandom'));
 });
 let lastOpenAcc = 'land';
 function updateLandSummary(){
   const sum=document.getElementById('acc-summary-land');
-  if(sum) sum.textContent = genMode==='flat'?'平らな地形':'起伏のある地形';
+  if(sum) sum.textContent = genMode==='flat'?tr('landFlat'):tr('landHilly');
 }
 document.querySelectorAll('.acc-header').forEach(h=>{
   h.addEventListener('click',e=>{
@@ -3403,9 +3557,9 @@ function refreshScatterUI(){
   scSlider.value = scCount;
   scCountEl.textContent = scCount;
   const pct = Math.round((scCount/max)*100);
-  scInfoEl.textContent = `マップの ${pct}% (最大 ${max})`;
+  scInfoEl.textContent = tr('scInfo',{pct,max});
   const sum = document.getElementById('acc-summary-scatter');
-  if(sum) sum.textContent = `${scCount}個`;
+  if(sum) sum.textContent = tr('scatterSummary',{n:scCount});
   document.querySelectorAll('#sc-presets .sc-preset').forEach(b=>{
     const t = Math.max(1, Math.round(max*parseInt(b.dataset.val)/100));
     b.classList.toggle('active', t===scCount);
@@ -3460,12 +3614,12 @@ function fillSolid(hex){
 SOLID.forEach(({label,c})=>{
   const btn=document.createElement('button');btn.className='tbtn';
   btn.style.cssText='font-size:10px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.1';
-  btn.innerHTML=`<span style="display:block;width:18px;height:18px;background:${c};border-radius:4px;border:1px solid rgba(255,255,255,.15)"></span><span>${label}</span>`;
-  btn.addEventListener('click',()=>{fillSolid(c);genPopup.style.display='none';showToast(`${label}で塗りつぶしました`);});
+  btn.innerHTML=`<span style="display:block;width:18px;height:18px;background:${c};border-radius:4px;border:1px solid rgba(255,255,255,.15)"></span><span data-i18n="solid:${label}">${tr('solid:'+label)}</span>`;
+  btn.addEventListener('click',()=>{fillSolid(c);genPopup.style.display='none';showToast(tr('toast.solidFill',{label:tr('solid:'+label)}));});
   document.getElementById('solid-presets').appendChild(btn);
 });
 document.getElementById('btn-solid-custom').addEventListener('click',()=>{
-  fillSolid(document.getElementById('color-picker').value);genPopup.style.display='none';showToast('🎨 カスタム色で塗りつぶしました');
+  fillSolid(document.getElementById('color-picker').value);genPopup.style.display='none';showToast(tr('toast.solidCustom'));
 });
 
 // ⭐ Scatter
@@ -3478,8 +3632,8 @@ function updateFxAvailability(){
   const night = isNight();
   document.querySelectorAll('.fx-night').forEach(b => b.classList.toggle('locked', !night));
   document.querySelectorAll('.fx-day')  .forEach(b => b.classList.toggle('locked', night));
-  document.getElementById('fx-night-label').textContent = night ? '🌙 夜の演出' : '🌙 夜の演出（日没後に使えます）';
-  document.getElementById('fx-day-label')  .textContent = !night ? '☀️ 昼の演出' : '☀️ 昼の演出（日の出後に使えます）';
+  document.getElementById('fx-night-label').textContent = night ? tr('fxNight') : tr('fxNightLocked');
+  document.getElementById('fx-day-label')  .textContent = !night ? tr('fxDay') : tr('fxDayLocked');
 }
 
 document.getElementById('btn-effects').addEventListener('click',e=>{
@@ -3549,7 +3703,7 @@ document.getElementById('btn-scatter').addEventListener('click',()=>{
     if(i % 2 === 0) playPlaceSound();
   },i*20));
   closeAllPopups();
-  showToast(`🎲 ${count}個をランダム配置！`);
+  showToast(tr('toast.scatter',{count}));
 });
 
 // ═══════════════════════════════════════════
@@ -3606,6 +3760,7 @@ function saveState(){
       weatherRandomPool: [...weatherRandomPool],
       fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
       autosaveMs,
+      lang,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   }catch(e){ /* quota exceeded or storage disabled — keep running */ }
@@ -3670,6 +3825,8 @@ function loadState(){
       autosaveMs = data.autosaveMs;
     }
 
+    if(data.lang === 'en' || data.lang === 'ja') lang = data.lang;
+
     if(data.fx){
       auroraOn    = !!data.fx.aurora;
       fireworksOn = !!data.fx.fireworks;
@@ -3702,14 +3859,15 @@ AUTOSAVE_PRESETS.forEach(({ms,label}) => {
   const b = document.createElement('button');
   b.className = 'tbtn autosave-opt';
   b.dataset.ms = ms;
-  b.textContent = label;
+  b.dataset.i18n = 'as:'+ms;
+  b.textContent = tr('as:'+ms);
   b.addEventListener('click', e => {
     e.stopPropagation();
     autosaveMs = ms;
     restartAutosave();
     refreshAutosaveUI();
     saveState();
-    showToast(ms === 0 ? '💾 オートセーブ：オフ' : `💾 オートセーブ：${label}ごと`);
+    showToast(ms === 0 ? tr('toast.autosaveOff') : tr('toast.autosaveSet',{label:tr('as:'+ms)}));
   });
   document.getElementById('autosave-opts').appendChild(b);
 });
@@ -3723,8 +3881,19 @@ document.addEventListener('visibilitychange', () => { if(document.hidden) saveSt
 // Manual save button (💾, next to ⚙️ settings)
 document.getElementById('btn-save').addEventListener('click', () => {
   saveState();
-  showToast('💾 セーブしました');
+  showToast(tr('toast.saved'));
 });
+
+// Language switch (settings menu)
+document.querySelectorAll('#lang-opts .lang-opt').forEach(b => {
+  b.addEventListener('click', e => {
+    e.stopPropagation();
+    setLang(b.dataset.lang);
+  });
+});
+
+// Reflect restored / default language across the whole UI
+applyLang();
 
 // ═══════════════════════════════════════════
 // ANIMATE LOOP
