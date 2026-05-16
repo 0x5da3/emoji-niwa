@@ -50,6 +50,21 @@ node .claude/scripts/check-syntax.mjs
 
 挙動の確認はブラウザで目視（配置・天気・時間・セーブ／ロード・日英切替など）。
 
+### UI 変更時はスクリーンショット必須
+
+見た目（HTML 構造・CSS・レイアウト・ボタン/トグル・パレット等）に影響する変更を
+行ったら、**毎回スクリーンショットを撮ってユーザーに共有する**こと。
+
+```bash
+node .claude/scripts/screenshot.mjs            # → /tmp/emoji-niwa-<ts>.png
+# 任意: SHOT_VP=390,844 で幅指定（モバイル確認など）
+```
+
+撮った画像は `SendUserFile` で必ずユーザーに見せる（スクショ取得だけで終わらせない）。
+Playwright/Chromium は dev のみで使用しリポジトリには含めない（コンテナ初回のみ
+`npx --yes playwright install chromium`）。多人数 UI（チャット/人数バッジ等）は
+`MP_*` 未設定では非表示のためオフラインで見える範囲を撮る。
+
 ## コミット規約
 
 既存履歴に倣い、**先頭に内容を表す絵文字を付けた日本語のコミットメッセージ**にする。
