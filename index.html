@@ -386,47 +386,23 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
         <button class="tbtn gen-mode-btn" id="gen-mode-flat" data-i18n="genFlat">⬜ 平らな地形</button>
         <button class="tbtn gen-mode-btn active" id="gen-mode-height" data-i18n="genHilly">⛰ 起伏あり</button>
       </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+        <span data-i18n="aeLabel" style="font-size:10px;color:rgba(180,220,180,.55);white-space:nowrap">🌳 地形に合った絵文字</span>
+        <button class="tbtn ae-on-btn active" id="ae-on" style="padding:4px 7px">ON</button>
+        <button class="tbtn ae-on-btn" id="ae-off" style="padding:4px 7px">OFF</button>
+        <input type="range" id="ae-slider" min="0" max="100" value="30" step="5" style="flex:1;min-width:36px;accent-color:#5dba6a">
+        <span id="ae-pct" style="font-size:11px;font-weight:700;color:#a8e063;width:32px;text-align:right">30%</span>
+      </div>
       <div data-i18n="selectMap" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
       <div id="gen-btns" style="margin-bottom:8px"></div>
       <button class="tbtn" id="btn-gen-random" data-i18n="genRandom" style="width:100%;padding:8px">🎲 完全ランダム</button>
-    </div>
-  </div>
-
-  <div class="acc-section">
-    <button class="acc-header" data-acc="solid">
-      <span class="acc-arrow">▶</span>
-      <span class="acc-title" data-i18n="solidFill">🎨 単色で塗りつぶす</span>
-      <span class="acc-summary" data-i18n="solidSummary">8色＋カスタム</span>
-    </button>
-    <div class="acc-content">
+      <div data-i18n="solidFill" style="font-size:10px;color:rgba(180,220,180,.55);margin:14px 0 6px">🎨 単色で塗りつぶす</div>
       <div id="solid-presets" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px"></div>
       <div style="display:flex;align-items:center;gap:6px">
         <input type="color" id="color-picker" value="#4a8a3a" style="width:32px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0">
         <span data-i18n="customColor" style="font-size:11px;color:rgba(180,220,180,.5);flex:1">カスタム色</span>
         <button class="tbtn" id="btn-solid-custom" data-i18n="paint">塗る</button>
       </div>
-    </div>
-  </div>
-
-  <div class="acc-section">
-    <button class="acc-header" data-acc="autoemoji">
-      <span class="acc-arrow">▶</span>
-      <span class="acc-title" data-i18n="aeTitle">🌳 地形に合った絵文字</span>
-      <span class="acc-summary" id="acc-summary-ae">ON · 30%</span>
-    </button>
-    <div class="acc-content">
-      <div data-i18n="aeToggleLabel" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">自動配置</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
-        <button class="tbtn ae-on-btn active" id="ae-on" data-i18n="aeOn">✅ オン</button>
-        <button class="tbtn ae-on-btn" id="ae-off" data-i18n="aeOff">⛔ オフ</button>
-      </div>
-      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
-        <span id="ae-count" style="font-size:22px;font-weight:800;color:#a8e063">30</span>
-        <span id="ae-info" style="font-size:10px;color:rgba(180,220,180,.5)">密度 30%</span>
-      </div>
-      <input type="range" id="ae-slider" min="0" max="100" value="30" step="1" style="width:100%;accent-color:#5dba6a;margin-bottom:8px">
-      <div id="ae-presets" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px"></div>
-      <div data-i18n="aeNote" id="ae-note" style="font-size:10px;color:rgba(180,220,180,.5);line-height:1.4">次の土地生成で反映されます</div>
     </div>
   </div>
 
@@ -1114,10 +1090,8 @@ const I18N = {
     genLand:'🗺 土地の生成', landFlat:'平らな地形', landHilly:'起伏のある地形',
     terrainTypeLabel:'地形のタイプ', genFlat:'⬜ 平らな地形', genHilly:'⛰ 起伏あり',
     selectMap:'マップを選択', genRandom:'🎲 完全ランダム',
-    solidFill:'🎨 単色で塗りつぶす', solidSummary:'8色＋カスタム', customColor:'カスタム色', paint:'塗る',
-    aeTitle:'🌳 地形に合った絵文字', aeToggleLabel:'自動配置', aeOn:'✅ オン', aeOff:'⛔ オフ',
-    aeInfo:'密度 {pct}%', aeNote:'次の土地生成で反映されます',
-    aeSummary:'{state} · {pct}%', aeStateOn:'ON', aeStateOff:'OFF',
+    solidFill:'🎨 単色で塗りつぶす', customColor:'カスタム色', paint:'塗る',
+    aeLabel:'🌳 地形に合った絵文字',
     scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
     scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
     scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
@@ -1190,10 +1164,8 @@ const I18N = {
     genLand:'🗺 Land generation', landFlat:'Flat terrain', landHilly:'Hilly terrain',
     terrainTypeLabel:'Terrain type', genFlat:'⬜ Flat', genHilly:'⛰ Hilly',
     selectMap:'Select a map', genRandom:'🎲 Fully random',
-    solidFill:'🎨 Fill with solid color', solidSummary:'8 colors + custom', customColor:'Custom color', paint:'Paint',
-    aeTitle:'🌳 Terrain-matched emoji', aeToggleLabel:'Auto-place', aeOn:'✅ On', aeOff:'⛔ Off',
-    aeInfo:'Density {pct}%', aeNote:'Applies to the next terrain generation',
-    aeSummary:'{state} · {pct}%', aeStateOn:'ON', aeStateOff:'OFF',
+    solidFill:'🎨 Fill with solid color', customColor:'Custom color', paint:'Paint',
+    aeLabel:'🌳 Terrain-matched emoji',
     scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
     scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
     scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
@@ -5084,11 +5056,10 @@ scSlider.addEventListener('input',e=>{scCount=parseInt(e.target.value);refreshSc
 refreshScatterUI();
 updateLandSummary();
 
-// 自動絵文字配置 UI（密度スライダー＋ON/OFF＋プリセット）。状態はセッションのみで非永続。
+// 自動絵文字配置 UI（土地生成パネル内・1行）。状態はセッションのみで非永続。
 const aeSlider = document.getElementById('ae-slider');
-const aeCountEl = document.getElementById('ae-count');
-const aeInfoEl = document.getElementById('ae-info');
-const aeOnBtn = document.getElementById('ae-on');
+const aePctEl  = document.getElementById('ae-pct');
+const aeOnBtn  = document.getElementById('ae-on');
 const aeOffBtn = document.getElementById('ae-off');
 
 function refreshAutoEmojiUI(){
@@ -5096,29 +5067,17 @@ function refreshAutoEmojiUI(){
   if(aeDensity < 0) aeDensity = 0;
   if(aeDensity > 100) aeDensity = 100;
   aeSlider.value = aeDensity;
-  aeCountEl.textContent = aeDensity;
-  aeInfoEl.textContent = tr('aeInfo',{pct:aeDensity});
+  aeSlider.disabled = !aeOn;
+  aeSlider.style.opacity = aeOn ? '' : '.4';
+  aePctEl.textContent = aeDensity + '%';
+  aePctEl.style.opacity = aeOn ? '' : '.4';
   aeOnBtn.classList.toggle('active', aeOn);
   aeOffBtn.classList.toggle('active', !aeOn);
-  const sum = document.getElementById('acc-summary-ae');
-  if(sum) sum.textContent = tr('aeSummary',{state: tr(aeOn?'aeStateOn':'aeStateOff'), pct: aeDensity});
-  document.querySelectorAll('#ae-presets .ae-preset').forEach(b=>{
-    b.classList.toggle('active', parseInt(b.dataset.val)===aeDensity);
-  });
 }
 
 aeOnBtn.addEventListener('click',e=>{ e.stopPropagation(); aeOn = true;  refreshAutoEmojiUI(); });
 aeOffBtn.addEventListener('click',e=>{ e.stopPropagation(); aeOn = false; refreshAutoEmojiUI(); });
 aeSlider.addEventListener('input',e=>{ aeDensity = parseInt(e.target.value); refreshAutoEmojiUI(); });
-[0,15,30,50,75].forEach(p=>{
-  const btn=document.createElement('button');
-  btn.className='tbtn ae-preset';
-  btn.dataset.val=p;
-  btn.style.cssText='font-size:10px;padding:6px 2px;font-weight:600';
-  btn.textContent=p+'%';
-  btn.addEventListener('click',e=>{ e.stopPropagation(); aeDensity = p; refreshAutoEmojiUI(); });
-  document.getElementById('ae-presets').appendChild(btn);
-});
 refreshAutoEmojiUI();
 
 // Solid color
