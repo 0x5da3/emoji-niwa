@@ -1046,6 +1046,10 @@ let timeOfDay = (function(){
 // 昼夜で生き物が変わる：夜行性は夜に活動・昼に就寝、それ以外は逆（夜判定は既存 isNight() を再利用）
 const NOCTURNAL = new Set(['🦉','🦊','🦝','🦔','🐍','🐈‍⬛']);
 function isAsleep(a){ const noc = NOCTURNAL.has(a.emoji); return isNight() ? !noc : noc; }
+// 水生動物：水セル（terrain==='water'）でしか活動できない。陸に置かれたら最寄りの水を目指し、
+// AQUA_STRAND_LIMIT 秒以内に到達できなければ消える。🦆 はカモ＝水陸両生のため除外する。
+const AQUATIC = new Set(['🐟','🐠','🐡','🦞','🦀','🐢']);
+const AQUA_STRAND_LIMIT = 30;   // 陸滞在の限界（秒）— 30×30 マップでも横断可能な余裕
 let dayPaused = false;
 let weather   = 'clear';
 let animT     = 0;
@@ -3389,17 +3393,44 @@ function findNearestFood(a){
   }
   return best;
 }
+// 水セル判定 / 最寄りの水セル（水生動物用）。terrain は "c,r"→type 文字列。
+function isWaterCell(c,r){ return terrain[`${c},${r}`] === 'water'; }
+function findNearestWater(cx, cy){
+  let best=null, bestD=Infinity;
+  for(let r=0;r<GRID;r++) for(let c=0;c<GRID;c++){
+    if(terrain[`${c},${r}`] !== 'water') continue;
+    const d=(c-cx)*(c-cx)+(r-cy)*(r-cy);
+    if(d<bestD){ bestD=d; best={c,r}; }
+  }
+  return best;
+}
 function updateAnimals(dt){
   for(const id in animals){
     const a=animals[id];
     if(a.eatCD>0) a.eatCD-=dt;
+    // 水生：陸セル滞在のタイマー進行 → 限界超過で消去（水中はリセット）。
+    // aqua フラグはセーブに乗らないため都度 AQUATIC.has() で判定し、古いセーブとも整合。
+    const aqua = AQUATIC.has(a.emoji);
+    if(aqua){
+      const cx=Math.floor(a.wx), cy=Math.floor(a.wy);
+      if(isWaterCell(cx,cy)){ a.strandT = 0; }
+      else {
+        a.strandT = (a.strandT||0) + dt;
+        if(a.strandT >= AQUA_STRAND_LIMIT){ delete animals[id]; continue; }
+      }
+    }
     if(!a.moving){
       a.waitTimer-=dt;
       if(a.waitTimer<=0){
         // 就寝中は徘徊・採餌・入店をせずその場で休む（移動中の個体は到達後に就寝）
         if(isAsleep(a)){ a.waitTimer=.8+Math.random()*2.5; continue; }
         let picked=false;
-        if(PEOPLE.has(a.emoji)){
+        // 水生で陸にいる：最寄りの水セルへ強制（店・食べ物・通常 wander は無視）
+        if(aqua && !isWaterCell(Math.floor(a.wx), Math.floor(a.wy))){
+          const w = findNearestWater(Math.floor(a.wx), Math.floor(a.wy));
+          if(w){ a.tx=w.c; a.ty=w.r; a.moving=true; a.flip=(a.tx<a.wx); picked=true; }
+        }
+        if(!picked && !aqua && PEOPLE.has(a.emoji)){
           const sk=storeAnchorKey();
           if(sk){
             const cell=nearestStoreCell(a,sk);
@@ -3409,7 +3440,7 @@ function updateAnimals(dt){
             }
           }
         }
-        if(!picked && (a.eatCD||0)<=0){
+        if(!picked && !aqua && (a.eatCD||0)<=0){
           const f=findNearestFood(a);
           if(f){ a.tx=f.c; a.ty=f.r; a.moving=true; a.flip=(a.tx<a.wx); picked=true; }
         }
@@ -3418,6 +3449,8 @@ function updateAnimals(dt){
             const dc=Math.round((Math.random()-.5)*6), dr=Math.round((Math.random()-.5)*6);
             const nc=Math.floor(a.wx)+dc, nr=Math.floor(a.wy)+dr;
             if(nc<0||nc>=GRID||nr<0||nr>=GRID) continue;
+            // 水生は水セルのみへ移動（陸への徘徊を防ぐ）
+            if(aqua && !isWaterCell(nc,nr)) continue;
             // 食べ物セルへの進入は許可。その他のアイテムと大型🏪フットプリントはブロック。
             if(cellOccupied(nc,nr) && !(items[`${nc},${nr}`] && isFood(items[`${nc},${nr}`].emoji))) continue;
             a.tx=nc; a.ty=nr; a.moving=true;
