@@ -79,3 +79,16 @@ Security knobs:
   stored/relayed); grossly oversize (> 2×) drops the connection. Guards
   memory/bandwidth and broadcast amplification. Raise via env, or move to
   chunked snapshots if a legitimate world ever exceeds it.
+- `MAX_ROOM_PEERS` — per-room concurrent connection cap (default `8`).
+  A join beyond the cap is rejected with `409` (the room itself stays up).
+- `MAX_ROOMS_PER_MEMBER` — per-member live-room cap (default `3`; `0` =
+  unlimited). `POST /room/new` over the cap returns `429`. Empty rooms are
+  GC'd after 6 h idle, which frees the member's quota again.
+- `SNAP_RATE` / `SNAP_BURST` — per-connection `snap` rate limit, a token
+  bucket refilling `SNAP_RATE`/s (default `6.0`) up to `SNAP_BURST` tokens
+  (default `12.0`). The app sends ~3–4/s with bursts, so this is generous;
+  over-rate snaps are dropped silently (no store, no relay, no disconnect).
+
+Persistence is gated on a dirty flag and runs on a blocking pool thread:
+an idle server does **zero** disk I/O between changes, and the 15 s flush
+never stalls the async runtime.
