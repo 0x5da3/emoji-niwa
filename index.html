@@ -4529,6 +4529,9 @@ async function mpOnMsg(ev){
     } else { mpRosterInit=true; }   // 初回（自分の入室時点のroster）は告知しない
     mpPeers=m.n|0; if(m.cap!=null) mpCap=m.cap|0; mpNames=next;
     mpUpdateCountBadge(); mpRefreshBar();
+  } else if(m.t==='chatlog'){
+    // 後入りへの直近ログ再生（サーバの ts でタイムスタンプ）
+    if(Array.isArray(m.items)) for(const it of m.items) mpChatAppend(it.name, it.text, it.ts);
   } else if(m.t==='chat'){
     mpChatAppend(m.name, m.text);
   } else if(m.t==='full'){
@@ -4565,19 +4568,19 @@ function mpTs(d){
   return d.getFullYear()+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+d.getDate()).slice(-2)
     +' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
 }
-function mpChatAppend(name, text){
+function mpChatAppend(name, text, ts){
   const log=document.getElementById('mpc-log');
   if(!log) return;
   const near = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
   const line=document.createElement('div');
-  const d=new Date();
-  const ts=document.createElement('span');
-  ts.className='ts';
-  ts.textContent=mpTs(d);
+  const d=new Date(ts!=null ? ts : Date.now());   // ts=サーバ時刻(ms)。無ければ現在時刻
+  const tsEl=document.createElement('span');
+  tsEl.className='ts';
+  tsEl.textContent=mpTs(d);
   const nm=document.createElement('span');
   nm.className='nm';
   nm.textContent=(name && String(name).trim()) ? name : 'ゲスト';
-  line.appendChild(ts);
+  line.appendChild(tsEl);
   line.appendChild(nm);
   line.appendChild(document.createTextNode(String(text==null?'':text)));
   log.appendChild(line);
