@@ -368,22 +368,13 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
         <button class="tbtn gen-mode-btn" id="gen-mode-flat" data-i18n="genFlat">⬜ 平らな地形</button>
         <button class="tbtn gen-mode-btn active" id="gen-mode-height" data-i18n="genHilly">⛰ 起伏あり</button>
       </div>
-      <div style="border-top:1px solid rgba(120,210,130,.12);margin:2px 0 8px"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <span data-i18n="aeLabel" style="font-size:10px;color:rgba(180,220,180,.55)">🌱 地形に合う絵文字も置く</span>
-        <span style="display:flex;gap:6px">
-          <button class="tbtn sc-src-btn active" id="ae-on">ON</button>
-          <button class="tbtn sc-src-btn" id="ae-off">OFF</button></span>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+        <span data-i18n="aeLabel" style="font-size:10px;color:rgba(180,220,180,.55);white-space:nowrap">🌱 地形に合う絵文字</span>
+        <button class="tbtn sc-src-btn active" id="ae-on" style="padding:4px 7px">ON</button>
+        <button class="tbtn sc-src-btn" id="ae-off" style="padding:4px 7px">OFF</button>
+        <input type="range" id="ae-slider" min="0" max="100" value="30" step="5" style="flex:1;min-width:36px;accent-color:#5dba6a">
+        <span id="ae-pct" style="font-size:11px;font-weight:700;color:#a8e063;width:32px;text-align:right">30%</span>
       </div>
-      <div id="ae-body">
-        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
-          <span id="ae-pct" style="font-size:18px;font-weight:800;color:#a8e063">30%</span>
-          <span id="ae-info" data-i18n="aeInfo" style="font-size:10px;color:rgba(180,220,180,.5)">配置の量</span>
-        </div>
-        <input type="range" id="ae-slider" min="0" max="100" value="30" step="5" style="width:100%;accent-color:#5dba6a;margin-bottom:8px">
-        <div id="ae-presets" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px"></div>
-      </div>
-      <div data-i18n="aeNote" style="font-size:10px;color:rgba(180,220,180,.45);margin-bottom:10px">土地を生成すると地形に合った絵文字も一緒に置かれます</div>
       <div data-i18n="selectMap" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
       <div id="gen-btns" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px"></div>
       <button class="tbtn" id="btn-gen-random" data-i18n="genRandom" style="width:100%;padding:8px">🎲 完全ランダム</button>
@@ -1076,7 +1067,7 @@ const I18N = {
     scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
     scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
     scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
-    aeLabel:'🌱 地形に合う絵文字も置く', aeInfo:'配置の量', aeNote:'土地を生成すると地形に合った絵文字も一緒に置かれます',
+    aeLabel:'🌱 地形に合う絵文字',
     tt3d:'2D/3D 切り替え', ttHeights:'高さを表示', ttPalette:'パレットの折りたたみ',
     empty:'使った絵文字がここに記録されます',
     'cat:📌 履歴':'📌 履歴','cat:🌿 自然':'🌿 自然','cat:🐾 動物':'🐾 動物','cat:🏗 建物':'🏗 建物',
@@ -1142,7 +1133,7 @@ const I18N = {
     scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
     scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
     scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
-    aeLabel:'🌱 Also place matching emoji', aeInfo:'Amount', aeNote:'Generating land also scatters emoji that match the terrain',
+    aeLabel:'🌱 Matching emoji',
     tt3d:'Toggle 2D/3D', ttHeights:'Show heights', ttPalette:'Collapse palette',
     empty:'Used emoji are recorded here',
     'cat:📌 履歴':'📌 History','cat:🌿 自然':'🌿 Nature','cat:🐾 動物':'🐾 Animals','cat:🏗 建物':'🏗 Buildings',
@@ -4562,31 +4553,21 @@ let aeOn = true;
 let aeDensity = 30;
 const aeSlider = document.getElementById('ae-slider');
 const aePctEl  = document.getElementById('ae-pct');
-const aeBodyEl = document.getElementById('ae-body');
 const aeOnBtn  = document.getElementById('ae-on');
 const aeOffBtn = document.getElementById('ae-off');
 function refreshAutoEmojiUI(){
   aeDensity = Math.max(0, Math.min(100, aeDensity));
   aeSlider.value = aeDensity;
+  aeSlider.disabled = !aeOn;
+  aeSlider.style.opacity = aeOn ? '' : '.4';
   aePctEl.textContent = aeDensity + '%';
-  aeBodyEl.style.display = aeOn ? '' : 'none';
+  aePctEl.style.opacity = aeOn ? '' : '.4';
   aeOnBtn.classList.toggle('active', aeOn);
   aeOffBtn.classList.toggle('active', !aeOn);
-  document.querySelectorAll('#ae-presets .ae-preset').forEach(b =>
-    b.classList.toggle('active', parseInt(b.dataset.val) === aeDensity));
 }
 aeOnBtn.addEventListener('click', e=>{ e.stopPropagation(); aeOn=true;  refreshAutoEmojiUI(); });
 aeOffBtn.addEventListener('click', e=>{ e.stopPropagation(); aeOn=false; refreshAutoEmojiUI(); });
 aeSlider.addEventListener('input', e=>{ aeDensity=parseInt(e.target.value); refreshAutoEmojiUI(); });
-[0,15,30,50,75].forEach(p=>{
-  const btn=document.createElement('button');
-  btn.className='tbtn ae-preset';
-  btn.dataset.val=p;
-  btn.style.cssText='font-size:10px;padding:6px 2px;font-weight:600';
-  btn.textContent=p+'%';
-  btn.addEventListener('click',e=>{ e.stopPropagation(); aeDensity=p; refreshAutoEmojiUI(); });
-  document.getElementById('ae-presets').appendChild(btn);
-});
 refreshAutoEmojiUI();
 
 // Solid color
