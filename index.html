@@ -1133,7 +1133,7 @@ const I18N = {
     'toast.roomCreated':'👥 ルームを作成しました（招待リンクをコピー）','toast.roomJoined':'👥 マルチプレイに参加しました',
     'toast.inviteCopied':'👥 招待リンクをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
     'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ マルチプレイサーバー未設定です',
-    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'👥 招待リンクをコピー','mp.leave':'↩ 退出','mp.namePrompt':'マルチプレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信','chat.joined':'{name} が参加しました',
+    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'👥 招待リンクをコピー','mp.leave':'↩ 退出','mp.namePrompt':'マルチプレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信','chat.joined':'{name} が参加しました','mp.ttl':'空き部屋の保持(日)','mp.ttlSet':'設定','toast.ttlSet':'🗓 空き部屋の保持を{n}日に設定','toast.ttlErr':'⚠️ 保持日数を設定できませんでした',
     'share':'🔗 共有リンク', 'toast.shareCopied':'🔗 共有リンクをコピーしました！', 'toast.shareError':'⚠️ 共有リンクのデータを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
@@ -1208,7 +1208,7 @@ const I18N = {
     'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined multiplayer',
     'toast.inviteCopied':'👥 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
-    'mp.bar':'👥 Room {room} ({n})','mp.copy':'👥 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for multiplayer','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send','chat.joined':'{name} joined',
+    'mp.bar':'👥 Room {room} ({n})','mp.copy':'👥 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for multiplayer','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send','chat.joined':'{name} joined','mp.ttl':'Keep empty room (days)','mp.ttlSet':'Set','toast.ttlSet':'🗓 Empty-room retention set to {n} days','toast.ttlErr':'⚠️ Could not set retention',
     'share':'🔗 Share link', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read share link data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
@@ -4327,6 +4327,8 @@ const MP_AUTH_KEY = 'emoji-niwa-auth';
 const MP_NAME_KEY = 'emoji-niwa-name';
 let mpActive=false, mpOwner=false, mpWs=null, mpGotSnap=false, mpSeeded=false;
 let mpApplying=false, mpRoomId='', mpPeers=0, mpRetry=0, mpSendT=null, mpOwnerTimer=null;
+let mpTtlDays=7;          // 空き部屋の保持日数（roleで更新・オーナーのみ変更UI表示）
+const MP_TTL_MAX=30;      // UI上限（サーバも同値でクランプ）
 let mpMyName='', mpNames=[], mpCap=0, mpRosterInit=false, mpJoinAnnounced=false;
 
 function mpName(){ try{ return localStorage.getItem(MP_NAME_KEY)||''; }catch(_){ return ''; } }
@@ -4370,6 +4372,21 @@ function mpBar(mode){
     mk(tr('mp.copy'), mpCopyInvite);
     mk(tr('mp.leave'), mpLeave);
     if(mpToken()) mk(tr('auth.logout'), mpLogout);
+    if(mpOwner && mpToken()){            // オーナー専用：空き部屋の保持日数
+      const wrap=document.createElement('div');
+      wrap.style.cssText='display:flex;align-items:center;gap:6px;margin-top:6px;width:100%;font-size:11px;color:#a8e063';
+      const lab=document.createElement('span'); lab.textContent=tr('mp.ttl'); lab.style.flex='1';
+      const inp=document.createElement('input');
+      inp.type='number'; inp.min='1'; inp.max=String(MP_TTL_MAX); inp.value=String(mpTtlDays);
+      inp.style.cssText='width:50px;background:rgba(0,0,0,.3);border:1px solid rgba(120,210,130,.3);color:#fff;border-radius:6px;font-size:12px;padding:3px 5px;text-align:center';
+      inp.addEventListener('click',e=>e.stopPropagation());
+      const setb=document.createElement('button'); setb.className='tbtn'; setb.textContent=tr('mp.ttlSet');
+      setb.addEventListener('click',e=>{ e.stopPropagation();
+        let d=parseInt(inp.value,10); if(!Number.isFinite(d)) d=mpTtlDays;
+        d=Math.max(1,Math.min(MP_TTL_MAX,d)); inp.value=String(d); mpSetTtl(d); });
+      wrap.appendChild(lab); wrap.appendChild(inp); wrap.appendChild(setb);
+      act.appendChild(wrap);
+    }
   }
   mpPlace();
   bar.style.display='block';
@@ -4388,6 +4405,22 @@ async function mpCopyInvite(){
   const u=mpInviteUrl();
   try{ await navigator.clipboard.writeText(u); showToast(tr('toast.inviteCopied')); }
   catch(_){ window.prompt(tr('mp.copy'), u); }
+}
+// オーナーのみ：空き部屋の保持日数を変更（サーバが creator かつ [1,30] を強制）
+async function mpSetTtl(days){
+  const t=mpToken();
+  if(!t || !MP_HTTP || !mpRoomId) return;
+  try{
+    const res=await fetch(MP_HTTP+'/room/'+encodeURIComponent(mpRoomId)+'/ttl',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},
+      body:JSON.stringify({days})
+    });
+    if(!res.ok) throw 0;
+    const j=await res.json();
+    mpTtlDays=j.days|0;
+    showToast(tr('toast.ttlSet',{n:mpTtlDays}));   // サーバが Refresh 配信→roleで他者にも反映
+  }catch(_){ showToast(tr('toast.ttlErr')); }
 }
 function mpLeave(){
   mpActive=false;
@@ -4431,6 +4464,7 @@ async function mpOnMsg(ev){
     }
   } else if(m.t==='role'){
     mpOwner=!!m.owner;
+    if(typeof m.ttlDays==='number'){ mpTtlDays=m.ttlDays; mpRefreshBar(); }  // 保持日数を反映
     if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
   } else if(m.t==='peers'){
     const next=Array.isArray(m.names)?m.names:[];

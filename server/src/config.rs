@@ -1,6 +1,6 @@
 //! Configuration loaded from the environment.
 
-use crate::domain::url_origin;
+use crate::domain::{clamp_ttl_days, url_origin};
 
 pub struct Config {
     pub gh_client_id: String,
@@ -13,6 +13,7 @@ pub struct Config {
     pub max_snap_bytes: usize, // reject oversize world snapshots (abuse/amplification guard)
     pub allowed_logins: Vec<String>, // GitHub logins (lowercased) allowed to log in; empty = open
     pub max_room_peers: usize, // max concurrent connections per room (full → rejected)
+    pub room_ttl_days: u64, // default empty-room retention (days); per-room override允許
 }
 
 fn env(key: &str) -> String {
@@ -58,6 +59,13 @@ impl Config {
                 .and_then(|v| v.parse().ok())
                 .filter(|&n| n >= 1)
                 .unwrap_or(8),
+            // 空き部屋のデフォルト保持日数。env で運用者が調整可。既定 7、
+            // 範囲外/未設定は [1,30] にクランプ（7 をフォールバック）。
+            room_ttl_days: std::env::var("ROOM_TTL_DAYS")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .map(clamp_ttl_days)
+                .unwrap_or(7),
         }
     }
 }

@@ -26,11 +26,12 @@ room (`#r=<id>`). Offline play and `#w=` snapshot sharing never touch it.
 | GET    | `/auth/me`       | Bearer      | current member                           |
 | POST   | `/auth/logout`   | Bearer      | revoke session                           |
 | POST   | `/room/new`      | Bearer      | **member-only** — issue a room id         |
+| POST   | `/room/{id}/ttl` | Bearer      | **owner-only** — set empty-room retention (days, 1-30) |
 | GET    | `/room/{id}`     | – (WS)      | join/co-edit (must already exist)         |
 
 Wire: C→S `{"t":"snap","d":<encoded>}` `{"t":"hello","name":str}`
 `{"t":"chat","text":str}` · S→C `{"t":"snap","d"}`
-`{"t":"role","owner":bool}` `{"t":"peers","n":int,"cap":int,"names":[str]}`
+`{"t":"role","owner":bool,"ttlDays":int}` `{"t":"peers","n":int,"cap":int,"names":[str]}`
 `{"t":"chat","name":str,"text":str}` `{"t":"full"}`. Chat is relayed
 (not persisted; no backlog).
 
@@ -116,3 +117,7 @@ Security knobs:
   (default `8`, min `1`). A join beyond the cap gets a `{"t":"full"}`
   message then the socket is closed (client shows a “room full” toast and
   stays on its own world; no reconnect).
+- `ROOM_TTL_DAYS` — default retention for empty rooms in days (default `7`,
+  clamped to `1`..`30`). Per-room overridable by the room owner via
+  `POST /room/{id}/ttl`; the GC drops a room only after it has been empty
+  (no connections) for longer than its retention.
