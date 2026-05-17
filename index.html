@@ -175,10 +175,10 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 .weather-opt.checked .w-check{background:rgba(93,186,106,.7);border-color:rgba(168,224,99,.9)}
 .weather-opt.checked .w-check::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff}
 #toast{position:fixed;top:98px;left:50%;transform:translateX(-50%);background:rgba(93,186,106,.88);color:#fff;font-size:12px;padding:6px 16px;border-radius:20px;pointer-events:none;z-index:50;opacity:0;transition:opacity .3s}
-#gif-frame-overlay{display:none;position:fixed;inset:0;z-index:60}
+#gif-frame-overlay{display:none;position:fixed;inset:0;z-index:60;pointer-events:none}
 #gif-frame-sq{position:absolute;border:2px solid rgba(168,224,99,.95);box-shadow:0 0 0 9999px rgba(0,0,0,.55);border-radius:6px;pointer-events:none}
 #gif-frame-cap{position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:61;font-size:12px;color:#a8e063;background:rgba(8,20,10,.92);border:1px solid rgba(120,210,130,.3);border-radius:10px;padding:6px 12px;white-space:nowrap}
-#gif-frame-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:61;display:flex;gap:10px;align-items:center;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(14px)}
+#gif-frame-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:61;display:flex;gap:10px;align-items:center;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(14px);pointer-events:auto}
 #gif-frame-bar .tbtn{padding:8px 16px}
 #btn-gif-ok{background:rgba(93,186,106,.3);border-color:rgba(168,224,99,.6)}
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
@@ -3544,6 +3544,7 @@ function storeFits(ac, ar, n){
 }
 
 function act(c,r){
+  if(gifFraming) return;   // GIF枠の表示中は配置/塗りを抑止（パン/ズームのみ許可）
   if(c<0||c>=GRID||r<0||r>=GRID) return;
   genClean = false;   // 手編集＝レシピ純度を破棄（共有時は厳密往復パスへ）
   const key=`${c},${r}`;
@@ -4161,7 +4162,7 @@ document.getElementById('btn-share').addEventListener('click', async e=>{
 //   Live Photo 化は端末側の Shortcut/アプリで（埋め込み不可・文言案内のみ）。
 // ═══════════════════════════════════════════
 const GIF_SECONDS = 3, GIF_FPS = 12, GIF_SIZE = 320;
-let gifBusy = false;
+let gifBusy = false, gifFraming = false;
 
 // 全フレームを median-cut で ≤256 色に量子化
 function _gifQuantize(frames, n){
@@ -4266,7 +4267,7 @@ function _gifEncode(frames, size, delayCs){
 // アニメ状態のみ進めて復元（rAF と非干渉）。
 function _gifCapture(){
   const W0=cv.width, H0=cv.height;
-  const side=Math.min(W0,H0), sx=(W0-side)/2, sy=(H0-side)/2;
+  const side=Math.min(W0,H0), sx=(W0-side)/2, sy=0;   // 上辺は画面最上部から
   const sT=animT, sDay=timeOfDay, sAn=JSON.stringify(animals), sAid=animalId;
   const g=document.createElement('canvas'); g.width=g.height=GIF_SIZE;
   const gx=g.getContext('2d', { willReadFrequently:true });
@@ -4298,9 +4299,10 @@ function layoutGifFrame(){
   const sq=document.getElementById('gif-frame-sq');
   sq.style.width=sq.style.height=side+'px';
   sq.style.left=((W-side)/2)+'px';
-  sq.style.top=((H-side)/2)+'px';
+  sq.style.top='0px';                 // 上辺を画面最上部から
 }
 function showGifFrame(on){
+  gifFraming = on;                    // 枠表示中は箱庭の移動/ズームのみ（配置は抑止）
   document.getElementById('gif-frame-overlay').style.display = on ? 'block' : 'none';
 }
 async function runGifExport(){
