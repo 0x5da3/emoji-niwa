@@ -1054,7 +1054,9 @@ let timeOfDay = (function(){
 })();
 // 昼夜で生き物が変わる：夜行性は夜に活動・昼に就寝、それ以外は逆（夜判定は既存 isNight() を再利用）
 const NOCTURNAL = new Set(['🦉','🦊','🦝','🦔','🐍','🐈‍⬛']);
-function isAsleep(a){ const noc = NOCTURNAL.has(a.emoji); return isNight() ? !noc : noc; }
+// サンタは夜も働く＝昼夜問わず眠らない
+const ALWAYS_AWAKE = new Set(['🎅','🤶','🧑‍🎄']);
+function isAsleep(a){ if(ALWAYS_AWAKE.has(a.emoji)) return false; const noc = NOCTURNAL.has(a.emoji); return isNight() ? !noc : noc; }
 // 水生動物：水セル（terrain==='water'）でしか活動できない。陸に置かれたら最寄りの水を目指し、
 // AQUA_STRAND_LIMIT 秒以内に到達できなければ消える。🦆 はカモ＝水陸両生のため除外する。
 const AQUATIC = new Set(['🐟','🐠','🐡','🦞','🦀','🐢']);
