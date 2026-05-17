@@ -71,7 +71,7 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 .sound-opt{padding:6px 4px;font-size:10px;line-height:1.2}
 .sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .autosave-opt{padding:6px 2px;font-size:10px;line-height:1.2}
-.autosave-opt.active,.fps-opt.active,.gif-scale-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.autosave-opt.active,.fps-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .lang-opt{padding:7px 4px;font-size:11px}
 .lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
@@ -301,22 +301,6 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
   </div>
 </div>
 
-<!-- GIF POPUP -->
-
-<div id="gif-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw">
-  <div data-i18n="gifTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">📸 GIF 書き出し</div>
-  <div data-i18n="gifScaleLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🔭 縮尺</div>
-  <div id="gif-scale-opts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px"></div>
-  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <span data-i18n="gifZoomLabel" style="font-size:11px;color:rgba(180,220,180,.6)">🔎 ズーム微調整</span>
-      <span id="gif-zoom-val" style="font-size:11px;color:#a8e063;font-weight:700">×1.00</span>
-    </div>
-    <input type="range" id="gif-zoom" min="0.5" max="2" step="0.05" value="1" style="width:100%;accent-color:#5dba6a">
-  </div>
-  <button class="tbtn" id="btn-gif-make" data-i18n="gifMake" style="width:100%;margin-top:12px;background:rgba(93,186,106,.3);border-color:rgba(168,224,99,.6)">📸 GIF を作成</button>
-</div>
-
 <!-- EFFECTS POPUP -->
 
 <div id="fx-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:12px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw;max-height:80vh;overflow-y:auto">
@@ -404,6 +388,28 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
         <span data-i18n="customColor" style="font-size:11px;color:rgba(180,220,180,.5);flex:1">カスタム色</span>
         <button class="tbtn" id="btn-solid-custom" data-i18n="paint">塗る</button>
       </div>
+    </div>
+  </div>
+
+  <div class="acc-section">
+    <button class="acc-header" data-acc="autoemoji">
+      <span class="acc-arrow">▶</span>
+      <span class="acc-title" data-i18n="aeTitle">🌳 地形に合った絵文字</span>
+      <span class="acc-summary" id="acc-summary-ae">ON · 30%</span>
+    </button>
+    <div class="acc-content">
+      <div data-i18n="aeToggleLabel" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">自動配置</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+        <button class="tbtn ae-on-btn active" id="ae-on" data-i18n="aeOn">✅ オン</button>
+        <button class="tbtn ae-on-btn" id="ae-off" data-i18n="aeOff">⛔ オフ</button>
+      </div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+        <span id="ae-count" style="font-size:22px;font-weight:800;color:#a8e063">30</span>
+        <span id="ae-info" style="font-size:10px;color:rgba(180,220,180,.5)">密度 30%</span>
+      </div>
+      <input type="range" id="ae-slider" min="0" max="100" value="30" step="1" style="width:100%;accent-color:#5dba6a;margin-bottom:8px">
+      <div id="ae-presets" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px"></div>
+      <div data-i18n="aeNote" id="ae-note" style="font-size:10px;color:rgba(180,220,180,.5);line-height:1.4">次の土地生成で反映されます</div>
     </div>
   </div>
 
@@ -994,6 +1000,31 @@ const TERRAIN_COLORS = {
 const TERRAIN_TYPES  = ['grass','sand','water','snow','dark'];
 const TERRAIN_LABELS = {grass:'🌿 草',sand:'🏜 砂',water:'🌊 水',snow:'❄️ 雪',dark:'⬛ 岩'};
 
+// ── 自動絵文字配置（Auto-Emoji）— 地形タイプに合った絵文字を決定論で散らす ──
+// SALT / VER は配信側・開封側の往復一致を保証する純関数の同一性キー。
+// pool・比率・順序・SALT のいずれかを変えたら AE_VER を +1（共有 av と整合）。
+const AE_SALT = 0x9E3779B1;
+const AE_VER  = 1;
+// type → 充填率の基準（草地は満載、水/砂は疎、岩=dark は最も疎）。実効密度 = fill * (density/100)。
+const TERRAIN_FILL = { grass:1.0, sand:0.45, water:0.6, snow:0.5, dark:0.4 };
+// type → {decor: 静的装飾, fauna: 徘徊動物}。fauna は ANIMALS Set 所属に限る（init で検証）。
+// dark（岩）は岩・都市道路と曖昧なので、中立的な自然装飾のみに留める。
+const TERRAIN_EMOJI = {
+  grass:{ decor:['🌳','🌲','🌷','🌻','🌼','🍀','🌿','🪴','🍄'], fauna:['🐇','🦋','🐝','🦊','🐿️','🦌','🐦'] },
+  sand: { decor:['🌵','🪨','🐚','🌴'],                          fauna:['🦎','🐍','🐌'] },
+  water:{ decor:['🪷','🌊'],                                    fauna:['🐟','🐠','🐡','🦆','🦀','🐢'] },
+  snow: { decor:['⛄','☃️','🌲','🪨','🐧'],                      fauna:['🐇','🦌','🦉'] },
+  dark: { decor:['🪨','🌲','🪵','⛰️'],                          fauna:['🦔','🦝','🦌'] },
+};
+// dev ガード：fauna は必ず ANIMALS Set 所属。pool 編集時の事故を検出（本番では console.warn のみ）。
+(function _aePoolAudit(){
+  for(const type in TERRAIN_EMOJI){
+    for(const e of (TERRAIN_EMOJI[type].fauna||[])){
+      if(!ANIMALS.has(e)) console.warn('[AE] fauna pool', type, 'has non-ANIMAL:', e);
+    }
+  }
+})();
+
 // ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
@@ -1015,6 +1046,10 @@ let timeOfDay = (function(){
 // 昼夜で生き物が変わる：夜行性は夜に活動・昼に就寝、それ以外は逆（夜判定は既存 isNight() を再利用）
 const NOCTURNAL = new Set(['🦉','🦊','🦝','🦔','🐍','🐈‍⬛']);
 function isAsleep(a){ const noc = NOCTURNAL.has(a.emoji); return isNight() ? !noc : noc; }
+// 水生動物：水セル（terrain==='water'）でしか活動できない。陸に置かれたら最寄りの水を目指し、
+// AQUA_STRAND_LIMIT 秒以内に到達できなければ消える。🦆 はカモ＝水陸両生のため除外する。
+const AQUATIC = new Set(['🐟','🐠','🐡','🦞','🦀','🐢']);
+const AQUA_STRAND_LIMIT = 30;   // 陸滞在の限界（秒）— 30×30 マップでも横断可能な余裕
 let dayPaused = false;
 let weather   = 'clear';
 let animT     = 0;
@@ -1035,8 +1070,8 @@ const I18N = {
     ttSettings:'設定', ttSave:'保存', ttSound:'サウンド', ttGif:'GIF書き出し',
     'toast.gifMaking':'🎞️ GIFを生成中…', 'toast.gifError':'⚠️ GIF生成に失敗しました',
     'toast.gifHint':'💾 保存後、iOSのショートカット/対応アプリでGIF→Live Photoに変換できます',
-    gifTitle:'📸 GIF 書き出し', gifScaleLabel:'🔭 縮尺', gifZoomLabel:'🔎 ズーム微調整', gifMake:'📸 GIF を作成',
-    'gifScale:keep':'拡大率そのまま', 'gifScale:fit':'今の見たまま', 'gifScale:whole':'箱庭全体',
+    'toast.gifHintAndroid':'💾 GIFを保存しました。ライブ壁紙/動く画像アプリで活用できます',
+    'toast.gifHintSaved':'💾 GIFを保存しました',
     weatherRandom:'🎲 ランダム切替',
     weatherRandomHint:'候補から30〜60秒ごとに切替（タップで候補を選択）',
     weatherSelect:'天気を選択',
@@ -1062,6 +1097,9 @@ const I18N = {
     terrainTypeLabel:'地形のタイプ', genFlat:'⬜ 平らな地形', genHilly:'⛰ 起伏あり',
     selectMap:'マップを選択', genRandom:'🎲 完全ランダム',
     solidFill:'🎨 単色で塗りつぶす', solidSummary:'8色＋カスタム', customColor:'カスタム色', paint:'塗る',
+    aeTitle:'🌳 地形に合った絵文字', aeToggleLabel:'自動配置', aeOn:'✅ オン', aeOff:'⛔ オフ',
+    aeInfo:'密度 {pct}%', aeNote:'次の土地生成で反映されます',
+    aeSummary:'{state} · {pct}%', aeStateOn:'ON', aeStateOff:'OFF',
     scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
     scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
     scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
@@ -1086,6 +1124,7 @@ const I18N = {
     'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 全リセットしました', 'toast.newMap':'🆕 {n}×{n} マップを作成しました',
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
+    'toast.genMapDecor':'🗺 {name}を生成（🌳 自動配置 {n}個）', 'toast.genRandomDecor':'🎲 ランダムマップ生成（🌳 自動配置 {n}個）',
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
     'toast.scatter':'🎲 {count}個をランダム配置！', 'toast.saved':'💾 セーブしました',
     'ttRoom':'マルチプレイ',
@@ -1106,8 +1145,8 @@ const I18N = {
     ttSettings:'Settings', ttSave:'Save', ttSound:'Sound', ttGif:'Export GIF',
     'toast.gifMaking':'🎞️ Making GIF…', 'toast.gifError':'⚠️ GIF export failed',
     'toast.gifHint':'💾 After saving, convert GIF→Live Photo via an iOS Shortcut/app',
-    gifTitle:'📸 Export GIF', gifScaleLabel:'🔭 Scale', gifZoomLabel:'🔎 Zoom fine-tune', gifMake:'📸 Make GIF',
-    'gifScale:keep':'Keep zoom', 'gifScale:fit':'As on screen', 'gifScale:whole':'Whole garden',
+    'toast.gifHintAndroid':'💾 GIF saved — use it in a live-wallpaper / motion-photo app',
+    'toast.gifHintSaved':'💾 GIF saved',
     weatherRandom:'🎲 Random switch',
     weatherRandomHint:'Switches among picks every 30–60s (tap to choose picks)',
     weatherSelect:'Select weather',
@@ -1133,6 +1172,9 @@ const I18N = {
     terrainTypeLabel:'Terrain type', genFlat:'⬜ Flat', genHilly:'⛰ Hilly',
     selectMap:'Select a map', genRandom:'🎲 Fully random',
     solidFill:'🎨 Fill with solid color', solidSummary:'8 colors + custom', customColor:'Custom color', paint:'Paint',
+    aeTitle:'🌳 Terrain-matched emoji', aeToggleLabel:'Auto-place', aeOn:'✅ On', aeOff:'⛔ Off',
+    aeInfo:'Density {pct}%', aeNote:'Applies to the next terrain generation',
+    aeSummary:'{state} · {pct}%', aeStateOn:'ON', aeStateOff:'OFF',
     scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
     scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
     scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
@@ -1157,6 +1199,7 @@ const I18N = {
     'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 Reset everything', 'toast.newMap':'🆕 Created a {n}×{n} map',
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
+    'toast.genMapDecor':'🗺 Generated {name} (🌳 auto-placed {n})', 'toast.genRandomDecor':'🎲 Random map (🌳 auto-placed {n})',
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
     'toast.scatter':'🎲 Scattered {count}!', 'toast.saved':'💾 Saved',
     'ttRoom':'Multiplayer',
@@ -1190,6 +1233,7 @@ function applyLang(){
   if(typeof updateFxAvailability === 'function') updateFxAvailability();
   if(typeof updateLandSummary === 'function') updateLandSummary();
   if(typeof refreshScatterUI === 'function') refreshScatterUI();
+  if(typeof refreshAutoEmojiUI === 'function') refreshAutoEmojiUI();
   if(typeof refreshTimePopupUI === 'function') refreshTimePopupUI();
   if(typeof updateNmLabel === 'function') updateNmLabel();
   if(typeof buildCatTabs === 'function'){ buildCatTabs(); buildPalette(); }
@@ -3242,6 +3286,53 @@ function applyTerrainMap(result){
   Object.assign(heights, hmap);
 }
 
+// ── 自動絵文字配置（コア）— (seed, densityPct, terrainMap, grid) → {it,an} の純関数
+// グローバルへ触れずローカル占有 Set のみで衝突回避。配信側／開封側で同一の compact 形を返す。
+// it[k]=emoji, an=[[emoji,c,r],...]（共有最小形と一致）。🏪 は絶対に置かない。
+function computeTerrainEmoji(seed, densityPct, terrainMap, grid){
+  const rng = mulberry32(((seed|0) + AE_SALT) >>> 0);
+  // 固定正準順（r外c内）でセル列を作り、決定論的 Fisher–Yates でシャッフル
+  const cells = [];
+  for(let r=0;r<grid;r++) for(let c=0;c<grid;c++) cells.push([c,r]);
+  for(let i=cells.length-1;i>0;i--){
+    const j = Math.floor(rng()*(i+1));
+    const tmp = cells[i]; cells[i] = cells[j]; cells[j] = tmp;
+  }
+  const it = {}, an = [];
+  const taken = new Set();
+  const d = Math.max(0, Math.min(100, densityPct|0)) / 100;
+  for(const [c,r] of cells){
+    const k = `${c},${r}`;
+    const type = terrainMap[k];
+    const pool = type && TERRAIN_EMOJI[type];
+    const fill = TERRAIN_FILL[type] || 0;
+    // RNG は分岐の有無に関わらず必ず1回引く（後段の分岐順を変えない）
+    const roll = rng();
+    if(!pool || roll >= d*fill) continue;
+    if(taken.has(k)) continue;
+    const wantFauna = rng() < 0.35 && pool.fauna && pool.fauna.length > 0;
+    const arr = wantFauna ? pool.fauna : (pool.decor || []);
+    if(!arr.length) continue;
+    const e = arr[Math.floor(rng()*arr.length)];
+    if(e === '🏪') continue;   // 安全弁（pool に混入していても置かない）
+    taken.add(k);
+    if(wantFauna) an.push([e,c,r]);
+    else it[k] = e;
+  }
+  return { it, an };
+}
+
+// ── 自動絵文字配置（薄いラッパ）— ライブの items/spawnAnimal へ実体化。戻り値＝配置数。
+function placeTerrainEmoji(seed, densityPct){
+  const r = computeTerrainEmoji(seed, densityPct, terrain, GRID);
+  for(const k in r.it){
+    if(items[k]) continue;   // 念のため衝突回避（act 由来の手置きは genByIndex で先にクリア済み）
+    items[k] = { emoji: r.it[k], bobOffset: Math.random()*Math.PI*2 };
+  }
+  for(const [e,c,r2] of r.an){ spawnAnimal(e, c, r2); }
+  return Object.keys(r.it).length + r.an.length;
+}
+
 // ═══════════════════════════════════════════
 // ANIMAL SYSTEM
 // ═══════════════════════════════════════════
@@ -3302,17 +3393,44 @@ function findNearestFood(a){
   }
   return best;
 }
+// 水セル判定 / 最寄りの水セル（水生動物用）。terrain は "c,r"→type 文字列。
+function isWaterCell(c,r){ return terrain[`${c},${r}`] === 'water'; }
+function findNearestWater(cx, cy){
+  let best=null, bestD=Infinity;
+  for(let r=0;r<GRID;r++) for(let c=0;c<GRID;c++){
+    if(terrain[`${c},${r}`] !== 'water') continue;
+    const d=(c-cx)*(c-cx)+(r-cy)*(r-cy);
+    if(d<bestD){ bestD=d; best={c,r}; }
+  }
+  return best;
+}
 function updateAnimals(dt){
   for(const id in animals){
     const a=animals[id];
     if(a.eatCD>0) a.eatCD-=dt;
+    // 水生：陸セル滞在のタイマー進行 → 限界超過で消去（水中はリセット）。
+    // aqua フラグはセーブに乗らないため都度 AQUATIC.has() で判定し、古いセーブとも整合。
+    const aqua = AQUATIC.has(a.emoji);
+    if(aqua){
+      const cx=Math.floor(a.wx), cy=Math.floor(a.wy);
+      if(isWaterCell(cx,cy)){ a.strandT = 0; }
+      else {
+        a.strandT = (a.strandT||0) + dt;
+        if(a.strandT >= AQUA_STRAND_LIMIT){ delete animals[id]; continue; }
+      }
+    }
     if(!a.moving){
       a.waitTimer-=dt;
       if(a.waitTimer<=0){
         // 就寝中は徘徊・採餌・入店をせずその場で休む（移動中の個体は到達後に就寝）
         if(isAsleep(a)){ a.waitTimer=.8+Math.random()*2.5; continue; }
         let picked=false;
-        if(PEOPLE.has(a.emoji)){
+        // 水生で陸にいる：最寄りの水セルへ強制（店・食べ物・通常 wander は無視）
+        if(aqua && !isWaterCell(Math.floor(a.wx), Math.floor(a.wy))){
+          const w = findNearestWater(Math.floor(a.wx), Math.floor(a.wy));
+          if(w){ a.tx=w.c; a.ty=w.r; a.moving=true; a.flip=(a.tx<a.wx); picked=true; }
+        }
+        if(!picked && !aqua && PEOPLE.has(a.emoji)){
           const sk=storeAnchorKey();
           if(sk){
             const cell=nearestStoreCell(a,sk);
@@ -3322,7 +3440,7 @@ function updateAnimals(dt){
             }
           }
         }
-        if(!picked && (a.eatCD||0)<=0){
+        if(!picked && !aqua && (a.eatCD||0)<=0){
           const f=findNearestFood(a);
           if(f){ a.tx=f.c; a.ty=f.r; a.moving=true; a.flip=(a.tx<a.wx); picked=true; }
         }
@@ -3331,6 +3449,8 @@ function updateAnimals(dt){
             const dc=Math.round((Math.random()-.5)*6), dr=Math.round((Math.random()-.5)*6);
             const nc=Math.floor(a.wx)+dc, nr=Math.floor(a.wy)+dr;
             if(nc<0||nc>=GRID||nr<0||nr>=GRID) continue;
+            // 水生は水セルのみへ移動（陸への徘徊を防ぐ）
+            if(aqua && !isWaterCell(nc,nr)) continue;
             // 食べ物セルへの進入は許可。その他のアイテムと大型🏪フットプリントはブロック。
             if(cellOccupied(nc,nr) && !(items[`${nc},${nr}`] && isFood(items[`${nc},${nr}`].emoji))) continue;
             a.tx=nc; a.ty=nr; a.moving=true;
@@ -3406,6 +3526,7 @@ function storeFits(ac, ar, n){
 
 function act(c,r){
   if(c<0||c>=GRID||r<0||r>=GRID) return;
+  genClean = false;   // 手編集＝レシピ純度を破棄（共有時は厳密往復パスへ）
   const key=`${c},${r}`;
   if(key===lastKey) return;
   lastKey=key;
@@ -3917,6 +4038,7 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 
 document.getElementById('btn-undo').addEventListener('click',()=>{
   const last=history.pop();if(!last)return;
+  genClean = false;
   if(last.type==='place'){delete items[last.key];}
   else if(last.type==='animal'){removeAnimal(last.id);}
   else if(last.type==='erase'){const it={emoji:last.emoji,bobOffset:Math.random()*Math.PI*2};if(last.size>1)it.size=last.size;items[last.key]=it;}
@@ -3931,6 +4053,8 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   history=[];
+  lastGen = null;
+  genClean = false;
   clearSave();
   document.getElementById('menu-popup').style.display = 'none';
   showToast(tr('toast.clearAll'));
@@ -3976,7 +4100,7 @@ refreshMuteToggle();
 const menuPopup = document.getElementById('menu-popup');
 
 // Exclusive popup helper
-const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','gif-popup'];
+const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup'];
 function openPopup(id){
   for(const p of ALL_POPUPS) document.getElementById(p).style.display = (p === id ? 'block' : 'none');
 }
@@ -4011,13 +4135,12 @@ document.getElementById('btn-share').addEventListener('click', async e=>{
 
 // ═══════════════════════════════════════════
 // 📸 箱庭GIF書き出し（依存ゼロ・自前GIF89aエンコーダ）
-//   縮尺はユーザー選択（拡大率そのまま/見たまま/箱庭全体）＋微調整。正方形
-//   クリップで UI は cv 非描画ゆえ含まれない。
+//   📸 タップで即「今の見たまま」を正方形クリップに（メニューなし）。
+//   UI は cv 非描画ゆえ含まれない。保存後ヒントは端末別（iOS/Android/その他）。
 //   Live Photo 化は端末側の Shortcut/アプリで（埋め込み不可・文言案内のみ）。
 // ═══════════════════════════════════════════
 const GIF_SECONDS = 3, GIF_FPS = 12, GIF_SIZE = 320;
-const GIF_SCALE_MODES = ['keep','fit','whole'];
-let gifBusy = false, gifScaleMode = 'keep', gifZoomMul = 1;   // 既定=拡大率そのまま
+let gifBusy = false;
 
 // 全フレームを median-cut で ≤256 色に量子化
 function _gifQuantize(frames, n){
@@ -4115,28 +4238,16 @@ function _gifEncode(frames, size, delayCs){
   return new Blob([new Uint8Array(b)],{type:'image/gif'});
 }
 
-// 縮尺はユーザー選択（keep=拡大率そのまま / fit=今の見たまま / whole=箱庭全体）
-// ＋ズーム微調整 mul。投影は screen = OX + projected·scale（線形）なので、基準点
-// （keep/fit=現在の画面中心の世界点、whole=マップ中心）を GIF 中央へ合わせる。
-// 正方形フレームを GIF_FPS で同期収集（rAF と非干渉）。
-function _gifCapture(mode, mul){
+// 「今の見たまま」を正方形に収めて GIF_FPS で同期収集（rAF と非干渉）。
+// 投影 screen = OX + projected·scale（線形）。短辺基準で見たままを正方形へ
+// フィットし、現在の画面中心の世界点を GIF 中央へ合わせる。
+function _gifCapture(){
   const W0=cv.width,H0=cv.height;
   const sOX=OX,sOY=OY,sSc=scale,tOX=targetOX,tOY=targetOY,tSc=targetScale;
   const sT=animT, sDay=timeOfDay, sAn=JSON.stringify(animals), sAid=animalId;
   cv.width=GIF_SIZE; cv.height=GIF_SIZE;
-  const {TW,TH}=getTileDims();
-  let base, Ax, Ay;
-  if(mode==='whole'){
-    const spanW=GRID*TW, spanH=GRID*TH;
-    base = 0.88 * Math.min(GIF_SIZE/spanW, GIF_SIZE/spanH);
-    if(drawMode==='3d'){ Ax=0; Ay=(GRID-1)*TH/2; }
-    else { Ax=GRID*TW/2; Ay=GRID*TH/2; }
-  } else {
-    base = (mode==='fit') ? sSc * GIF_SIZE / Math.min(W0,H0) : sSc;  // fit=見たまま, 既定 keep
-    Ax = (W0/2 - sOX) / sSc;   // 現在の画面中心にある世界点（投影座標）
-    Ay = (H0/2 - sOY) / sSc;
-  }
-  const nSc = base * (mul||1);
+  const nSc = sSc * GIF_SIZE / Math.min(W0,H0);            // 見たまま（短辺基準）
+  const Ax = (W0/2 - sOX) / sSc, Ay = (H0/2 - sOY) / sSc;  // 画面中心の世界点
   OX = GIF_SIZE/2 - Ax*nSc; OY = GIF_SIZE/2 - Ay*nSc;
   scale=nSc; targetOX=OX; targetOY=OY; targetScale=nSc;
   const n=Math.round(GIF_SECONDS*GIF_FPS), dt=1/GIF_FPS, frames=[];
@@ -4153,13 +4264,16 @@ function _gifCapture(mode, mul){
   return frames;
 }
 
-document.getElementById('btn-gif').addEventListener('click', e=>{
-  e.stopPropagation();
-  refreshGifUI();
-  togglePopup('gif-popup');
-});
+// 保存後ヒントは端末別（Live Photo は iOS のみ。Android/その他にも案内）
+function _gifHintKey(){
+  const ua=navigator.userAgent||'';
+  const iOS=/iPad|iPhone|iPod/.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  if(iOS) return 'toast.gifHint';
+  if(/Android/.test(ua)) return 'toast.gifHintAndroid';
+  return 'toast.gifHintSaved';
+}
 
-document.getElementById('btn-gif-make').addEventListener('click', async e=>{
+document.getElementById('btn-gif').addEventListener('click', async e=>{
   e.stopPropagation();
   if(gifBusy) return;
   gifBusy=true;
@@ -4167,19 +4281,22 @@ document.getElementById('btn-gif-make').addEventListener('click', async e=>{
     closeAllPopups();
     showToast(tr('toast.gifMaking'));
     await new Promise(r=>setTimeout(r,50));      // トースト描画を待つ
-    const frames=_gifCapture(gifScaleMode, gifZoomMul);
+    const frames=_gifCapture();
     await new Promise(r=>setTimeout(r,0));
     const blob=_gifEncode(frames, GIF_SIZE, Math.round(100/GIF_FPS));
     const file=new File([blob], 'emoji-niwa-'+Date.now()+'.gif', {type:'image/gif'});
+    let saved=false;
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file], title:'emoji-niwa'}); }catch(_){ }
+      try{ await navigator.share({files:[file], title:'emoji-niwa'}); saved=true; }
+      catch(_){ saved=false; }   // キャンセル等＝保存されていない
     } else {
       const u=URL.createObjectURL(blob);
       const a=document.createElement('a'); a.href=u; a.download=file.name;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(()=>URL.revokeObjectURL(u),4000);
+      saved=true;
     }
-    showToast(tr('toast.gifHint'));
+    if(saved) showToast(tr(_gifHintKey()));   // 保存した時だけヒントを出す
   }catch(err){ showToast(tr('toast.gifError')); }
   finally{ gifBusy=false; }
 });
@@ -4552,6 +4669,8 @@ document.getElementById('nm-create').addEventListener('click',()=>{
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   history=[];
+  lastGen = null;
+  genClean = false;
   nmPopup.style.display='none';
   resetView();
   if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
@@ -4699,6 +4818,33 @@ function applyGenResult(result){
     applyTerrainMap(result);
   }
 }
+
+// ── 生成レシピ：共有URLの最小化と決定論再現に必要な「直近生成」の意図を保持 ──
+// lastGen={s:seed, i:プリセット添字, m:genMode}。genClean=直前生成以降に手編集が無い印。
+// MAP_PRESET_NAMES は MAP_PRESETS の宣言順を凍結（共有 av と整合：順序変更時は AE_VER を +1）。
+const MAP_PRESET_NAMES = Object.keys(MAP_PRESETS);
+let lastGen = null;
+let genClean = false;
+// 自動絵文字配置の状態（セッションのみ・localStorage 非永続）
+let aeOn = true;
+let aeDensity = 30;
+
+// プリセット添字を受け取り、生成→既存 items/animals/history クリア→自動絵文字配置→genClean=true。
+// 戻り値＝自動配置した個数（toast 切替用）。idx<0 or 範囲外で 0。seed 未指定で乱数。
+function genByIndex(idx, seed){
+  if(typeof idx !== 'number' || idx < 0 || idx >= MAP_PRESET_NAMES.length) return 0;
+  if(typeof seed !== 'number') seed = Math.floor(Math.random()*99999);
+  const name = MAP_PRESET_NAMES[idx];
+  applyGenResult(MAP_PRESETS[name](seed));
+  for(const k in items) delete items[k];
+  for(const k in animals) delete animals[k];
+  history = [];
+  lastGen = { s: seed|0, i: idx, m: genMode };
+  let aePlaced = 0;
+  if(aeOn) aePlaced = placeTerrainEmoji(seed, aeDensity);
+  genClean = true;
+  return aePlaced;
+}
 document.getElementById('gen-mode-flat').addEventListener('click',e=>{
   e.stopPropagation();
   genMode='flat';
@@ -4722,7 +4868,14 @@ document.getElementById('gen-mode-height').addEventListener('click',e=>{
     btn.style.cssText='font-size:9px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1';
     const parts=name.split(' ');
     btn.innerHTML=`<span style="font-size:16px">${parts[0]}</span><span style="font-weight:600" data-i18n="map:${name}">${tr('map:'+name)}</span>`;
-    btn.addEventListener('click',()=>{applyGenResult(MAP_PRESETS[name](Math.floor(Math.random()*99999)));genPopup.style.display='none';showToast(tr('toast.genMap',{name:parts[0]+' '+tr('map:'+name)}));});
+    btn.addEventListener('click',()=>{
+      const idx = MAP_PRESET_NAMES.indexOf(name);
+      const n = genByIndex(idx);
+      genPopup.style.display='none';
+      const lbl = parts[0]+' '+tr('map:'+name);
+      showToast(aeOn && n>0 ? tr('toast.genMapDecor',{name:lbl, n}) : tr('toast.genMap',{name:lbl}));
+      mpTouch();
+    });
     return btn;
   };
   MAP_GROUPS.forEach((g,i)=>{
@@ -4738,8 +4891,11 @@ document.getElementById('gen-mode-height').addEventListener('click',e=>{
   });
 })();
 document.getElementById('btn-gen-random').addEventListener('click',()=>{
-  const fns=Object.values(MAP_PRESETS);applyGenResult(fns[Math.floor(Math.random()*fns.length)](Math.floor(Math.random()*99999)));
-  genPopup.style.display='none';showToast(tr('toast.genRandom'));
+  const idx = Math.floor(Math.random()*MAP_PRESET_NAMES.length);
+  const n = genByIndex(idx);
+  genPopup.style.display='none';
+  showToast(aeOn && n>0 ? tr('toast.genRandomDecor',{n}) : tr('toast.genRandom'));
+  mpTouch();
 });
 let lastOpenAcc = 'land';
 function updateLandSummary(){
@@ -4762,6 +4918,7 @@ document.getElementById('btn-gen').addEventListener('click',e=>{
   togglePopup('gen-popup');
   if(!wasOpen){
     refreshScatterUI();
+    refreshAutoEmojiUI();
     document.querySelectorAll('.acc-section').forEach(s=>s.classList.remove('open'));
     if(lastOpenAcc){
       const h=document.querySelector(`.acc-header[data-acc="${lastOpenAcc}"]`);
@@ -4833,6 +4990,43 @@ scSlider.addEventListener('input',e=>{scCount=parseInt(e.target.value);refreshSc
 refreshScatterUI();
 updateLandSummary();
 
+// 自動絵文字配置 UI（密度スライダー＋ON/OFF＋プリセット）。状態はセッションのみで非永続。
+const aeSlider = document.getElementById('ae-slider');
+const aeCountEl = document.getElementById('ae-count');
+const aeInfoEl = document.getElementById('ae-info');
+const aeOnBtn = document.getElementById('ae-on');
+const aeOffBtn = document.getElementById('ae-off');
+
+function refreshAutoEmojiUI(){
+  if(!aeSlider) return;
+  if(aeDensity < 0) aeDensity = 0;
+  if(aeDensity > 100) aeDensity = 100;
+  aeSlider.value = aeDensity;
+  aeCountEl.textContent = aeDensity;
+  aeInfoEl.textContent = tr('aeInfo',{pct:aeDensity});
+  aeOnBtn.classList.toggle('active', aeOn);
+  aeOffBtn.classList.toggle('active', !aeOn);
+  const sum = document.getElementById('acc-summary-ae');
+  if(sum) sum.textContent = tr('aeSummary',{state: tr(aeOn?'aeStateOn':'aeStateOff'), pct: aeDensity});
+  document.querySelectorAll('#ae-presets .ae-preset').forEach(b=>{
+    b.classList.toggle('active', parseInt(b.dataset.val)===aeDensity);
+  });
+}
+
+aeOnBtn.addEventListener('click',e=>{ e.stopPropagation(); aeOn = true;  refreshAutoEmojiUI(); });
+aeOffBtn.addEventListener('click',e=>{ e.stopPropagation(); aeOn = false; refreshAutoEmojiUI(); });
+aeSlider.addEventListener('input',e=>{ aeDensity = parseInt(e.target.value); refreshAutoEmojiUI(); });
+[0,15,30,50,75].forEach(p=>{
+  const btn=document.createElement('button');
+  btn.className='tbtn ae-preset';
+  btn.dataset.val=p;
+  btn.style.cssText='font-size:10px;padding:6px 2px;font-weight:600';
+  btn.textContent=p+'%';
+  btn.addEventListener('click',e=>{ e.stopPropagation(); aeDensity = p; refreshAutoEmojiUI(); });
+  document.getElementById('ae-presets').appendChild(btn);
+});
+refreshAutoEmojiUI();
+
 // Solid color
 function lighten(hex,amt){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);const cl=v=>Math.max(0,Math.min(255,Math.round(v+255*amt)));return`#${cl(r).toString(16).padStart(2,'0')}${cl(g).toString(16).padStart(2,'0')}${cl(b).toString(16).padStart(2,'0')}`;}
 const SOLID=[{label:'🌿 草',c:'#4a8a3a'},{label:'🏜 砂',c:'#d4aa5a'},{label:'🌊 水',c:'#2a6e9a'},{label:'❄️ 雪',c:'#ddeeff'},{label:'⬛ 岩',c:'#3a3530'},{label:'🟫 土',c:'#8b5e3c'},{label:'🟪 紫',c:'#7a4a9a'},{label:'🟥 赤',c:'#9a3a3a'}];
@@ -4840,6 +5034,8 @@ function fillSolid(hex){
   TERRAIN_COLORS[hex]=[hex, hex];
   const tmap={};for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)tmap[`${c},${r}`]=hex;
   applyTerrainMap({terrain:tmap, heights:{}});
+  lastGen = null;       // 単色塗りつぶしはレシピ外＝以降の共有は厳密往復パスへ
+  genClean = false;
 }
 SOLID.forEach(({label,c})=>{
   const btn=document.createElement('button');btn.className='tbtn';
@@ -4875,7 +5071,7 @@ document.getElementById('btn-effects').addEventListener('click',e=>{
 
 document.addEventListener('click',e=>{
   const insideAnyPopup = ALL_POPUPS.some(id => document.getElementById(id).contains(e.target));
-  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn','btn-gif'].includes(e.target.id);
+  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn'].includes(e.target.id);
   if(!insideAnyPopup && !isTriggerBtn) closeAllPopups();
 });
 
@@ -4922,6 +5118,7 @@ document.getElementById('btn-scatter').addEventListener('click',()=>{
   for(const k in items)delete items[k];
   for(const k in animals)delete animals[k];
   history=[];
+  genClean = false;   // ランダム散布は地形レシピと無関係＝以降は厳密往復パス
   const cells=[];for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)cells.push({c,r});
   for(let i=cells.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
   // 🏪 はランダム配置でも 3×3 を1個だけ置く（端は内側へクランプ、フットプリントは確保）
@@ -4997,45 +5194,103 @@ function refreshFpsUI(){
 let visiting = false;
 
 // 共有する「世界＋情景」のみ（個人設定 lang/音/ミュート/履歴等は含めない）
-// 共有用コンパクトペイロード（sf:2）。bobOffset や animals の実行時 float など
+// 共有用コンパクトペイロード（sf:2／sf:3）。bobOffset や animals の実行時 float など
 // エンティティ毎の高エントロピー値を捨て、deflate が効く形にして URL を短縮。
+// sf:3 は「直近生成のレシピ＋AE 密度」だけを載せ、開封側で同一の純関数から再生成する形。
+// 手編集が無い（genClean=true）かつ直近生成がある時のみ採用。それ以外は従来 sf:2 で厳密往復。
 // 保存形式(saveState)と applyState は不変。decodeWorld 側で元の形へ復元する。
 function worldPayload(){
-  const it = {};
-  for(const k in items){ const v = items[k]; it[k] = (v.size>1) ? [v.emoji, v.size] : v.emoji; }
-  const an = [];
-  for(const id in animals){ const a = animals[id]; an.push([a.emoji, Math.round(a.wx), Math.round(a.wy)]); }
-  return {
-    v: SAVE_VERSION, sf: 2,
-    grid: GRID,
-    terrain, heights,
-    it, an,
+  // 共通：時刻・天気・表示設定など、レシピでは再現できない情景。
+  const scene = {
     timeOfDay: Math.round(timeOfDay*1e4)/1e4, dayPaused, weather,
     drawMode, showHeights, heightsTouched,
     weatherRandomOn,
     weatherRandomPool: [...weatherRandomPool],
     fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
   };
+  // レシピ採用条件：直近生成が記録されており、その後に手編集が一切無いこと。
+  if(lastGen && genClean){
+    const p = {
+      v: SAVE_VERSION, sf: 3,
+      g: GRID,
+      s: lastGen.s, gi: lastGen.i, gm: lastGen.m || 'height',
+      av: AE_VER,
+    };
+    if(aeOn) p.ae = aeDensity|0;
+    Object.assign(p, scene);
+    return p;
+  }
+  // フォールバック：sf:2 で全 items/animals を載せる（厳密往復）
+  const it = {};
+  for(const k in items){ const v = items[k]; it[k] = (v.size>1) ? [v.emoji, v.size] : v.emoji; }
+  const an = [];
+  for(const id in animals){ const a = animals[id]; an.push([a.emoji, Math.round(a.wx), Math.round(a.wy)]); }
+  return Object.assign({
+    v: SAVE_VERSION, sf: 2,
+    grid: GRID,
+    terrain, heights,
+    it, an,
+  }, scene);
 }
-// コンパクト共有形式(sf:2)を applyState が期待する通常 data 形へ復元
+// コンパクト共有形式(sf:2 / sf:3) を applyState が期待する通常 data 形へ復元
 function expandShared(d){
-  if(!d || d.sf !== 2) return d;   // 旧共有URL(sf無し)はそのまま
+  if(!d || (d.sf !== 2 && d.sf !== 3)) return d;   // 旧共有URL(sf無し)はそのまま
+  // ── sf:3：レシピから地形を再生成し、自動絵文字を計算して sf:2 相当の形を組み立てる
+  let baseTerrain = null, baseHeights = null, aeIt = {}, aeAn = [], gridN = d.grid || d.g || GRID;
+  if(d.sf === 3){
+    gridN = (typeof d.g === 'number') ? d.g : GRID;
+    const idx = (typeof d.gi === 'number') ? d.gi : -1;
+    const name = (idx>=0 && idx<MAP_PRESET_NAMES.length) ? MAP_PRESET_NAMES[idx] : null;
+    if(name && MAP_PRESETS[name]){
+      // 配信時の GRID を一時セットして MAP_PRESETS を実行（既存ジェネレータは GRID 参照）
+      const savedGrid = GRID;
+      GRID = gridN;
+      try {
+        const res = MAP_PRESETS[name](d.s|0);
+        const tmap = res.terrain || res;
+        const hmapSrc = res.heights || {};
+        const hmap = {};
+        for(const k in hmapSrc) hmap[k] = Math.min(MAX_H, Math.max(0, Math.round(hmapSrc[k]*GEN_H_SCALE)));
+        baseTerrain = tmap;
+        baseHeights = (d.gm === 'flat') ? {} : hmap;
+        if(typeof d.ae === 'number'){
+          const r = computeTerrainEmoji(d.s|0, d.ae, baseTerrain, gridN);
+          aeIt = r.it; aeAn = r.an;
+        }
+      } finally { GRID = savedGrid; }
+    }
+  }
+  // ── 統合：sf:3 由来の aeIt/aeAn と、明示の d.it/d.an（sf:2 または非 clean パスの sf:3 用）をマージ
+  const itSrc = Object.assign({}, aeIt, d.it || {});
   const items = {};
-  for(const k in (d.it||{})){
-    const v = d.it[k];
+  for(const k in itSrc){
+    const v = itSrc[k];
     const o = { emoji: Array.isArray(v) ? v[0] : v, bobOffset: Math.random()*Math.PI*2 };
     if(Array.isArray(v) && v[1] > 1) o.size = v[1];
     items[k] = o;
   }
-  const animals = {}; const list = Array.isArray(d.an) ? d.an : [];
-  list.forEach(([emoji,c,r], i) => {
+  const anList = [...aeAn, ...(Array.isArray(d.an) ? d.an : [])];
+  const animals = {};
+  anList.forEach(([emoji,c,r], i) => {
     animals[i] = { id:i, emoji, wx:c, wy:r, tx:c, ty:r, moving:false, flip:false,
       speed:.6+Math.random()*.8, waitTimer:.5+Math.random()*2, excited:0, eatCD:0 };
   });
+  // sf:2 互換の戻り値。sf:3 は terrain/heights を baseTerrain/baseHeights から、grid は gridN から。
+  if(d.sf === 3){
+    return {
+      v: d.v, grid: gridN,
+      terrain: baseTerrain || {}, heights: baseHeights || {},
+      items, animals, animalId: anList.length,
+      timeOfDay: d.timeOfDay, dayPaused: d.dayPaused, weather: d.weather,
+      drawMode: d.drawMode, showHeights: d.showHeights, heightsTouched: d.heightsTouched,
+      weatherRandomOn: d.weatherRandomOn, weatherRandomPool: d.weatherRandomPool,
+      fx: d.fx,
+    };
+  }
   return {
     v: d.v, grid: d.grid,
     terrain: d.terrain || {}, heights: d.heights || {},
-    items, animals, animalId: list.length,
+    items, animals, animalId: anList.length,
     timeOfDay: d.timeOfDay, dayPaused: d.dayPaused, weather: d.weather,
     drawMode: d.drawMode, showHeights: d.showHeights, heightsTouched: d.heightsTouched,
     weatherRandomOn: d.weatherRandomOn, weatherRandomPool: d.weatherRandomPool,
@@ -5137,6 +5392,9 @@ function applyState(data){
     repl(items,   data.items);
     repl(heights, data.heights);
     repl(animals, data.animals);
+    // ロード／共有閲覧の世界はスナップショット。直近生成の意図は引き継がない（共有は厳密往復パスへ）。
+    lastGen = null;
+    genClean = false;
     if(typeof data.animalId === 'number') animalId = data.animalId;
 
     // Custom solid/paint colors are stored straight into terrain as hex
@@ -5247,33 +5505,6 @@ FPS_PRESETS.forEach(v => {
   document.getElementById('fps-opts').appendChild(b);
 });
 refreshFpsUI();
-
-// GIF 縮尺プリセット（色づけ選択・トーストなし）＋ズーム微調整スライダー
-function refreshGifUI(){
-  document.querySelectorAll('#gif-scale-opts .gif-scale-opt').forEach(b =>
-    b.classList.toggle('active', b.dataset.mode === gifScaleMode));
-  const z=document.getElementById('gif-zoom'), zv=document.getElementById('gif-zoom-val');
-  if(z) z.value = gifZoomMul;
-  if(zv) zv.textContent = '×' + gifZoomMul.toFixed(2);
-}
-GIF_SCALE_MODES.forEach(m => {
-  const b = document.createElement('button');
-  b.className = 'tbtn gif-scale-opt';
-  b.dataset.mode = m;
-  b.dataset.i18n = 'gifScale:'+m;
-  b.textContent = tr('gifScale:'+m);
-  b.addEventListener('click', e => {
-    e.stopPropagation();
-    gifScaleMode = m;
-    refreshGifUI();
-  });
-  document.getElementById('gif-scale-opts').appendChild(b);
-});
-document.getElementById('gif-zoom').addEventListener('input', e => {
-  gifZoomMul = Number(e.target.value) || 1;
-  document.getElementById('gif-zoom-val').textContent = '×' + gifZoomMul.toFixed(2);
-});
-refreshGifUI();
 
 // 起動分岐: #auth=（ログイン受領）→ #r=（マルチプレイルーム）→ #w=（共有リンク閲覧）→ 通常ロード
 (async () => {
