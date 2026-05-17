@@ -50,6 +50,28 @@ node .claude/scripts/check-syntax.mjs
 
 挙動の確認はブラウザで目視（配置・天気・時間・セーブ／ロード・日英切替など）。
 
+### UI 変更時はスクリーンショット必須
+
+見た目（HTML 構造・CSS・レイアウト・ボタン/トグル・パレット等）に影響する変更を
+行ったら、**毎回スクリーンショットを撮ってユーザーに共有する**こと。
+
+```bash
+node .claude/scripts/screenshot.mjs            # 既定で3環境を撮影
+# 出力: /tmp/emoji-niwa-<ts>-iphone-air.png / -ipad.png / -fullhd.png
+# 任意: SHOT_VP=390,844 で単一カスタム viewport のみ
+```
+
+**必ず以下 3 環境すべてを撮る**（スクリプト既定で自動）:
+
+- `iphone-air` 420×912（iPhone Air 相当ポートレート）
+- `ipad` 820×1180（iPad 相当ポートレート）
+- `fullhd` 1920×1080（フル HD の Web ブラウザ）
+
+3 枚すべてを `SendUserFile` でユーザーに見せる（取得だけで終わらせない・1環境だけで
+省略しない）。Playwright/Chromium は dev のみで使用しリポジトリには含めない（未導入なら
+スクリプトが自動 `npx playwright install chromium`）。多人数 UI（チャット/人数バッジ等）は
+`MP_*` 未設定では非表示のためオフラインで見える範囲を撮る。
+
 ## コミット規約
 
 既存履歴に倣い、**先頭に内容を表す絵文字を付けた日本語のコミットメッセージ**にする。

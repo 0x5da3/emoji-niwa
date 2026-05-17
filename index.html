@@ -87,8 +87,8 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 .cattab{flex:0 0 auto;padding:3px 10px;font-size:11px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.04);color:var(--dim);cursor:pointer;transition:all .12s}
 .cattab.active{background:rgba(93,186,106,.22);color:var(--accent2);border-color:var(--accent)}
 #palette-wrap{position:fixed;bottom:0;left:0;right:0;z-index:28;background:var(--panel);border-top:1px solid var(--border);backdrop-filter:blur(14px);padding:6px 8px 14px}
-#palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;grid-auto-rows:42px;height:136px;overflow-y:auto;align-content:start;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:rgba(168,224,99,.4) transparent;-webkit-overflow-scrolling:touch}
-/* 共有プレイ用チャット（パレット上・既定3行・最小化/拡大可） */
+#palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;grid-auto-rows:42px;height:183px;overflow-y:auto;align-content:start;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:rgba(168,224,99,.4) transparent;-webkit-overflow-scrolling:touch}
+/* マルチプレイ用チャット（パレット上・既定3行・最小化/拡大可） */
 #mp-chat{display:none;flex-direction:column;gap:4px;margin-bottom:6px;border:1px solid rgba(120,210,130,.3);border-radius:10px;background:rgba(8,20,10,.55);padding:5px 6px}
 #mpc-head{display:flex;align-items:center;gap:10px;font-size:11px;color:#a8e063}
 #mpc-head .mpc-t{flex:1;font-weight:700}
@@ -175,10 +175,16 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 .weather-opt.checked .w-check{background:rgba(93,186,106,.7);border-color:rgba(168,224,99,.9)}
 .weather-opt.checked .w-check::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff}
 #toast{position:fixed;top:98px;left:50%;transform:translateX(-50%);background:rgba(93,186,106,.88);color:#fff;font-size:12px;padding:6px 16px;border-radius:20px;pointer-events:none;z-index:50;opacity:0;transition:opacity .3s}
+#gif-frame-overlay{display:none;position:fixed;inset:0;z-index:60}
+#gif-frame-sq{position:absolute;border:2px solid rgba(168,224,99,.95);box-shadow:0 0 0 9999px rgba(0,0,0,.55);border-radius:6px;pointer-events:none}
+#gif-frame-cap{position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:61;font-size:12px;color:#a8e063;background:rgba(8,20,10,.92);border:1px solid rgba(120,210,130,.3);border-radius:10px;padding:6px 12px;white-space:nowrap}
+#gif-frame-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:61;display:flex;gap:10px;align-items:center;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(14px)}
+#gif-frame-bar .tbtn{padding:8px 16px}
+#btn-gif-ok{background:rgba(93,186,106,.3);border-color:rgba(168,224,99,.6)}
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 #map-btns{position:fixed;right:10px;top:60px;z-index:27;display:grid;grid-template-columns:repeat(2,36px);gap:6px;justify-items:center}
-#map-btns #btn-3d{grid-column:1/-1;width:100%;height:30px;justify-self:stretch;margin-top:2px}
-#map-btns #btn-heights{grid-column:1/-1;width:100%;height:30px;justify-self:stretch}
+#map-btns #btn-3d{grid-column:1/-1;width:auto;min-width:76px;box-sizing:border-box;justify-content:center;height:30px;justify-self:center;margin-top:2px}
+#map-btns #btn-heights{grid-column:1/-1;width:auto;min-width:76px;box-sizing:border-box;justify-content:center;height:30px;justify-self:center}
 #corner-btns{position:fixed;left:8px;top:56px;z-index:27;display:flex;flex-direction:column;gap:6px}
 #corner-btns .tbtn{width:46px;text-align:center;background:var(--panel);backdrop-filter:blur(10px)}
 #btn-room{position:relative}
@@ -206,8 +212,9 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
   <button class="tbtn" id="btn-menu" data-i18n-title="ttSettings" title="設定">⚙️</button>
   <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
   <button class="tbtn" id="sound-btn" data-i18n-title="ttSound" title="サウンド">🔇</button>
-  <button class="tbtn" id="btn-share" data-i18n-title="share" title="共有">🔗</button>
-  <button class="tbtn" id="btn-room" data-i18n-title="ttRoom" title="多人数">👥<span id="mp-count-badge"></span></button>
+  <button class="tbtn" id="btn-gif" data-i18n-title="ttGif" title="GIF書き出し">📸</button>
+  <button class="tbtn" id="btn-share" data-i18n-title="share" title="共有リンク">🔗</button>
+  <button class="tbtn" id="btn-room" data-i18n-title="ttRoom" title="マルチプレイ">👥<span id="mp-count-badge"></span></button>
 </div>
 
 <!-- WEATHER POPUP -->
@@ -300,6 +307,17 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
   </div>
 </div>
 
+<!-- GIF CAPTURE-FRAME OVERLAY (📸 で撮影範囲を提示→OKで実行) -->
+
+<div id="gif-frame-overlay">
+  <div id="gif-frame-sq"></div>
+  <div id="gif-frame-cap" data-i18n="gifFrameHint">📸 この範囲がGIFになります</div>
+  <div id="gif-frame-bar">
+    <button class="tbtn" id="btn-gif-cancel" data-i18n="gifFrameCancel">キャンセル</button>
+    <button class="tbtn" id="btn-gif-ok" data-i18n="gifFrameOk">📸 GIFを作成</button>
+  </div>
+</div>
+
 <!-- EFFECTS POPUP -->
 
 <div id="fx-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:12px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw;max-height:80vh;overflow-y:auto">
@@ -368,23 +386,47 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
         <button class="tbtn gen-mode-btn" id="gen-mode-flat" data-i18n="genFlat">⬜ 平らな地形</button>
         <button class="tbtn gen-mode-btn active" id="gen-mode-height" data-i18n="genHilly">⛰ 起伏あり</button>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-        <span data-i18n="aeLabel" style="font-size:10px;color:rgba(180,220,180,.55);white-space:nowrap">🌱 地形に合う絵文字</span>
-        <button class="tbtn sc-src-btn active" id="ae-on" style="padding:4px 7px">ON</button>
-        <button class="tbtn sc-src-btn" id="ae-off" style="padding:4px 7px">OFF</button>
-        <input type="range" id="ae-slider" min="0" max="100" value="30" step="5" style="flex:1;min-width:36px;accent-color:#5dba6a">
-        <span id="ae-pct" style="font-size:11px;font-weight:700;color:#a8e063;width:32px;text-align:right">30%</span>
-      </div>
       <div data-i18n="selectMap" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
-      <div id="gen-btns" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px"></div>
+      <div id="gen-btns" style="margin-bottom:8px"></div>
       <button class="tbtn" id="btn-gen-random" data-i18n="genRandom" style="width:100%;padding:8px">🎲 完全ランダム</button>
-      <div data-i18n="solidFill" style="font-size:10px;color:rgba(180,220,180,.55);margin:14px 0 6px">🎨 単色で塗りつぶす</div>
+    </div>
+  </div>
+
+  <div class="acc-section">
+    <button class="acc-header" data-acc="solid">
+      <span class="acc-arrow">▶</span>
+      <span class="acc-title" data-i18n="solidFill">🎨 単色で塗りつぶす</span>
+      <span class="acc-summary" data-i18n="solidSummary">8色＋カスタム</span>
+    </button>
+    <div class="acc-content">
       <div id="solid-presets" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px"></div>
       <div style="display:flex;align-items:center;gap:6px">
         <input type="color" id="color-picker" value="#4a8a3a" style="width:32px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0">
         <span data-i18n="customColor" style="font-size:11px;color:rgba(180,220,180,.5);flex:1">カスタム色</span>
         <button class="tbtn" id="btn-solid-custom" data-i18n="paint">塗る</button>
       </div>
+    </div>
+  </div>
+
+  <div class="acc-section">
+    <button class="acc-header" data-acc="autoemoji">
+      <span class="acc-arrow">▶</span>
+      <span class="acc-title" data-i18n="aeTitle">🌳 地形に合った絵文字</span>
+      <span class="acc-summary" id="acc-summary-ae">ON · 30%</span>
+    </button>
+    <div class="acc-content">
+      <div data-i18n="aeToggleLabel" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">自動配置</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+        <button class="tbtn ae-on-btn active" id="ae-on" data-i18n="aeOn">✅ オン</button>
+        <button class="tbtn ae-on-btn" id="ae-off" data-i18n="aeOff">⛔ オフ</button>
+      </div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+        <span id="ae-count" style="font-size:22px;font-weight:800;color:#a8e063">30</span>
+        <span id="ae-info" style="font-size:10px;color:rgba(180,220,180,.5)">密度 30%</span>
+      </div>
+      <input type="range" id="ae-slider" min="0" max="100" value="30" step="1" style="width:100%;accent-color:#5dba6a;margin-bottom:8px">
+      <div id="ae-presets" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px"></div>
+      <div data-i18n="aeNote" id="ae-note" style="font-size:10px;color:rgba(180,220,180,.5);line-height:1.4">次の土地生成で反映されます</div>
     </div>
   </div>
 
@@ -975,11 +1017,15 @@ const TERRAIN_COLORS = {
 const TERRAIN_TYPES  = ['grass','sand','water','snow','dark'];
 const TERRAIN_LABELS = {grass:'🌿 草',sand:'🏜 砂',water:'🌊 水',snow:'❄️ 雪',dark:'⬛ 岩'};
 
-// 地形に合う絵文字の自動配置用テーブル。AE_SALT/AE_VER/pool/比率/順序を
-// 変えたら必ず AE_VER を +1（gv と同じ運用＝旧共有リンクの差異検知用）。
+// ── 自動絵文字配置（Auto-Emoji）— 地形タイプに合った絵文字を決定論で散らす ──
+// SALT / VER は配信側・開封側の往復一致を保証する純関数の同一性キー。
+// pool・比率・順序・SALT のいずれかを変えたら AE_VER を +1（共有 av と整合）。
 const AE_SALT = 0x9E3779B1;
 const AE_VER  = 1;
+// type → 充填率の基準（草地は満載、水/砂は疎、岩=dark は最も疎）。実効密度 = fill * (density/100)。
 const TERRAIN_FILL = { grass:1.0, sand:0.45, water:0.6, snow:0.5, dark:0.4 };
+// type → {decor: 静的装飾, fauna: 徘徊動物}。fauna は ANIMALS Set 所属に限る（init で検証）。
+// dark（岩）は岩・都市道路と曖昧なので、中立的な自然装飾のみに留める。
 const TERRAIN_EMOJI = {
   grass:{ decor:['🌳','🌲','🌷','🌻','🌼','🍀','🌿','🪴','🍄'], fauna:['🐇','🦋','🐝','🦊','🐿️','🦌','🐦'] },
   sand: { decor:['🌵','🪨','🐚','🌴'],                          fauna:['🦎','🐍','🐌'] },
@@ -987,9 +1033,14 @@ const TERRAIN_EMOJI = {
   snow: { decor:['⛄','☃️','🌲','🪨','🐧'],                      fauna:['🐇','🦌','🦉'] },
   dark: { decor:['🪨','🌲','🪵','⛰️'],                          fauna:['🦔','🦝','🦌'] },
 };
-// dev: fauna は必ず ANIMALS（徘徊・描画の前提）に属すること
-for(const _t in TERRAIN_EMOJI) for(const _e of TERRAIN_EMOJI[_t].fauna)
-  if(!ANIMALS.has(_e)) console.warn('[emoji-niwa] TERRAIN_EMOJI fauna not in ANIMALS:', _t, _e);
+// dev ガード：fauna は必ず ANIMALS Set 所属。pool 編集時の事故を検出（本番では console.warn のみ）。
+(function _aePoolAudit(){
+  for(const type in TERRAIN_EMOJI){
+    for(const e of (TERRAIN_EMOJI[type].fauna||[])){
+      if(!ANIMALS.has(e)) console.warn('[AE] fauna pool', type, 'has non-ANIMAL:', e);
+    }
+  }
+})();
 
 // ═══════════════════════════════════════════
 // STATE
@@ -1012,6 +1063,10 @@ let timeOfDay = (function(){
 // 昼夜で生き物が変わる：夜行性は夜に活動・昼に就寝、それ以外は逆（夜判定は既存 isNight() を再利用）
 const NOCTURNAL = new Set(['🦉','🦊','🦝','🦔','🐍','🐈‍⬛']);
 function isAsleep(a){ const noc = NOCTURNAL.has(a.emoji); return isNight() ? !noc : noc; }
+// 水生動物：水セル（terrain==='water'）でしか活動できない。陸に置かれたら最寄りの水を目指し、
+// AQUA_STRAND_LIMIT 秒以内に到達できなければ消える。🦆 はカモ＝水陸両生のため除外する。
+const AQUATIC = new Set(['🐟','🐠','🐡','🦞','🦀','🐢']);
+const AQUA_STRAND_LIMIT = 30;   // 陸滞在の限界（秒）— 30×30 マップでも横断可能な余裕
 let dayPaused = false;
 let weather   = 'clear';
 let animT     = 0;
@@ -1029,7 +1084,12 @@ let lang = 'ja';
 const I18N = {
   ja: {
     weatherBtn:'☀️ 天気', undo:'↩ 戻す', gen:'🎲 生成', effects:'✨ 演出',
-    ttSettings:'設定', ttSave:'保存', ttSound:'サウンド',
+    ttSettings:'設定', ttSave:'保存', ttSound:'サウンド', ttGif:'GIF書き出し',
+    'toast.gifMaking':'🎞️ GIFを生成中…', 'toast.gifError':'⚠️ GIF生成に失敗しました',
+    'toast.gifHint':'💾 保存後、iOSのショートカット/対応アプリでGIF→Live Photoに変換できます',
+    'toast.gifHintAndroid':'💾 GIFを保存しました。ライブ壁紙/動く画像アプリで活用できます',
+    'toast.gifHintSaved':'💾 GIFを保存しました',
+    gifFrameHint:'📸 この範囲がGIFになります', gifFrameOk:'📸 GIFを作成', gifFrameCancel:'キャンセル',
     weatherRandom:'🎲 ランダム切替',
     weatherRandomHint:'候補から30〜60秒ごとに切替（タップで候補を選択）',
     weatherSelect:'天気を選択',
@@ -1054,11 +1114,13 @@ const I18N = {
     genLand:'🗺 土地の生成', landFlat:'平らな地形', landHilly:'起伏のある地形',
     terrainTypeLabel:'地形のタイプ', genFlat:'⬜ 平らな地形', genHilly:'⛰ 起伏あり',
     selectMap:'マップを選択', genRandom:'🎲 完全ランダム',
-    solidFill:'🎨 単色で塗りつぶす', customColor:'カスタム色', paint:'塗る',
+    solidFill:'🎨 単色で塗りつぶす', solidSummary:'8色＋カスタム', customColor:'カスタム色', paint:'塗る',
+    aeTitle:'🌳 地形に合った絵文字', aeToggleLabel:'自動配置', aeOn:'✅ オン', aeOff:'⛔ オフ',
+    aeInfo:'密度 {pct}%', aeNote:'次の土地生成で反映されます',
+    aeSummary:'{state} · {pct}%', aeStateOn:'ON', aeStateOff:'OFF',
     scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
     scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
     scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
-    aeLabel:'🌱 地形に合う絵文字',
     tt3d:'2D/3D 切り替え', ttHeights:'高さを表示', ttPalette:'パレットの折りたたみ',
     empty:'使った絵文字がここに記録されます',
     'cat:📌 履歴':'📌 履歴','cat:🌿 自然':'🌿 自然','cat:🐾 動物':'🐾 動物','cat:🏗 建物':'🏗 建物',
@@ -1067,8 +1129,11 @@ const I18N = {
     'evt:🎄 クリスマス':'🎄 クリスマス','evt:🎍 お正月':'🎍 お正月','evt:💝 バレンタイン':'💝 バレンタイン',
     'evt:🎃 ハロウィン':'🎃 ハロウィン','evt:🐰 イースター':'🐰 イースター','evt:🎉 お祝い':'🎉 お祝い',
     'map:🌿 草原':'草原','map:🏝 島':'島','map:🏔 山岳':'山岳','map:🏜 砂漠':'砂漠','map:❄️ 雪原':'雪原',
-    'map:🌊 群島':'群島','map:🌳 森':'森','map:🌋 火山':'火山','map:🏖 環礁':'環礁','map:🏞 谷':'谷',
-    'map:🏙 都市':'都市','map:🏘 街':'街','map:💧 川':'川','map:💦 滝':'滝','map:🌊 海':'海',
+    'map:🌳 森':'森','map:🌋 火山':'火山','map:🏖 環礁':'環礁','map:🏞 谷':'谷','map:🏙 都市':'都市',
+    'map:🏘 街':'街','map:💧 川':'川','map:💦 滝':'滝','map:🌊 海辺':'海辺','map:🗻 雪山':'雪山',
+    'map:🌴 アマゾン':'アマゾン','map:🐊 湿地':'湿地','map:🪨 峡谷':'峡谷','map:🗿 メサ':'メサ','map:🌵 サバンナ':'サバンナ',
+    'map:🏰 城':'城','map:🌾 農村':'農村',
+    'genGrpGreen':'🌿 みどり','genGrpMtn':'⛰ 山・雪','genGrpArid':'🏜 荒野','genGrpWater':'🌊 水辺','genGrpBuilt':'🏙 人の場所',
     'solid:🌿 草':'🌿 草','solid:🏜 砂':'🏜 砂','solid:🌊 水':'🌊 水','solid:❄️ 雪':'❄️ 雪',
     'solid:⬛ 岩':'⬛ 岩','solid:🟫 土':'🟫 土','solid:🟪 紫':'🟪 紫','solid:🟥 赤':'🟥 赤',
     'ta:paint':'塗る','ta:up':'高さ+','ta:down':'高さ-',
@@ -1077,17 +1142,17 @@ const I18N = {
     'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 全リセットしました', 'toast.newMap':'🆕 {n}×{n} マップを作成しました',
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
-    'toast.genMapDecor':'🗺 {name}を生成し絵文字を{n}個配置', 'toast.genRandomDecor':'🎲 ランダム生成＋絵文字{n}個',
+    'toast.genMapDecor':'🗺 {name}を生成（🌳 自動配置 {n}個）', 'toast.genRandomDecor':'🎲 ランダムマップ生成（🌳 自動配置 {n}個）',
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
     'toast.scatter':'🎲 {count}個をランダム配置！', 'toast.saved':'💾 セーブしました',
-    'ttRoom':'多人数（共有プレイ）',
+    'ttRoom':'マルチプレイ',
     'auth.loginNeeded':'ルーム発行には会員ログインが必要です','auth.loginGitHub':'GitHubでログイン','auth.logout':'ログアウト','auth.denied':'⛔ このGitHubアカウントはログインを許可されていません',
     'toast.loggedIn':'✅ ログインしました','toast.loggedOut':'👋 ログアウトしました',
-    'toast.roomCreated':'👥 ルームを作成しました（招待URLをコピー）','toast.roomJoined':'👥 共有ルームに参加しました',
-    'toast.inviteCopied':'🔗 招待URLをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
-    'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ 多人数サーバー未設定です',
-    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'🔗 招待URLコピー','mp.leave':'↩ 退出','mp.namePrompt':'共有プレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信','chat.joined':'{name} が参加しました',
-    'share':'🔗 共有', 'toast.shareCopied':'🔗 共有URLをコピーしました！', 'toast.shareError':'⚠️ 共有データを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
+    'toast.roomCreated':'👥 ルームを作成しました（招待リンクをコピー）','toast.roomJoined':'👥 マルチプレイに参加しました',
+    'toast.inviteCopied':'👥 招待リンクをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
+    'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ マルチプレイサーバー未設定です',
+    'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'👥 招待リンクをコピー','mp.leave':'↩ 退出','mp.namePrompt':'マルチプレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信','chat.joined':'{name} が参加しました','mp.ttl':'空き部屋の保持(日)','mp.ttlSet':'設定','toast.ttlSet':'🗓 空き部屋の保持を{n}日に設定','toast.ttlErr':'⚠️ 保持日数を設定できませんでした',
+    'share':'🔗 共有リンク', 'toast.shareCopied':'🔗 共有リンクをコピーしました！', 'toast.shareError':'⚠️ 共有リンクのデータを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
     'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
@@ -1095,7 +1160,12 @@ const I18N = {
   },
   en: {
     weatherBtn:'☀️ Weather', undo:'↩ Undo', gen:'🎲 Generate', effects:'✨ Effects',
-    ttSettings:'Settings', ttSave:'Save', ttSound:'Sound',
+    ttSettings:'Settings', ttSave:'Save', ttSound:'Sound', ttGif:'Export GIF',
+    'toast.gifMaking':'🎞️ Making GIF…', 'toast.gifError':'⚠️ GIF export failed',
+    'toast.gifHint':'💾 After saving, convert GIF→Live Photo via an iOS Shortcut/app',
+    'toast.gifHintAndroid':'💾 GIF saved — use it in a live-wallpaper / motion-photo app',
+    'toast.gifHintSaved':'💾 GIF saved',
+    gifFrameHint:'📸 This area becomes the GIF', gifFrameOk:'📸 Make GIF', gifFrameCancel:'Cancel',
     weatherRandom:'🎲 Random switch',
     weatherRandomHint:'Switches among picks every 30–60s (tap to choose picks)',
     weatherSelect:'Select weather',
@@ -1120,11 +1190,13 @@ const I18N = {
     genLand:'🗺 Land generation', landFlat:'Flat terrain', landHilly:'Hilly terrain',
     terrainTypeLabel:'Terrain type', genFlat:'⬜ Flat', genHilly:'⛰ Hilly',
     selectMap:'Select a map', genRandom:'🎲 Fully random',
-    solidFill:'🎨 Fill with solid color', customColor:'Custom color', paint:'Paint',
+    solidFill:'🎨 Fill with solid color', solidSummary:'8 colors + custom', customColor:'Custom color', paint:'Paint',
+    aeTitle:'🌳 Terrain-matched emoji', aeToggleLabel:'Auto-place', aeOn:'✅ On', aeOff:'⛔ Off',
+    aeInfo:'Density {pct}%', aeNote:'Applies to the next terrain generation',
+    aeSummary:'{state} · {pct}%', aeStateOn:'ON', aeStateOff:'OFF',
     scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
     scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
     scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
-    aeLabel:'🌱 Matching emoji',
     tt3d:'Toggle 2D/3D', ttHeights:'Show heights', ttPalette:'Collapse palette',
     empty:'Used emoji are recorded here',
     'cat:📌 履歴':'📌 History','cat:🌿 自然':'🌿 Nature','cat:🐾 動物':'🐾 Animals','cat:🏗 建物':'🏗 Buildings',
@@ -1133,8 +1205,11 @@ const I18N = {
     'evt:🎄 クリスマス':'🎄 Christmas','evt:🎍 お正月':'🎍 New Year','evt:💝 バレンタイン':'💝 Valentine',
     'evt:🎃 ハロウィン':'🎃 Halloween','evt:🐰 イースター':'🐰 Easter','evt:🎉 お祝い':'🎉 Celebration',
     'map:🌿 草原':'Grassland','map:🏝 島':'Island','map:🏔 山岳':'Mountains','map:🏜 砂漠':'Desert','map:❄️ 雪原':'Snowfield',
-    'map:🌊 群島':'Archipelago','map:🌳 森':'Forest','map:🌋 火山':'Volcano','map:🏖 環礁':'Atoll','map:🏞 谷':'Valley',
-    'map:🏙 都市':'City','map:🏘 街':'Town','map:💧 川':'River','map:💦 滝':'Waterfall','map:🌊 海':'Ocean',
+    'map:🌳 森':'Forest','map:🌋 火山':'Volcano','map:🏖 環礁':'Atoll','map:🏞 谷':'Valley','map:🏙 都市':'City',
+    'map:🏘 街':'Town','map:💧 川':'River','map:💦 滝':'Waterfall','map:🌊 海辺':'Seaside','map:🗻 雪山':'Snowy Peaks',
+    'map:🌴 アマゾン':'Amazon','map:🐊 湿地':'Wetland','map:🪨 峡谷':'Canyon','map:🗿 メサ':'Mesa','map:🌵 サバンナ':'Savanna',
+    'map:🏰 城':'Castle','map:🌾 農村':'Farmland',
+    'genGrpGreen':'🌿 Green','genGrpMtn':'⛰ Mountain & Snow','genGrpArid':'🏜 Wilds','genGrpWater':'🌊 Water','genGrpBuilt':'🏙 Built',
     'solid:🌿 草':'🌿 Grass','solid:🏜 砂':'🏜 Sand','solid:🌊 水':'🌊 Water','solid:❄️ 雪':'❄️ Snow',
     'solid:⬛ 岩':'⬛ Rock','solid:🟫 土':'🟫 Soil','solid:🟪 紫':'🟪 Purple','solid:🟥 赤':'🟥 Red',
     'ta:paint':'Paint','ta:up':'Height +','ta:down':'Height -',
@@ -1143,17 +1218,17 @@ const I18N = {
     'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 Reset everything', 'toast.newMap':'🆕 Created a {n}×{n} map',
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
-    'toast.genMapDecor':'🗺 Generated {name} + {n} emoji', 'toast.genRandomDecor':'🎲 Random map + {n} emoji',
+    'toast.genMapDecor':'🗺 Generated {name} (🌳 auto-placed {n})', 'toast.genRandomDecor':'🎲 Random map (🌳 auto-placed {n})',
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
     'toast.scatter':'🎲 Scattered {count}!', 'toast.saved':'💾 Saved',
-    'ttRoom':'Multiplayer (shared play)',
+    'ttRoom':'Multiplayer',
     'auth.loginNeeded':'Sign in (member) to create a room','auth.loginGitHub':'Sign in with GitHub','auth.logout':'Sign out','auth.denied':'⛔ This GitHub account is not allowed to sign in',
     'toast.loggedIn':'✅ Signed in','toast.loggedOut':'👋 Signed out',
-    'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined shared room',
-    'toast.inviteCopied':'🔗 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
+    'toast.roomCreated':'👥 Room created (invite link copied)','toast.roomJoined':'👥 Joined multiplayer',
+    'toast.inviteCopied':'👥 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
-    'mp.bar':'👥 Room {room} ({n})','mp.copy':'🔗 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for shared play','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send','chat.joined':'{name} joined',
-    'share':'🔗 Share', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read shared data', 'toast.kept':'💾 Saved this world as your own',
+    'mp.bar':'👥 Room {room} ({n})','mp.copy':'👥 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for multiplayer','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send','chat.joined':'{name} joined','mp.ttl':'Keep empty room (days)','mp.ttlSet':'Set','toast.ttlSet':'🗓 Empty-room retention set to {n} days','toast.ttlErr':'⚠️ Could not set retention',
+    'share':'🔗 Share link', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read share link data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
     'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
@@ -2722,6 +2797,12 @@ function carveRiver(t, seed, startSide){
 }
 
 // Classify terrain by elevation thresholds
+// 高さ上限（手動編集・生成共通）。生成された高さは GEN_H_SCALE 倍して
+// 0..MAX_H レンジを活用する。地形タイプ判定は各ジェネレータ側で確定済みのため
+// この再スケールでは変わらず、見た目の起伏だけが大きくなる。
+const MAX_H = 16;
+const GEN_H_SCALE = 1.5;
+
 function classifyByHeight(t, h, profile){
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
     const key=`${c},${r}`;
@@ -2815,17 +2896,6 @@ function genSnow(s){
   }
   smoothHeights(h, 2);
   classifyByHeight(t, h, [[6,'dark'],[2,'snow'],[1,'snow'],[0,'water']]);
-  return {terrain:t, heights:h};
-}
-
-function genArchipelago(s){
-  const n=makeNoise(s), n2=makeNoise(s+42), n3=makeNoise(s+123), t={}, h={};
-  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
-    const v = n(c/4, r/4)*0.55 + n2(c/2.2, r/2.2)*0.30 + n3(c/8, r/8)*0.15;
-    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.15) * 6));
-  }
-  smoothHeights(h, 1);
-  classifyByHeight(t, h, [[5,'dark'],[2,'grass'],[1,'sand'],[0,'water']]);
   return {terrain:t, heights:h};
 }
 
@@ -2933,11 +3003,9 @@ function genValley(s){
     const k=`${c},${r}`;
     if(t[k]==='water') continue;
     const v = h[k] || 0;
-    if(v >= 6) t[k] = 'snow';
-    else if(v >= 4) t[k] = 'dark';
-    else if(v >= 2) t[k] = 'grass';
-    else if(v >= 1) t[k] = 'sand';
-    else t[k] = 'grass';
+    if(v >= 5) t[k] = 'dark';        // 岩がちな尾根筋（雪は使わない＝緑の谷）
+    else if(v >= 1) t[k] = 'grass';  // 緑の斜面・谷底
+    else t[k] = 'sand';              // 川沿いの低い砂地
   }
   return {terrain:t, heights:h};
 }
@@ -3027,20 +3095,167 @@ function genWaterfall(s){
   return {terrain:t, heights:h};
 }
 
-// NEW: Ocean — open sea with a small central island, open at the borders
-function genOcean(s){
+// NEW: Seaside — wavy coastline with a sandy beach band, sea on one side
+function genCoast(s){
   const n=makeNoise(s), n2=makeNoise(s+9), t={}, h={};
-  const cx=GRID*0.5, cy=GRID*0.55;
+  // 砂浜の幅はマップサイズ連動。最大 6 マス、最小 2 マス（フラットな平地）
+  const beachW = Math.min(6, Math.max(2, Math.round(GRID*0.25)));
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
-    const dx=(c-cx)/(GRID*0.5), dy=(r-cy)/(GRID*0.5);
-    const dist=Math.sqrt(dx*dx+dy*dy);
-    const v=n(c/6,r/6)*0.5 + n2(c/3,r/3)*0.2 - dist*0.95 + 0.18;
-    h[`${c},${r}`]=Math.max(0,Math.round(v*7));
+    const k=`${c},${r}`;
+    const shore = GRID*0.55 + n(c/7,0)*GRID*0.10;     // うねる波打ち際
+    const d = r - shore;                               // d>=0=海側 / d<0=陸側
+    if(d >= 0){
+      t[k]='water';                                    // 海
+    } else if(d >= -beachW){
+      t[k]='sand'; h[k]=1;                             // 砂浜＝フラットな平地
+    } else {
+      const v = 1 + (-d - beachW)*0.45 + n2(c/5,r/5)*1.4; // 砂浜の先から起伏
+      h[k] = Math.round(v);
+      t[k] = v >= 6 ? 'dark' : 'grass';                // 草地→内陸の丘
+    }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Snowy Peaks — taller than Mountains with a much lower snow line
+function genSnowMountain(s){
+  const n=makeNoise(s), n2=makeNoise(s+99), n3=makeNoise(s+33), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/6,r/6)*0.55 + n2(c/3,r/3)*0.30 + n3(c/12,r/12)*0.15;
+    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.5) * 11));
   }
   smoothHeights(h,1);
-  classifyByHeight(t,h,[[5,'dark'],[2,'grass'],[1,'sand'],[0,'water']]);
+  classifyByHeight(t,h,[[9,'snow'],[6,'snow'],[4,'snow'],[2,'dark'],[1,'sand'],[0,'water']]);
+  return {terrain:t, heights:h};
+}
+
+// NEW: Amazon — dense low rainforest split by a meandering river + tributary
+function genAmazon(s){
+  const n=makeNoise(s), n2=makeNoise(s+17), t={}, h={};
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
-    if(c===0||r===0||c===GRID-1||r===GRID-1){ const k=`${c},${r}`; t[k]='water'; delete h[k]; }
+    const v = n(c/8,r/8)*0.5 + n2(c/3,r/3)*0.5;
+    h[`${c},${r}`] = Math.max(1, Math.round((v + 0.45) * 4));
+  }
+  smoothHeights(h,1);
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    t[k] = (h[k] >= 3) ? 'dark' : 'grass';   // 密林=暗緑 / 林床=草
+  }
+  const mid=GRID*0.5;
+  for(let c=0;c<GRID;c++){                    // 蛇行する本流
+    const rr=Math.round(mid + n(c/5,0)*GRID*0.22);
+    for(let w=-2;w<=2;w++){ const r2=rr+w; if(r2<0||r2>=GRID) continue;
+      const k=`${c},${r2}`;
+      if(Math.abs(w)<=1){ t[k]='water'; delete h[k]; } else { t[k]='sand'; h[k]=0; } }
+  }
+  for(let r=0;r<GRID;r++){                    // 支流
+    const cc=Math.round(GRID*0.3 + n2(0,r/5)*GRID*0.15);
+    for(let w=-1;w<=1;w++){ const c2=cc+w; if(c2<0||c2>=GRID) continue;
+      const k=`${c2},${r}`;
+      if(w===0){ t[k]='water'; delete h[k]; } else if(t[k]!=='water'){ t[k]='sand'; h[k]=0; } }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Wetland — very flat marsh with scattered shallow pools and reed banks
+function genWetland(s){
+  const n=makeNoise(s), n2=makeNoise(s+8), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    const w = n(c/3,r/3)*0.6 + n2(c/6,r/6)*0.4;
+    if(w < -0.12){ t[k]='water'; }                       // 浅い水たまり
+    else if(w < 0.05){ t[k]='sand'; h[k]=0; }            // 泥・葦の岸
+    else { t[k]='grass'; h[k]= (w>0.35?1:0); }           // 湿地草（ほぼ平坦）
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Canyon — high rocky mesa carved by a branching canyon (vs. grassy Valley)
+function genCanyon(s){
+  const n=makeNoise(s), n2=makeNoise(s+19), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const v = n(c/7,r/7)*0.4 + n2(c/3,r/3)*0.2;
+    h[`${c},${r}`] = Math.max(0, Math.round((v + 0.65) * 8));
+  }
+  smoothHeights(h,1);
+  const mid=GRID*0.5;
+  for(let c=0;c<GRID;c++){                    // 本谷
+    const rr=Math.round(mid + n(c/6,0)*GRID*0.2);
+    for(let w=-2;w<=2;w++){ const r2=rr+w; if(r2<0||r2>=GRID) continue;
+      const k=`${c},${r2}`;
+      if(Math.abs(w)<=1){ t[k]='water'; delete h[k]; } else { h[k]=1; } }
+  }
+  const fc=GRID*0.55;
+  for(let r=Math.floor(mid);r<GRID;r++){      // 支谷
+    const cc=Math.round(fc + n2(0,r/6)*GRID*0.12);
+    const k=`${cc},${r}`;
+    t[k]='water'; delete h[k];
+  }
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    if(t[k]==='water') continue;
+    t[k] = (h[k]||0) >= 5 ? 'dark' : 'sand'; // 岩のメサ天端 / 砂の斜面
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Mesa — flat-topped rock buttes rising from sand flats
+function genMesa(s){
+  const n=makeNoise(s), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const base = n(c/5,r/5);
+    const v = base > 0.18 ? 4 + base*5 : base*1.5;     // ビュート or 砂の平地
+    h[`${c},${r}`] = Math.max(0, Math.round(v));
+  }
+  smoothHeights(h,1);
+  classifyByHeight(t,h,[[5,'dark'],[3,'dark'],[1,'sand'],[0,'sand']]);
+  return {terrain:t, heights:h};
+}
+
+// NEW: Savanna — flat patchy dry grass & dirt with a rare waterhole
+function genSavanna(s){
+  const n=makeNoise(s), n2=makeNoise(s+4), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    const v = n(c/7,r/7)*0.6 + n2(c/3,r/3)*0.4;
+    h[k] = Math.max(0, Math.round((v+0.4)*2));
+    t[k] = v > 0.05 ? 'grass' : 'sand';
+  }
+  if(Math.random()<0.5){
+    const px=3+Math.floor(Math.random()*(GRID-6)), py=3+Math.floor(Math.random()*(GRID-6));
+    for(let dr=0;dr<=1;dr++)for(let dc=0;dc<=1;dc++){ const kk=`${px+dc},${py+dr}`; t[kk]='water'; delete h[kk]; }
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Castle — central keep with concentric ward, moat, and castle town
+function genCastle(s){
+  const rng=mulberry32(s+2), t={}, h={};
+  const cx=GRID/2, cy=GRID/2;
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    const d=Math.max(Math.abs(c-cx),Math.abs(r-cy));   // 四角いリング（チェビシェフ距離）
+    if(d < GRID*0.10){ t[k]='dark'; h[k]=5; }          // 天守
+    else if(d < GRID*0.16){ t[k]='dark'; h[k]=3; }     // 本丸
+    else if(d < GRID*0.22){ t[k]='water'; }            // 堀
+    else if(d < GRID*0.40){ t[k]='dark'; h[k]= rng()<0.5?1:0; } // 城下町
+    else { t[k]='grass'; h[k]=0; }                     // 郊外
+  }
+  return {terrain:t, heights:h};
+}
+
+// NEW: Farmland — checkerboard fields with lanes, farmhouses and a pond
+function genFarm(s){
+  const rng=mulberry32(s+3), t={}, h={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    const k=`${c},${r}`;
+    if((r%3===2)||(c%3===2)){ t[k]='sand'; h[k]=0; }   // あぜ道
+    else { t[k]=((Math.floor(r/3)+Math.floor(c/3))%2===0)?'grass':'sand'; h[k]=0; } // 田畑の市松
+  }
+  for(let i=0;i<3;i++){ const k=`${1+Math.floor(rng()*(GRID-2))},${1+Math.floor(rng()*(GRID-2))}`; t[k]='dark'; h[k]=1; } // 農家
+  if(rng()<0.7){
+    const px=2+Math.floor(rng()*(GRID-4)), py=2+Math.floor(rng()*(GRID-4));
+    for(let dr=0;dr<=1;dr++)for(let dc=0;dc<=1;dc++){ const kk=`${px+dc},${py+dr}`; t[kk]='water'; delete h[kk]; }
   }
   return {terrain:t, heights:h};
 }
@@ -3051,7 +3266,6 @@ const MAP_PRESETS={
   '🏔 山岳':genMountain,
   '🏜 砂漠':genDesert,
   '❄️ 雪原':genSnow,
-  '🌊 群島':genArchipelago,
   '🌳 森':genForest,
   '🌋 火山':genVolcano,
   '🏖 環礁':genAtoll,
@@ -3060,53 +3274,82 @@ const MAP_PRESETS={
   '🏘 街':genTown,
   '💧 川':genRiver,
   '💦 滝':genWaterfall,
-  '🌊 海':genOcean,
+  '🌊 海辺':genCoast,
+  '🗻 雪山':genSnowMountain,
+  '🌴 アマゾン':genAmazon,
+  '🐊 湿地':genWetland,
+  '🪨 峡谷':genCanyon,
+  '🗿 メサ':genMesa,
+  '🌵 サバンナ':genSavanna,
+  '🏰 城':genCastle,
+  '🌾 農村':genFarm,
 };
+
+// 種類が増えたのでカテゴリ分けして見やすく表示（全プリセットを過不足なく網羅）
+const MAP_GROUPS=[
+  {key:'genGrpGreen', names:['🌿 草原','🌳 森','🌴 アマゾン','🏞 谷','🐊 湿地']},
+  {key:'genGrpMtn',   names:['🏔 山岳','🗻 雪山','❄️ 雪原','🌋 火山']},
+  {key:'genGrpArid',  names:['🏜 砂漠','🪨 峡谷','🗿 メサ','🌵 サバンナ']},
+  {key:'genGrpWater', names:['🏝 島','🏖 環礁','💧 川','💦 滝','🌊 海辺']},
+  {key:'genGrpBuilt', names:['🏙 都市','🏘 街','🏰 城','🌾 農村']},
+];
 
 function applyTerrainMap(result){
   // Accept either {terrain, heights} or legacy plain terrain object
   const tmap = result.terrain || result;
   const hmap = result.heights || {};
+  for(const k in hmap) hmap[k] = Math.min(MAX_H, Math.max(0, Math.round(hmap[k]*GEN_H_SCALE)));
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   Object.assign(terrain, tmap);
   Object.assign(heights, hmap);
 }
 
-// 地形タイプに合う絵文字を決定論で算出する純関数。配信側と開封側が
-// 同一入力（seed,density,terrain,grid）で同一の {it,an} を再現する。
-// it[k]=絵文字（装飾）、an=[[絵文字,c,r],...]（徘徊する動物）。
+// ── 自動絵文字配置（コア）— (seed, densityPct, terrainMap, grid) → {it,an} の純関数
+// グローバルへ触れずローカル占有 Set のみで衝突回避。配信側／開封側で同一の compact 形を返す。
+// it[k]=emoji, an=[[emoji,c,r],...]（共有最小形と一致）。🏪 は絶対に置かない。
 function computeTerrainEmoji(seed, densityPct, terrainMap, grid){
-  const it = {}, an = [];
-  const d = Math.max(0, Math.min(100, densityPct)) / 100;
-  if(d <= 0) return { it, an };
-  const rng = mulberry32((seed + AE_SALT) >>> 0);
+  const rng = mulberry32(((seed|0) + AE_SALT) >>> 0);
+  // 固定正準順（r外c内）でセル列を作り、決定論的 Fisher–Yates でシャッフル
   const cells = [];
   for(let r=0;r<grid;r++) for(let c=0;c<grid;c++) cells.push([c,r]);
-  for(let i=cells.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); const t=cells[i]; cells[i]=cells[j]; cells[j]=t; }
-  const used = new Set();
+  for(let i=cells.length-1;i>0;i--){
+    const j = Math.floor(rng()*(i+1));
+    const tmp = cells[i]; cells[i] = cells[j]; cells[j] = tmp;
+  }
+  const it = {}, an = [];
+  const taken = new Set();
+  const d = Math.max(0, Math.min(100, densityPct|0)) / 100;
   for(const [c,r] of cells){
     const k = `${c},${r}`;
-    const pool = TERRAIN_EMOJI[terrainMap[k]];
-    if(!pool) continue;                                  // 未塗り/カスタム色は対象外
-    if(rng() >= d * (TERRAIN_FILL[terrainMap[k]] || 0)) continue;
-    if(used.has(k)) continue;
-    const useFauna = rng() < 0.35 && pool.fauna.length > 0;
-    const arr = useFauna ? pool.fauna : pool.decor;
+    const type = terrainMap[k];
+    const pool = type && TERRAIN_EMOJI[type];
+    const fill = TERRAIN_FILL[type] || 0;
+    // RNG は分岐の有無に関わらず必ず1回引く（後段の分岐順を変えない）
+    const roll = rng();
+    if(!pool || roll >= d*fill) continue;
+    if(taken.has(k)) continue;
+    const wantFauna = rng() < 0.35 && pool.fauna && pool.fauna.length > 0;
+    const arr = wantFauna ? pool.fauna : (pool.decor || []);
     if(!arr.length) continue;
     const e = arr[Math.floor(rng()*arr.length)];
-    if(e === '🏪') continue;                              // 🏪 は絶対に置かない
-    used.add(k);
-    if(useFauna) an.push([e,c,r]); else it[k] = e;
+    if(e === '🏪') continue;   // 安全弁（pool に混入していても置かない）
+    taken.add(k);
+    if(wantFauna) an.push([e,c,r]);
+    else it[k] = e;
   }
   return { it, an };
 }
-// computeTerrainEmoji の結果をライブ世界へ実体化。戻り値＝配置総数（トースト用）。
-function placeTerrainEmoji(seed, density){
-  const { it, an } = computeTerrainEmoji(seed, density, terrain, GRID);
-  for(const k in it) items[k] = { emoji: it[k], bobOffset: Math.random()*Math.PI*2 };
-  for(const [e,c,r] of an) spawnAnimal(e,c,r);
-  return Object.keys(it).length + an.length;
+
+// ── 自動絵文字配置（薄いラッパ）— ライブの items/spawnAnimal へ実体化。戻り値＝配置数。
+function placeTerrainEmoji(seed, densityPct){
+  const r = computeTerrainEmoji(seed, densityPct, terrain, GRID);
+  for(const k in r.it){
+    if(items[k]) continue;   // 念のため衝突回避（act 由来の手置きは genByIndex で先にクリア済み）
+    items[k] = { emoji: r.it[k], bobOffset: Math.random()*Math.PI*2 };
+  }
+  for(const [e,c,r2] of r.an){ spawnAnimal(e, c, r2); }
+  return Object.keys(r.it).length + r.an.length;
 }
 
 // ═══════════════════════════════════════════
@@ -3169,17 +3412,44 @@ function findNearestFood(a){
   }
   return best;
 }
+// 水セル判定 / 最寄りの水セル（水生動物用）。terrain は "c,r"→type 文字列。
+function isWaterCell(c,r){ return terrain[`${c},${r}`] === 'water'; }
+function findNearestWater(cx, cy){
+  let best=null, bestD=Infinity;
+  for(let r=0;r<GRID;r++) for(let c=0;c<GRID;c++){
+    if(terrain[`${c},${r}`] !== 'water') continue;
+    const d=(c-cx)*(c-cx)+(r-cy)*(r-cy);
+    if(d<bestD){ bestD=d; best={c,r}; }
+  }
+  return best;
+}
 function updateAnimals(dt){
   for(const id in animals){
     const a=animals[id];
     if(a.eatCD>0) a.eatCD-=dt;
+    // 水生：陸セル滞在のタイマー進行 → 限界超過で消去（水中はリセット）。
+    // aqua フラグはセーブに乗らないため都度 AQUATIC.has() で判定し、古いセーブとも整合。
+    const aqua = AQUATIC.has(a.emoji);
+    if(aqua){
+      const cx=Math.floor(a.wx), cy=Math.floor(a.wy);
+      if(isWaterCell(cx,cy)){ a.strandT = 0; }
+      else {
+        a.strandT = (a.strandT||0) + dt;
+        if(a.strandT >= AQUA_STRAND_LIMIT){ delete animals[id]; continue; }
+      }
+    }
     if(!a.moving){
       a.waitTimer-=dt;
       if(a.waitTimer<=0){
         // 就寝中は徘徊・採餌・入店をせずその場で休む（移動中の個体は到達後に就寝）
         if(isAsleep(a)){ a.waitTimer=.8+Math.random()*2.5; continue; }
         let picked=false;
-        if(PEOPLE.has(a.emoji)){
+        // 水生で陸にいる：最寄りの水セルへ強制（店・食べ物・通常 wander は無視）
+        if(aqua && !isWaterCell(Math.floor(a.wx), Math.floor(a.wy))){
+          const w = findNearestWater(Math.floor(a.wx), Math.floor(a.wy));
+          if(w){ a.tx=w.c; a.ty=w.r; a.moving=true; a.flip=(a.tx<a.wx); picked=true; }
+        }
+        if(!picked && !aqua && PEOPLE.has(a.emoji)){
           const sk=storeAnchorKey();
           if(sk){
             const cell=nearestStoreCell(a,sk);
@@ -3189,7 +3459,7 @@ function updateAnimals(dt){
             }
           }
         }
-        if(!picked && (a.eatCD||0)<=0){
+        if(!picked && !aqua && (a.eatCD||0)<=0){
           const f=findNearestFood(a);
           if(f){ a.tx=f.c; a.ty=f.r; a.moving=true; a.flip=(a.tx<a.wx); picked=true; }
         }
@@ -3198,6 +3468,8 @@ function updateAnimals(dt){
             const dc=Math.round((Math.random()-.5)*6), dr=Math.round((Math.random()-.5)*6);
             const nc=Math.floor(a.wx)+dc, nr=Math.floor(a.wy)+dr;
             if(nc<0||nc>=GRID||nr<0||nr>=GRID) continue;
+            // 水生は水セルのみへ移動（陸への徘徊を防ぐ）
+            if(aqua && !isWaterCell(nc,nr)) continue;
             // 食べ物セルへの進入は許可。その他のアイテムと大型🏪フットプリントはブロック。
             if(cellOccupied(nc,nr) && !(items[`${nc},${nr}`] && isFood(items[`${nc},${nr}`].emoji))) continue;
             a.tx=nc; a.ty=nr; a.moving=true;
@@ -3273,7 +3545,7 @@ function storeFits(ac, ar, n){
 
 function act(c,r){
   if(c<0||c>=GRID||r<0||r>=GRID) return;
-  genClean = false;   // 手編集＝recipe 純度を失う（共有は dense にフォールバック）
+  genClean = false;   // 手編集＝レシピ純度を破棄（共有時は厳密往復パスへ）
   const key=`${c},${r}`;
   if(key===lastKey) return;
   lastKey=key;
@@ -3313,7 +3585,7 @@ function act(c,r){
       history.push({type:'terrain',key,c,r,old,terrain:selTerrain});
     } else if(terrainAction==='up'){
       const oldH=heights[key]||0;
-      if(oldH>=8) return;
+      if(oldH>=MAX_H) return;
       heights[key]=oldH+1;
       history.push({type:'height',key,c,r,old:oldH,new:heights[key]});
     } else if(terrainAction==='down'){
@@ -3415,6 +3687,7 @@ function updateRainFade(dt){
 }
 
 cv.addEventListener('mousedown',e=>{
+  closeAllPopups();   // 箱庭をクリックしたら開いているメニューを閉じる
   if(e.button===1||e.button===2){panning=true;panStart={x:e.clientX,y:e.clientY};panOrigin={x:targetOX,y:targetOY};return;}
   if(tryBubbleTap(e.clientX, e.clientY)) return;
   if(tryMoonTap(e.clientX, e.clientY)) return;
@@ -3437,6 +3710,7 @@ cv.addEventListener('wheel',e=>{
 // Touch: place only on touchend if tap (not drag), pan/pinch with 2 fingers
 cv.addEventListener('touchstart',e=>{
   e.preventDefault();
+  closeAllPopups();   // 箱庭をタップしたら開いているメニューを閉じる（touchはclick不発のため明示）
   if(e.touches.length===2){
     // 2-finger pan only (no pinch zoom)
     panStart={x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2};
@@ -3512,7 +3786,10 @@ function getFitScale(){
   const {TW,TH} = getTileDims();
   const maxW = cv.width  * 0.88;
   const maxH = (cv.height - 120) * 0.88;
-  let fs = Math.min(maxW / (GRID * TW), maxH / (GRID * TH));
+  // 3D は高い柱（最大 MAX_H、1段=TH*0.5 持ち上げ）が上にはみ出すので、
+  // 縦の必要量にピーク分の余白を見込んで fit させる。
+  const gridH = drawMode==='3d' ? (GRID + MAX_H*0.5) * TH : GRID * TH;
+  let fs = Math.min(maxW / (GRID * TW), maxH / gridH);
   if(drawMode!=='3d') fs *= 0.8; // 2D は full-fit から 1 段引く
   return fs;
 }
@@ -3525,7 +3802,8 @@ function resetView(){
   if(drawMode==='3d'){
     // OX = screen center (iso origin is center-top of diamond)
     ox = cv.width / 2;
-    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
+    // ピーク余白の半分だけ下げ、高い柱が上端で切れないようにする
+    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20 + (MAX_H * TH * fitScale * 0.5) / 2;
   } else {
     ox = cv.width  / 2 - (GRID * TW / 2) * fitScale - 30;
     oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
@@ -3796,7 +4074,8 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   history=[];
-  lastGen=null; genClean=false;
+  lastGen = null;
+  genClean = false;
   clearSave();
   document.getElementById('menu-popup').style.display = 'none';
   showToast(tr('toast.clearAll'));
@@ -3875,6 +4154,201 @@ document.getElementById('btn-share').addEventListener('click', async e=>{
   }
 });
 
+// ═══════════════════════════════════════════
+// 📸 箱庭GIF書き出し（依存ゼロ・自前GIF89aエンコーダ）
+//   📸 タップで即「今の見たまま」を正方形クリップに（メニューなし）。
+//   UI は cv 非描画ゆえ含まれない。保存後ヒントは端末別（iOS/Android/その他）。
+//   Live Photo 化は端末側の Shortcut/アプリで（埋め込み不可・文言案内のみ）。
+// ═══════════════════════════════════════════
+const GIF_SECONDS = 3, GIF_FPS = 12, GIF_SIZE = 320;
+let gifBusy = false;
+
+// 全フレームを median-cut で ≤256 色に量子化
+function _gifQuantize(frames, n){
+  const samp = [];
+  const stride = Math.max(4, (Math.floor(frames[0].length / 4 / 6000)) * 4); // ~6k/frame
+  for(const f of frames)
+    for(let p = 0; p < f.length; p += stride) samp.push([f[p], f[p+1], f[p+2]]);
+  const mkBox = pts => {
+    let r0=255,g0=255,b0=255,r1=0,g1=0,b1=0;
+    for(const c of pts){
+      if(c[0]<r0)r0=c[0]; if(c[0]>r1)r1=c[0];
+      if(c[1]<g0)g0=c[1]; if(c[1]>g1)g1=c[1];
+      if(c[2]<b0)b0=c[2]; if(c[2]>b1)b1=c[2];
+    }
+    return { pts, r:r1-r0, g:g1-g0, b:b1-b0 };
+  };
+  let boxes = [mkBox(samp)];
+  while(boxes.length < n){
+    let bi=-1, best=-1;
+    for(let i=0;i<boxes.length;i++){
+      const bx=boxes[i]; if(bx.pts.length<2) continue;
+      const m=Math.max(bx.r,bx.g,bx.b); if(m>best){best=m;bi=i;}
+    }
+    if(bi<0) break;
+    const bx=boxes[bi];
+    const ch = bx.r>=bx.g && bx.r>=bx.b ? 0 : (bx.g>=bx.b ? 1 : 2);
+    bx.pts.sort((a,b)=>a[ch]-b[ch]);
+    const mid=bx.pts.length>>1;
+    boxes.splice(bi,1, mkBox(bx.pts.slice(0,mid)), mkBox(bx.pts.slice(mid)));
+  }
+  const pal=[];
+  for(const bx of boxes){
+    const L=bx.pts.length||1; let r=0,g=0,b=0;
+    for(const c of bx.pts){ r+=c[0]; g+=c[1]; b+=c[2]; }
+    pal.push([Math.round(r/L),Math.round(g/L),Math.round(b/L)]);
+  }
+  while(pal.length<256) pal.push([0,0,0]);
+  return pal.slice(0,256);
+}
+
+// GIF 可変長 LZW（最小コードサイズ8）
+function _gifLZW(idx){
+  const MIN=8, CLR=256, EOI=257;
+  const out=[]; let acc=0, nb=0;
+  const put=(c,s)=>{ acc|=c<<nb; nb+=s; while(nb>=8){ out.push(acc&255); acc>>>=8; nb-=8; } };
+  let cs=MIN+1, dict=new Map(), next=EOI+1;
+  put(CLR,cs);
+  let cur=idx[0];
+  for(let i=1;i<idx.length;i++){
+    const k=idx[i], key=(cur<<8)|k, got=dict.get(key);
+    if(got!==undefined){ cur=got; continue; }
+    put(cur,cs);
+    dict.set(key,next);
+    if(next===(1<<cs)){ if(cs<12) cs++; }
+    next++;
+    cur=k;
+    if(next===4096){ put(CLR,cs); dict=new Map(); next=EOI+1; cs=MIN+1; }
+  }
+  put(cur,cs); put(EOI,cs);
+  if(nb>0) out.push(acc&255);
+  return out;
+}
+
+function _gifEncode(frames, size, delayCs){
+  const pal=_gifQuantize(frames,256);
+  const cache=new Int16Array(32768).fill(-1);
+  const near=(r,g,b)=>{
+    const key=((r>>3)<<10)|((g>>3)<<5)|(b>>3);
+    let v=cache[key]; if(v>=0) return v;
+    let bi=0,bd=1e12;
+    for(let i=0;i<256;i++){ const p=pal[i],dr=p[0]-r,dg=p[1]-g,db=p[2]-b,d=dr*dr+dg*dg+db*db; if(d<bd){bd=d;bi=i;} }
+    cache[key]=bi; return bi;
+  };
+  const b=[]; const w16=v=>b.push(v&255,(v>>8)&255);
+  for(const c of 'GIF89a') b.push(c.charCodeAt(0));
+  w16(size); w16(size); b.push(0xF7,0,0);
+  for(let i=0;i<256;i++){ const p=pal[i]; b.push(p[0],p[1],p[2]); }
+  b.push(0x21,0xFF,0x0B);
+  for(const c of 'NETSCAPE2.0') b.push(c.charCodeAt(0));
+  b.push(0x03,0x01,0,0,0x00);
+  const px=size*size;
+  for(const f of frames){
+    b.push(0x21,0xF9,0x04,0x00, delayCs&255,(delayCs>>8)&255, 0x00,0x00);
+    b.push(0x2C); w16(0); w16(0); w16(size); w16(size); b.push(0x00, 0x08);
+    const idx=new Uint8Array(px);
+    for(let p=0,q=0;p<px;p++,q+=4) idx[p]=near(f[q],f[q+1],f[q+2]);
+    const lz=_gifLZW(idx);
+    for(let i=0;i<lz.length;i+=255){
+      const m=Math.min(255,lz.length-i); b.push(m);
+      for(let j=0;j<m;j++) b.push(lz[i+j]);
+    }
+    b.push(0x00);
+  }
+  b.push(0x3B);
+  return new Blob([new Uint8Array(b)],{type:'image/gif'});
+}
+
+// 「今の見たまま」を正方形に。キャンバスのサイズ・スケール・カメラは一切
+// 変更せず現状のまま描画し、中央の正方形（短辺）を切り出して GIF_SIZE へ
+// 等倍縮小する。背景（空/星/月）はキャンバス基準で描かれるため、サイズを
+// 変えると縮んで見える＝今回はサイズ非変更なので背景も画面と同じ比率のまま。
+// アニメ状態のみ進めて復元（rAF と非干渉）。
+function _gifCapture(){
+  const W0=cv.width, H0=cv.height;
+  const side=Math.min(W0,H0), sx=(W0-side)/2, sy=(H0-side)/2;
+  const sT=animT, sDay=timeOfDay, sAn=JSON.stringify(animals), sAid=animalId;
+  const g=document.createElement('canvas'); g.width=g.height=GIF_SIZE;
+  const gx=g.getContext('2d', { willReadFrequently:true });
+  const n=Math.round(GIF_SECONDS*GIF_FPS), dt=1/GIF_FPS, frames=[];
+  for(let i=0;i<n;i++){
+    updateAnimals(dt); animT+=dt;          // timeOfDay/天気は据え置き
+    render();
+    gx.drawImage(cv, sx, sy, side, side, 0, 0, GIF_SIZE, GIF_SIZE);  // 中央正方形→等倍縮小
+    frames.push(gx.getImageData(0,0,GIF_SIZE,GIF_SIZE).data);
+  }
+  animT=sT; timeOfDay=sDay; animalId=sAid;
+  for(const k in animals) delete animals[k];
+  Object.assign(animals, JSON.parse(sAn));
+  return frames;
+}
+
+// 保存後ヒントは端末別（Live Photo は iOS のみ。Android/その他にも案内）
+function _gifHintKey(){
+  const ua=navigator.userAgent||'';
+  const iOS=/iPad|iPhone|iPod/.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  if(iOS) return 'toast.gifHint';
+  if(/Android/.test(ua)) return 'toast.gifHintAndroid';
+  return 'toast.gifHintSaved';
+}
+
+// 撮影される正方形（短辺・中央）。_gifCapture の切り出し矩形と一致＝WYSIWYG
+function layoutGifFrame(){
+  const W=window.innerWidth, H=window.innerHeight, side=Math.min(W,H);
+  const sq=document.getElementById('gif-frame-sq');
+  sq.style.width=sq.style.height=side+'px';
+  sq.style.left=((W-side)/2)+'px';
+  sq.style.top=((H-side)/2)+'px';
+}
+function showGifFrame(on){
+  document.getElementById('gif-frame-overlay').style.display = on ? 'block' : 'none';
+}
+async function runGifExport(){
+  if(gifBusy) return;
+  gifBusy=true;
+  try{
+    showToast(tr('toast.gifMaking'));
+    await new Promise(r=>setTimeout(r,50));      // トースト描画を待つ
+    const frames=_gifCapture();
+    await new Promise(r=>setTimeout(r,0));
+    const blob=_gifEncode(frames, GIF_SIZE, Math.round(100/GIF_FPS));
+    const file=new File([blob], 'emoji-niwa-'+Date.now()+'.gif', {type:'image/gif'});
+    let saved=false;
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:'emoji-niwa'}); saved=true; }
+      catch(_){ saved=false; }   // キャンセル等＝保存されていない
+    } else {
+      const u=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=u; a.download=file.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u),4000);
+      saved=true;
+    }
+    if(saved) showToast(tr(_gifHintKey()));   // 保存した時だけヒントを出す
+  }catch(err){ showToast(tr('toast.gifError')); }
+  finally{ gifBusy=false; }
+}
+
+document.getElementById('btn-gif').addEventListener('click', e=>{
+  e.stopPropagation();
+  if(gifBusy) return;
+  closeAllPopups();
+  layoutGifFrame();
+  showGifFrame(true);          // 撮影範囲を提示。OK で実行
+});
+document.getElementById('btn-gif-cancel').addEventListener('click', e=>{
+  e.stopPropagation();
+  showGifFrame(false);
+});
+document.getElementById('btn-gif-ok').addEventListener('click', e=>{
+  e.stopPropagation();
+  showGifFrame(false);
+  runGifExport();
+});
+window.addEventListener('resize', ()=>{
+  if(document.getElementById('gif-frame-overlay').style.display==='block') layoutGifFrame();
+});
+
 // 共有URL閲覧バーの表示と操作
 function showVisitingBar(){ document.getElementById('visiting-bar').style.display = 'block'; }
 document.getElementById('btn-visit-back').addEventListener('click', e=>{
@@ -3894,14 +4368,16 @@ document.getElementById('btn-visit-keep').addEventListener('click', e=>{
   saveState(); restartAutosave();
 });
 
-// ── 多人数（共有プレイ）─ オプトイン。MP_* 未設定なら無効＝オフライン従来動作 ──
-const MP_HTTP = 'https://emoji-niwa.fly.dev';   // 多人数APIサーバー（Fly.io）
+// ── マルチプレイ ─ オプトイン。MP_* 未設定なら無効＝オフライン従来動作 ──
+const MP_HTTP = 'https://emoji-niwa.fly.dev';   // マルチプレイAPIサーバー（Fly.io）
 const MP_WS   = 'wss://emoji-niwa.fly.dev';     // 同 WebSocket
 const MP_AUTH_KEY = 'emoji-niwa-auth';
 const MP_NAME_KEY = 'emoji-niwa-name';
 let mpActive=false, mpOwner=false, mpWs=null, mpGotSnap=false, mpSeeded=false;
 let mpApplying=false, mpRoomId='', mpPeers=0, mpRetry=0, mpSendT=null, mpOwnerTimer=null;
-let mpMyName='', mpNames=[], mpCap=0, mpRosterInit=false;
+let mpTtlDays=7;          // 空き部屋の保持日数（roleで更新・オーナーのみ変更UI表示）
+const MP_TTL_MAX=30;      // UI上限（サーバも同値でクランプ）
+let mpMyName='', mpNames=[], mpCap=0, mpRosterInit=false, mpJoinAnnounced=false;
 
 function mpName(){ try{ return localStorage.getItem(MP_NAME_KEY)||''; }catch(_){ return ''; } }
 // 表示名入力フロー（ゲスト・オーナー共通）。キャンセルで null
@@ -3919,7 +4395,7 @@ function mpSetToken(t){ try{ localStorage.setItem(MP_AUTH_KEY, t); }catch(_){ } 
 function mpClearToken(){ try{ localStorage.removeItem(MP_AUTH_KEY); }catch(_){ } }
 function mpInviteUrl(){ return location.origin + location.pathname + '#r=' + mpRoomId; }
 
-// 共有プレイメニューを 👥 アイコン列の直下（画面左）に配置
+// マルチプレイメニューを 👥 アイコン列の直下（画面左）に配置
 function mpPlace(){
   const bar=document.getElementById('mp-bar'), cb=document.getElementById('corner-btns');
   if(!bar||!cb) return;
@@ -3944,6 +4420,21 @@ function mpBar(mode){
     mk(tr('mp.copy'), mpCopyInvite);
     mk(tr('mp.leave'), mpLeave);
     if(mpToken()) mk(tr('auth.logout'), mpLogout);
+    if(mpOwner && mpToken()){            // オーナー専用：空き部屋の保持日数
+      const wrap=document.createElement('div');
+      wrap.style.cssText='display:flex;align-items:center;gap:6px;margin-top:6px;width:100%;font-size:11px;color:#a8e063';
+      const lab=document.createElement('span'); lab.textContent=tr('mp.ttl'); lab.style.flex='1';
+      const inp=document.createElement('input');
+      inp.type='number'; inp.min='1'; inp.max=String(MP_TTL_MAX); inp.value=String(mpTtlDays);
+      inp.style.cssText='width:50px;background:rgba(0,0,0,.3);border:1px solid rgba(120,210,130,.3);color:#fff;border-radius:6px;font-size:12px;padding:3px 5px;text-align:center';
+      inp.addEventListener('click',e=>e.stopPropagation());
+      const setb=document.createElement('button'); setb.className='tbtn'; setb.textContent=tr('mp.ttlSet');
+      setb.addEventListener('click',e=>{ e.stopPropagation();
+        let d=parseInt(inp.value,10); if(!Number.isFinite(d)) d=mpTtlDays;
+        d=Math.max(1,Math.min(MP_TTL_MAX,d)); inp.value=String(d); mpSetTtl(d); });
+      wrap.appendChild(lab); wrap.appendChild(inp); wrap.appendChild(setb);
+      act.appendChild(wrap);
+    }
   }
   mpPlace();
   bar.style.display='block';
@@ -3962,6 +4453,22 @@ async function mpCopyInvite(){
   const u=mpInviteUrl();
   try{ await navigator.clipboard.writeText(u); showToast(tr('toast.inviteCopied')); }
   catch(_){ window.prompt(tr('mp.copy'), u); }
+}
+// オーナーのみ：空き部屋の保持日数を変更（サーバが creator かつ [1,30] を強制）
+async function mpSetTtl(days){
+  const t=mpToken();
+  if(!t || !MP_HTTP || !mpRoomId) return;
+  try{
+    const res=await fetch(MP_HTTP+'/room/'+encodeURIComponent(mpRoomId)+'/ttl',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},
+      body:JSON.stringify({days})
+    });
+    if(!res.ok) throw 0;
+    const j=await res.json();
+    mpTtlDays=j.days|0;
+    showToast(tr('toast.ttlSet',{n:mpTtlDays}));   // サーバが Refresh 配信→roleで他者にも反映
+  }catch(_){ showToast(tr('toast.ttlErr')); }
 }
 function mpLeave(){
   mpActive=false;
@@ -4005,9 +4512,14 @@ async function mpOnMsg(ev){
     }
   } else if(m.t==='role'){
     mpOwner=!!m.owner;
+    if(typeof m.ttlDays==='number'){ mpTtlDays=m.ttlDays; mpRefreshBar(); }  // 保持日数を反映
     if(mpOwner && !mpGotSnap && !mpSeeded){ mpSeeded=true; mpSend(); }   // 新規room: 作成者がシード
   } else if(m.t==='peers'){
     const next=Array.isArray(m.names)?m.names:[];
+    if(!mpJoinAnnounced && mpMyName && next.indexOf(mpMyName)>=0){
+      mpJoinAnnounced=true;       // 自分の入室を1回だけ告知（オーナー作成時もログに残る・再接続では出ない）
+      mpChatSystem(tr('chat.joined',{name:mpMyName}));
+    }
     if(mpRosterInit){
       for(const nm of next){
         if(nm && nm!==mpMyName && mpNames.indexOf(nm)<0) mpChatSystem(tr('chat.joined',{name:nm}));
@@ -4018,7 +4530,7 @@ async function mpOnMsg(ev){
   } else if(m.t==='chat'){
     mpChatAppend(m.name, m.text);
   } else if(m.t==='full'){
-    // 満員：再接続せず多人数を停止し、自分の世界に留まる
+    // 満員：再接続せずマルチプレイを停止し、自分の世界に留まる
     mpActive=false;
     if(mpOwnerTimer){ clearInterval(mpOwnerTimer); mpOwnerTimer=null; }
     try{ if(mpWs){ mpWs.onclose=null; mpWs.close(); } }catch(_){ }
@@ -4028,7 +4540,7 @@ async function mpOnMsg(ev){
     showToast(tr('toast.roomFull'));
   }
 }
-// ── 共有プレイ チャット ──────────────────────────────────
+// ── マルチプレイ チャット ──────────────────────────────────
 // チャットの高さぶん、下部の 3D/高さ/ミニマップを持ち上げて隠れを防ぐ
 function mpChatLift(){
   const el=document.getElementById('mp-chat');
@@ -4140,7 +4652,7 @@ function mpConnect(){
 }
 function mpJoin(roomId, name){
   mpRoomId=roomId; mpMyName=name||mpName()||'ゲスト';
-  mpActive=true; mpGotSnap=false; mpSeeded=false;
+  mpActive=true; mpGotSnap=false; mpSeeded=false; mpJoinAnnounced=false;
   mpPeers=0; mpNames=[]; mpUpdateCountBadge();
   const log=document.getElementById('mpc-log'); if(log) log.textContent='';
   mpChatShow(true);
@@ -4239,7 +4751,8 @@ document.getElementById('nm-create').addEventListener('click',()=>{
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   history=[];
-  lastGen=null; genClean=false;
+  lastGen = null;
+  genClean = false;
   nmPopup.style.display='none';
   resetView();
   if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
@@ -4387,28 +4900,30 @@ function applyGenResult(result){
     applyTerrainMap(result);
   }
 }
-// ── 共有URLレシピ用：手続き生成の出自を追跡し、決定論で再現可能にする ──
-// gen* 本体・MAP_PRESETS は変更しない。生成の呼び出しを seed 化 Math.random で包むだけ。
-const GEN_NAMES = Object.keys(MAP_PRESETS);
-const GEN_VER = 1;            // 生成アルゴリズムを変えたら +1（旧レシピリンクの差異検知用）
-let lastGen = null;           // {n:プリセット番号, s:seed, gm:'flat'|'height'}／手編集や単色塗りで null
-let genClean = false;         // 直近に生成器で作られ手編集が無い世界か（recipe 共有＝自動絵文字を列挙しない前提）
-function withSeededRandom(seed, fn){
-  const orig = Math.random, rng = mulberry32(seed >>> 0);
-  Math.random = rng;
-  try{ return fn(); } finally{ Math.random = orig; }
-}
-function genByIndex(idx){
-  const seed = Math.floor(Math.random() * 99999);
-  lastGen = { n: idx, s: seed, gm: genMode };
-  applyGenResult(withSeededRandom(seed, () => MAP_PRESETS[GEN_NAMES[idx]](seed)));
-  // 「新世界」セマンティクス（scatter と同じ）＝旧 items/animals を捨て、
-  // 地形に合う絵文字を seed から決定論配置。history は空＝生成は不可分。
+
+// ── 生成レシピ：共有URLの最小化と決定論再現に必要な「直近生成」の意図を保持 ──
+// lastGen={s:seed, i:プリセット添字, m:genMode}。genClean=直前生成以降に手編集が無い印。
+// MAP_PRESET_NAMES は MAP_PRESETS の宣言順を凍結（共有 av と整合：順序変更時は AE_VER を +1）。
+const MAP_PRESET_NAMES = Object.keys(MAP_PRESETS);
+let lastGen = null;
+let genClean = false;
+// 自動絵文字配置の状態（セッションのみ・localStorage 非永続）
+let aeOn = true;
+let aeDensity = 30;
+
+// プリセット添字を受け取り、生成→既存 items/animals/history クリア→自動絵文字配置→genClean=true。
+// 戻り値＝自動配置した個数（toast 切替用）。idx<0 or 範囲外で 0。seed 未指定で乱数。
+function genByIndex(idx, seed){
+  if(typeof idx !== 'number' || idx < 0 || idx >= MAP_PRESET_NAMES.length) return 0;
+  if(typeof seed !== 'number') seed = Math.floor(Math.random()*99999);
+  const name = MAP_PRESET_NAMES[idx];
+  applyGenResult(MAP_PRESETS[name](seed));
   for(const k in items) delete items[k];
   for(const k in animals) delete animals[k];
+  history = [];
+  lastGen = { s: seed|0, i: idx, m: genMode };
   let aePlaced = 0;
   if(aeOn) aePlaced = placeTerrainEmoji(seed, aeDensity);
-  history = [];
   genClean = true;
   return aePlaced;
 }
@@ -4427,24 +4942,42 @@ document.getElementById('gen-mode-height').addEventListener('click',e=>{
   if(typeof updateLandSummary==='function') updateLandSummary();
 });
 
-Object.keys(MAP_PRESETS).forEach((name,idx)=>{
-  const btn=document.createElement('button');
-  btn.className='tbtn';
-  btn.style.cssText='font-size:9px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1';
-  const parts=name.split(' ');
-  btn.innerHTML=`<span style="font-size:16px">${parts[0]}</span><span style="font-weight:600" data-i18n="map:${name}">${tr('map:'+name)}</span>`;
-  btn.addEventListener('click',()=>{
-    const n=genByIndex(idx);
-    genPopup.style.display='none';
-    const nm=parts[0]+' '+tr('map:'+name);
-    showToast(aeOn&&n>0 ? tr('toast.genMapDecor',{name:nm,n}) : tr('toast.genMap',{name:nm}));
+(function renderGenGroups(){
+  const host=document.getElementById('gen-btns');
+  const mkBtn=(name)=>{
+    const btn=document.createElement('button');
+    btn.className='tbtn';
+    btn.style.cssText='font-size:9px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1';
+    const parts=name.split(' ');
+    btn.innerHTML=`<span style="font-size:16px">${parts[0]}</span><span style="font-weight:600" data-i18n="map:${name}">${tr('map:'+name)}</span>`;
+    btn.addEventListener('click',()=>{
+      const idx = MAP_PRESET_NAMES.indexOf(name);
+      const n = genByIndex(idx);
+      genPopup.style.display='none';
+      const lbl = parts[0]+' '+tr('map:'+name);
+      showToast(aeOn && n>0 ? tr('toast.genMapDecor',{name:lbl, n}) : tr('toast.genMap',{name:lbl}));
+      mpTouch();
+    });
+    return btn;
+  };
+  MAP_GROUPS.forEach((g,i)=>{
+    const label=document.createElement('div');
+    label.setAttribute('data-i18n', g.key);
+    label.textContent=tr(g.key);
+    label.style.cssText=`font-size:10px;color:rgba(180,220,180,.55);margin:${i?'9px':'0'} 0 5px`;
+    host.appendChild(label);
+    const grid=document.createElement('div');
+    grid.style.cssText='display:grid;grid-template-columns:repeat(5,1fr);gap:5px';
+    g.names.forEach(name=>{ if(MAP_PRESETS[name]) grid.appendChild(mkBtn(name)); });
+    host.appendChild(grid);
   });
-  document.getElementById('gen-btns').appendChild(btn);
-});
+})();
 document.getElementById('btn-gen-random').addEventListener('click',()=>{
-  const n=genByIndex(Math.floor(Math.random()*GEN_NAMES.length));
+  const idx = Math.floor(Math.random()*MAP_PRESET_NAMES.length);
+  const n = genByIndex(idx);
   genPopup.style.display='none';
-  showToast(aeOn&&n>0 ? tr('toast.genRandomDecor',{n}) : tr('toast.genRandom'));
+  showToast(aeOn && n>0 ? tr('toast.genRandomDecor',{n}) : tr('toast.genRandom'));
+  mpTouch();
 });
 let lastOpenAcc = 'land';
 function updateLandSummary(){
@@ -4539,36 +5072,52 @@ scSlider.addEventListener('input',e=>{scCount=parseInt(e.target.value);refreshSc
 refreshScatterUI();
 updateLandSummary();
 
-// Auto terrain emoji（土地生成パネル内・セッションのみ／localStorage 非永続）
-let aeOn = true;
-let aeDensity = 30;
+// 自動絵文字配置 UI（密度スライダー＋ON/OFF＋プリセット）。状態はセッションのみで非永続。
 const aeSlider = document.getElementById('ae-slider');
-const aePctEl  = document.getElementById('ae-pct');
-const aeOnBtn  = document.getElementById('ae-on');
+const aeCountEl = document.getElementById('ae-count');
+const aeInfoEl = document.getElementById('ae-info');
+const aeOnBtn = document.getElementById('ae-on');
 const aeOffBtn = document.getElementById('ae-off');
+
 function refreshAutoEmojiUI(){
-  aeDensity = Math.max(0, Math.min(100, aeDensity));
+  if(!aeSlider) return;
+  if(aeDensity < 0) aeDensity = 0;
+  if(aeDensity > 100) aeDensity = 100;
   aeSlider.value = aeDensity;
-  aeSlider.disabled = !aeOn;
-  aeSlider.style.opacity = aeOn ? '' : '.4';
-  aePctEl.textContent = aeDensity + '%';
-  aePctEl.style.opacity = aeOn ? '' : '.4';
+  aeCountEl.textContent = aeDensity;
+  aeInfoEl.textContent = tr('aeInfo',{pct:aeDensity});
   aeOnBtn.classList.toggle('active', aeOn);
   aeOffBtn.classList.toggle('active', !aeOn);
+  const sum = document.getElementById('acc-summary-ae');
+  if(sum) sum.textContent = tr('aeSummary',{state: tr(aeOn?'aeStateOn':'aeStateOff'), pct: aeDensity});
+  document.querySelectorAll('#ae-presets .ae-preset').forEach(b=>{
+    b.classList.toggle('active', parseInt(b.dataset.val)===aeDensity);
+  });
 }
-aeOnBtn.addEventListener('click', e=>{ e.stopPropagation(); aeOn=true;  refreshAutoEmojiUI(); });
-aeOffBtn.addEventListener('click', e=>{ e.stopPropagation(); aeOn=false; refreshAutoEmojiUI(); });
-aeSlider.addEventListener('input', e=>{ aeDensity=parseInt(e.target.value); refreshAutoEmojiUI(); });
+
+aeOnBtn.addEventListener('click',e=>{ e.stopPropagation(); aeOn = true;  refreshAutoEmojiUI(); });
+aeOffBtn.addEventListener('click',e=>{ e.stopPropagation(); aeOn = false; refreshAutoEmojiUI(); });
+aeSlider.addEventListener('input',e=>{ aeDensity = parseInt(e.target.value); refreshAutoEmojiUI(); });
+[0,15,30,50,75].forEach(p=>{
+  const btn=document.createElement('button');
+  btn.className='tbtn ae-preset';
+  btn.dataset.val=p;
+  btn.style.cssText='font-size:10px;padding:6px 2px;font-weight:600';
+  btn.textContent=p+'%';
+  btn.addEventListener('click',e=>{ e.stopPropagation(); aeDensity = p; refreshAutoEmojiUI(); });
+  document.getElementById('ae-presets').appendChild(btn);
+});
 refreshAutoEmojiUI();
 
 // Solid color
 function lighten(hex,amt){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);const cl=v=>Math.max(0,Math.min(255,Math.round(v+255*amt)));return`#${cl(r).toString(16).padStart(2,'0')}${cl(g).toString(16).padStart(2,'0')}${cl(b).toString(16).padStart(2,'0')}`;}
 const SOLID=[{label:'🌿 草',c:'#4a8a3a'},{label:'🏜 砂',c:'#d4aa5a'},{label:'🌊 水',c:'#2a6e9a'},{label:'❄️ 雪',c:'#ddeeff'},{label:'⬛ 岩',c:'#3a3530'},{label:'🟫 土',c:'#8b5e3c'},{label:'🟪 紫',c:'#7a4a9a'},{label:'🟥 赤',c:'#9a3a3a'}];
 function fillSolid(hex){
-  lastGen = null; genClean = false;   // 単色塗りはレシピ非対象→共有は dense フォールバック
   TERRAIN_COLORS[hex]=[hex, hex];
   const tmap={};for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)tmap[`${c},${r}`]=hex;
   applyTerrainMap({terrain:tmap, heights:{}});
+  lastGen = null;       // 単色塗りつぶしはレシピ外＝以降の共有は厳密往復パスへ
+  genClean = false;
 }
 SOLID.forEach(({label,c})=>{
   const btn=document.createElement('button');btn.className='tbtn';
@@ -4638,7 +5187,6 @@ function refreshAllFxToggles(){
 refreshAllFxToggles();
 
 document.getElementById('btn-scatter').addEventListener('click',()=>{
-  genClean=false;   // ランダム散布は seed から再現不可＝recipe 非対象
   let favs;
   if(scSource === 'recent'){
     favs = [...(CATEGORIES['📌 履歴']||[])];
@@ -4652,6 +5200,7 @@ document.getElementById('btn-scatter').addEventListener('click',()=>{
   for(const k in items)delete items[k];
   for(const k in animals)delete animals[k];
   history=[];
+  genClean = false;   // ランダム散布は地形レシピと無関係＝以降は厳密往復パス
   const cells=[];for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)cells.push({c,r});
   for(let i=cells.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
   // 🏪 はランダム配置でも 3×3 を1個だけ置く（端は内側へクランプ、フットプリントは確保）
@@ -4727,124 +5276,103 @@ function refreshFpsUI(){
 let visiting = false;
 
 // 共有する「世界＋情景」のみ（個人設定 lang/音/ミュート/履歴等は含めない）
-// 共有用コンパクトペイロード（sf:2）。bobOffset や animals の実行時 float など
+// 共有用コンパクトペイロード（sf:2／sf:3）。bobOffset や animals の実行時 float など
 // エンティティ毎の高エントロピー値を捨て、deflate が効く形にして URL を短縮。
+// sf:3 は「直近生成のレシピ＋AE 密度」だけを載せ、開封側で同一の純関数から再生成する形。
+// 手編集が無い（genClean=true）かつ直近生成がある時のみ採用。それ以外は従来 sf:2 で厳密往復。
 // 保存形式(saveState)と applyState は不変。decodeWorld 側で元の形へ復元する。
-// 共有アイテム/動物のコンパクト表現（dense/recipe 共通）
-function compactEntities(){
-  const it = {};
-  for(const k in items){ const v = items[k]; it[k] = (v.size>1) ? [v.emoji, v.size] : v.emoji; }
-  const an = [];
-  for(const id in animals){ const a = animals[id]; an.push([a.emoji, Math.round(a.wx), Math.round(a.wy)]); }
-  return { it, an };
-}
-// 従来の全グリッド形式（sf:2）。レシピで再現できない時のフォールバック。
-function densePayload(){
-  const { it, an } = compactEntities();
-  return {
-    v: SAVE_VERSION, sf: 2,
-    grid: GRID,
-    terrain, heights,
-    it, an,
+function worldPayload(){
+  // 共通：時刻・天気・表示設定など、レシピでは再現できない情景。
+  const scene = {
     timeOfDay: Math.round(timeOfDay*1e4)/1e4, dayPaused, weather,
     drawMode, showHeights, heightsTouched,
     weatherRandomOn,
     weatherRandomPool: [...weatherRandomPool],
     fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
   };
-}
-// レシピを決定論で再生成し {terrain,heights} を返す（gen* 本体は不変）
-function regenTerrain(rec){
-  const name = GEN_NAMES[rec.G];
-  if(!name) return null;
-  let r;
-  try{ r = withSeededRandom(rec.s >>> 0, () => MAP_PRESETS[name](rec.s)); }
-  catch(_){ return null; }
-  return { terrain: r.terrain || {}, heights: rec.gm === 'f' ? {} : (r.heights || {}) };
-}
-// 値の完全一致（terrain は文字列、heights は数値。両方向にキー比較）
-function mapEquals(a, b){
-  for(const k in a){ if(a[k] !== b[k]) return false; }
-  for(const k in b){ if(a[k] !== b[k]) return false; }
-  return true;
-}
-// 生成直後（地形が無編集）なら超短縮レシピ(sf:3)。情景は非既定のみ載せる。
-function recipePayload(){
-  const { it, an } = compactEntities();
-  const p = { v: SAVE_VERSION, sf: 3, g: GRID, gv: GEN_VER, av: AE_VER,
-              G: lastGen.n, s: lastGen.s, gm: (lastGen.gm === 'flat' ? 'f' : 'h'),
-              t: Math.round(timeOfDay*1e4)/1e4, w: weather, dm: drawMode,
-              sh: showHeights ? 1 : 0 };
-  if(dayPaused) p.dp = 1;
-  if(heightsTouched) p.ht = 1;
-  if(weatherRandomOn) p.wr = 1;
-  if(weatherRandomPool && weatherRandomPool.size) p.wp = [...weatherRandomPool];
-  const fxb = (auroraOn?1:0)|(fireworksOn?2:0)|(bubblesOn?4:0)|(mistOn?8:0);
-  if(fxb) p.fx = fxb;
-  if(aeOn && genClean){
-    // 自動絵文字は (s, ae) から決定論再生成可能＝列挙しない（高密度50×50でも極小）
-    p.ae = aeDensity;
-  } else {
-    if(Object.keys(it).length) p.it = it;
-    if(an.length) p.an = an;
+  // レシピ採用条件：直近生成が記録されており、その後に手編集が一切無いこと。
+  if(lastGen && genClean){
+    const p = {
+      v: SAVE_VERSION, sf: 3,
+      g: GRID,
+      s: lastGen.s, gi: lastGen.i, gm: lastGen.m || 'height',
+      av: AE_VER,
+    };
+    if(aeOn) p.ae = aeDensity|0;
+    Object.assign(p, scene);
+    return p;
   }
-  return p;
+  // フォールバック：sf:2 で全 items/animals を載せる（厳密往復）
+  const it = {};
+  for(const k in items){ const v = items[k]; it[k] = (v.size>1) ? [v.emoji, v.size] : v.emoji; }
+  const an = [];
+  for(const id in animals){ const a = animals[id]; an.push([a.emoji, Math.round(a.wx), Math.round(a.wy)]); }
+  return Object.assign({
+    v: SAVE_VERSION, sf: 2,
+    grid: GRID,
+    terrain, heights,
+    it, an,
+  }, scene);
 }
-function worldPayload(){
-  // レシピが現在地形を完全再現できる時のみ sf:3（URL を激短縮）。
-  // 手描き地形・単色塗り・生成履歴なし・往復不一致は従来 sf:2 へ安全フォールバック。
-  if(lastGen){
-    const base = regenTerrain({ G:lastGen.n, s:lastGen.s, gm:(lastGen.gm==='flat'?'f':'h') });
-    if(base && mapEquals(base.terrain, terrain) && mapEquals(base.heights, heights)){
-      return recipePayload();
+// コンパクト共有形式(sf:2 / sf:3) を applyState が期待する通常 data 形へ復元
+function expandShared(d){
+  if(!d || (d.sf !== 2 && d.sf !== 3)) return d;   // 旧共有URL(sf無し)はそのまま
+  // ── sf:3：レシピから地形を再生成し、自動絵文字を計算して sf:2 相当の形を組み立てる
+  let baseTerrain = null, baseHeights = null, aeIt = {}, aeAn = [], gridN = d.grid || d.g || GRID;
+  if(d.sf === 3){
+    gridN = (typeof d.g === 'number') ? d.g : GRID;
+    const idx = (typeof d.gi === 'number') ? d.gi : -1;
+    const name = (idx>=0 && idx<MAP_PRESET_NAMES.length) ? MAP_PRESET_NAMES[idx] : null;
+    if(name && MAP_PRESETS[name]){
+      // 配信時の GRID を一時セットして MAP_PRESETS を実行（既存ジェネレータは GRID 参照）
+      const savedGrid = GRID;
+      GRID = gridN;
+      try {
+        const res = MAP_PRESETS[name](d.s|0);
+        const tmap = res.terrain || res;
+        const hmapSrc = res.heights || {};
+        const hmap = {};
+        for(const k in hmapSrc) hmap[k] = Math.min(MAX_H, Math.max(0, Math.round(hmapSrc[k]*GEN_H_SCALE)));
+        baseTerrain = tmap;
+        baseHeights = (d.gm === 'flat') ? {} : hmap;
+        if(typeof d.ae === 'number'){
+          const r = computeTerrainEmoji(d.s|0, d.ae, baseTerrain, gridN);
+          aeIt = r.it; aeAn = r.an;
+        }
+      } finally { GRID = savedGrid; }
     }
   }
-  return densePayload();
-}
-// コンパクト共有形式(sf:2/sf:3)を applyState が期待する通常 data 形へ復元
-function expandShared(d){
-  if(d && d.sf === 3){
-    // レシピ(sf:3)→ 決定論で地形を再生成し sf:2 形へ変換してから下の共通処理へ。
-    // 注: GEN_VER と d.gv が不一致なら別バージョンの生成器で再生成＝見た目が
-    // 変わりうる（グリッドは保持していないため最善努力で再生成する）。
-    GRID = d.g || GRID;
-    const base = regenTerrain({ G:d.G, s:d.s, gm:d.gm }) || { terrain:{}, heights:{} };
-    // 自動絵文字（純パス）は同じ seed/density から再生成。手編集ありの非純パスは
-    // d.ae 不在＝aeIt/aeAn 空＝従来どおり d.it/d.an のみで挙動不変。
-    let aeIt = {}, aeAn = [];
-    if(d.ae != null){ const ae = computeTerrainEmoji(d.s, d.ae, base.terrain, d.g || GRID); aeIt = ae.it; aeAn = ae.an; }
-    d = {
-      v: d.v, sf: 2, grid: d.g,
-      terrain: base.terrain, heights: base.heights,
-      it: { ...aeIt, ...(d.it || {}) }, an: [ ...aeAn, ...(d.an || []) ],
-      timeOfDay: (d.t != null ? d.t : 0.5),
-      dayPaused: !!d.dp, weather: (d.w != null ? d.w : 'clear'),
-      drawMode: (d.dm != null ? d.dm : 'place'),
-      showHeights: d.sh === 0 ? false : true,
-      heightsTouched: !!d.ht,
-      weatherRandomOn: !!d.wr,
-      weatherRandomPool: Array.isArray(d.wp) ? d.wp : [],
-      fx: { aurora:!!((d.fx||0)&1), fireworks:!!((d.fx||0)&2),
-            bubbles:!!((d.fx||0)&4), mist:!!((d.fx||0)&8) },
-    };
-  }
-  if(!d || d.sf !== 2) return d;   // 旧共有URL(sf無し)はそのまま
+  // ── 統合：sf:3 由来の aeIt/aeAn と、明示の d.it/d.an（sf:2 または非 clean パスの sf:3 用）をマージ
+  const itSrc = Object.assign({}, aeIt, d.it || {});
   const items = {};
-  for(const k in (d.it||{})){
-    const v = d.it[k];
+  for(const k in itSrc){
+    const v = itSrc[k];
     const o = { emoji: Array.isArray(v) ? v[0] : v, bobOffset: Math.random()*Math.PI*2 };
     if(Array.isArray(v) && v[1] > 1) o.size = v[1];
     items[k] = o;
   }
-  const animals = {}; const list = Array.isArray(d.an) ? d.an : [];
-  list.forEach(([emoji,c,r], i) => {
+  const anList = [...aeAn, ...(Array.isArray(d.an) ? d.an : [])];
+  const animals = {};
+  anList.forEach(([emoji,c,r], i) => {
     animals[i] = { id:i, emoji, wx:c, wy:r, tx:c, ty:r, moving:false, flip:false,
       speed:.6+Math.random()*.8, waitTimer:.5+Math.random()*2, excited:0, eatCD:0 };
   });
+  // sf:2 互換の戻り値。sf:3 は terrain/heights を baseTerrain/baseHeights から、grid は gridN から。
+  if(d.sf === 3){
+    return {
+      v: d.v, grid: gridN,
+      terrain: baseTerrain || {}, heights: baseHeights || {},
+      items, animals, animalId: anList.length,
+      timeOfDay: d.timeOfDay, dayPaused: d.dayPaused, weather: d.weather,
+      drawMode: d.drawMode, showHeights: d.showHeights, heightsTouched: d.heightsTouched,
+      weatherRandomOn: d.weatherRandomOn, weatherRandomPool: d.weatherRandomPool,
+      fx: d.fx,
+    };
+  }
   return {
     v: d.v, grid: d.grid,
     terrain: d.terrain || {}, heights: d.heights || {},
-    items, animals, animalId: list.length,
+    items, animals, animalId: anList.length,
     timeOfDay: d.timeOfDay, dayPaused: d.dayPaused, weather: d.weather,
     drawMode: d.drawMode, showHeights: d.showHeights, heightsTouched: d.heightsTouched,
     weatherRandomOn: d.weatherRandomOn, weatherRandomPool: d.weatherRandomPool,
@@ -4873,18 +5401,13 @@ async function _streamBytes(bytes, StreamCtor){
   for(const c of chunks){ out.set(c, o); o += c.length; }
   return out;
 }
-// JSON→base64url。先頭1文字タグ '1'=deflate圧縮 '0'=非圧縮。
-// レシピ等の微小ペイロードは deflate が逆に膨らむため短い方を採用する。
+// JSON→(deflate-raw 圧縮があれば圧縮)→base64url。先頭1文字タグ '1'=圧縮 '0'=非圧縮
 async function encodeWorld(obj){
   const raw = new TextEncoder().encode(JSON.stringify(obj));
-  const plain = '0' + _b64urlFromBytes(raw);
   if(typeof CompressionStream === 'function'){
-    try{
-      const zip = '1' + _b64urlFromBytes(await _streamBytes(raw, CompressionStream));
-      return zip.length < plain.length ? zip : plain;
-    }catch(e){}
+    try{ return '1' + _b64urlFromBytes(await _streamBytes(raw, CompressionStream)); }catch(e){}
   }
-  return plain;
+  return '0' + _b64urlFromBytes(raw);
 }
 async function decodeWorld(str){
   try{
@@ -4902,7 +5425,7 @@ async function decodeWorld(str){
 }
 
 function saveState(){
-  if(visiting||mpActive) return;   // 閲覧/多人数中は保存しない（オートセーブ非干渉）
+  if(visiting||mpActive) return;   // 閲覧/マルチプレイ中は保存しない（オートセーブ非干渉）
   try{
     const data = {
       v: SAVE_VERSION,
@@ -4927,7 +5450,7 @@ function saveState(){
 }
 
 function clearSave(){
-  if(visiting||mpActive) return;   // 閲覧/多人数中は自分のセーブを消さない
+  if(visiting||mpActive) return;   // 閲覧/マルチプレイ中は自分のセーブを消さない
   try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
 }
 
@@ -4951,7 +5474,9 @@ function applyState(data){
     repl(items,   data.items);
     repl(heights, data.heights);
     repl(animals, data.animals);
-    genClean = false;   // ロード/共有閲覧はスナップショット＝再共有は dense
+    // ロード／共有閲覧の世界はスナップショット。直近生成の意図は引き継がない（共有は厳密往復パスへ）。
+    lastGen = null;
+    genClean = false;
     if(typeof data.animalId === 'number') animalId = data.animalId;
 
     // Custom solid/paint colors are stored straight into terrain as hex
@@ -5063,7 +5588,7 @@ FPS_PRESETS.forEach(v => {
 });
 refreshFpsUI();
 
-// 起動分岐: #auth=（ログイン受領）→ #r=（多人数ルーム）→ #w=（共有閲覧）→ 通常ロード
+// 起動分岐: #auth=（ログイン受領）→ #r=（マルチプレイルーム）→ #w=（共有リンク閲覧）→ 通常ロード
 (async () => {
   let h = location.hash || '';
   if(h.startsWith('#auth=')){

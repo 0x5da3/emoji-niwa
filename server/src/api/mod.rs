@@ -49,5 +49,6 @@ pub fn routes(c: &mut web::ServiceConfig) {
         .route("/auth/me", web::get().to(auth::me))
         .route("/auth/logout", web::post().to(auth::logout))
         .route("/room/new", web::post().to(rooms::new))
+        .route("/room/{id}/ttl", web::post().to(rooms::set_ttl))
         .route("/room/{id}", web::get().to(rooms::ws));
 }

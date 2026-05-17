@@ -21,7 +21,7 @@ use std::time::Duration;
 use actix_web::{web, App, HttpServer};
 
 use crate::config::Config;
-use crate::domain::{now_secs, ROOM_IDLE_TTL, SAVE_INTERVAL};
+use crate::domain::{now_secs, DAY_SECS, SAVE_INTERVAL};
 use crate::state::AppState;
 
 #[actix_web::main]
@@ -45,7 +45,8 @@ async fn main() -> std::io::Result<()> {
             bg.sessions.retain(|_, s| s.exp >= nowt);
             bg.rooms.retain(|_, r| {
                 let empty = r.conns.lock().unwrap().is_empty();
-                let idle = nowt.saturating_sub(*r.last_active.lock().unwrap()) > ROOM_IDLE_TTL;
+                let ttl = *r.ttl_days.lock().unwrap() * DAY_SECS;
+                let idle = nowt.saturating_sub(*r.last_active.lock().unwrap()) > ttl;
                 !(empty && idle)
             });
             persistence::save(&bg);

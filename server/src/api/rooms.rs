@@ -7,8 +7,10 @@ use actix_ws::AggregatedMessage;
 use futures_util::StreamExt;
 use tokio::sync::broadcast;
 
+use serde::Deserialize;
+
 use crate::api::auth_uid;
-use crate::domain::{origin_ok, rand_room_id, Bcast, Room};
+use crate::domain::{clamp_ttl_days, origin_ok, rand_room_id, Bcast, Room};
 use crate::state::Data;
 
 pub async fn new(state: Data, req: HttpRequest) -> HttpResponse {
@@ -20,8 +22,39 @@ pub async fn new(state: Data, req: HttpRequest) -> HttpResponse {
     while state.rooms.contains_key(&id) {
         id = rand_room_id();
     }
-    state.rooms.insert(id.clone(), Room::new(uid, None));
+    let ttl = state.cfg.room_ttl_days;
+    state.rooms.insert(id.clone(), Room::new(uid, None, ttl));
     HttpResponse::Ok().json(serde_json::json!({ "id": id }))
+}
+
+#[derive(Deserialize)]
+pub struct TtlReq {
+    pub days: u64,
+}
+
+/// オーナー（部屋の作成会員）のみ、空き部屋の保持日数を変更。値は [1,30] にクランプ。
+pub async fn set_ttl(
+    state: Data,
+    req: HttpRequest,
+    path: web::Path<String>,
+    body: web::Json<TtlReq>,
+) -> HttpResponse {
+    let uid = match auth_uid(&state, &req) {
+        Some(u) => u,
+        None => return HttpResponse::Unauthorized().finish(),
+    };
+    let room_id = path.into_inner();
+    let room = match state.rooms.get(&room_id) {
+        Some(r) => r.value().clone(),
+        None => return HttpResponse::NotFound().finish(),
+    };
+    if room.creator_uid != uid {
+        return HttpResponse::Forbidden().finish();
+    }
+    let days = clamp_ttl_days(body.days);
+    *room.ttl_days.lock().unwrap() = days;
+    let _ = room.tx.send(Bcast::Refresh); // 接続中の所有者UIへ反映
+    HttpResponse::Ok().json(serde_json::json!({ "ok": true, "days": days }))
 }
 
 pub async fn ws(
@@ -194,8 +227,9 @@ pub async fn ws(
                                         .to_string(),
                                 )
                                 .await;
+                            let ttl_days = *room2.ttl_days.lock().unwrap();
                             if session
-                                .text(serde_json::json!({ "t": "role", "owner": owner }).to_string())
+                                .text(serde_json::json!({ "t": "role", "owner": owner, "ttlDays": ttl_days }).to_string())
                                 .await
                                 .is_err()
                             { break; }
