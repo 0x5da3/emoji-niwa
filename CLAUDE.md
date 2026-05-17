@@ -78,6 +78,14 @@ node .claude/scripts/screenshot.mjs            # 既定で3環境を撮影
 
 例: `🏪 人が入店して人数表示＋ランダム配置で🏪1個保証＋入店音`、`🍽️ 動物・人が近くの食べ物を食べて消費する機能`
 
+## バージョニング
+
+セマンティックバージョニング（SemVer: `MAJOR.MINOR.PATCH`）を採用。現行は
+`0.8.0`。唯一の真実源は `index.html` の `const APP_VERSION`（設定メニュー内に
+`vX.Y.Z` で表示）。破壊的変更=MAJOR / 機能追加=MINOR / 修正=PATCH を目安に、
+ユーザーに見える変更を出すときは `APP_VERSION` を更新する（`SAVE_VERSION` は
+セーブ形式専用の別物なので混同しない）。
+
 ## ファイル構成
 
 ```

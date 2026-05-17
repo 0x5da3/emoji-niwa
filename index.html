@@ -285,6 +285,9 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
       <button class="tbtn lang-opt" data-lang="en">🇺🇸 English</button>
     </div>
   </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:8px;text-align:center">
+    <span id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em">v0.8.0</span>
+  </div>
 </div>
 
 <!-- SOUND POPUP -->
@@ -1173,6 +1176,8 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
+const APP_VERSION = '0.8.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
   '📌 履歴':    [],
