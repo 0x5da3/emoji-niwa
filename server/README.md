@@ -32,8 +32,11 @@ room (`#r=<id>`). Offline play and `#w=` snapshot sharing never touch it.
 Wire: C→S `{"t":"snap","d":<encoded>}` `{"t":"hello","name":str}`
 `{"t":"chat","text":str}` · S→C `{"t":"snap","d"}`
 `{"t":"role","owner":bool,"ttlDays":int}` `{"t":"peers","n":int,"cap":int,"names":[str]}`
-`{"t":"chat","name":str,"text":str}` `{"t":"full"}`. Chat is relayed
-(not persisted; no backlog).
+`{"t":"chat","name":str,"text":str}`
+`{"t":"chatlog","items":[{"name":str,"text":str,"ts":int}]}` `{"t":"full"}`.
+Chat is relayed live, and a bounded recent backlog (~100, in-memory) is
+replayed to a late joiner on join (`ts` = epoch ms; not persisted across
+server restarts).
 
 ## Run locally
 

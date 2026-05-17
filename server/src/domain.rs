@@ -1,6 +1,6 @@
 //! Domain layer: core entities + pure helpers. No web framework deps.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -16,6 +16,7 @@ pub const ROOM_TTL_DAYS_MIN: u64 = 1;
 pub const ROOM_TTL_DAYS_MAX: u64 = 30; // UI/サーバ共通の上限（空き部屋の保持日数）
 pub const SAVE_INTERVAL: u64 = 15; // persistence flush seconds
 pub const BCAST_CAP: usize = 64;
+pub const CHAT_HISTORY_CAP: usize = 100; // 後入りに見せる直近チャット件数（メモリ内・非永続）
 
 /// 空き部屋の保持日数を許容範囲 [MIN, MAX] にクランプ。
 pub fn clamp_ttl_days(d: u64) -> u64 {
@@ -27,6 +28,22 @@ pub fn now_secs() -> u64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0)
+}
+
+pub fn now_millis() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+/// One relayed chat line kept in a room's bounded in-memory backlog so
+/// late joiners can see prior messages (ts = epoch millis, client renders it).
+#[derive(Clone)]
+pub struct ChatMsg {
+    pub name: String,
+    pub text: String,
+    pub ts: u64,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -53,6 +70,7 @@ pub struct Room {
     pub snap: Mutex<Option<String>>,
     pub tx: broadcast::Sender<Bcast>,
     pub conns: Mutex<BTreeMap<u64, String>>, // conn id → display name ("" until hello)
+    pub chat: Mutex<VecDeque<ChatMsg>>,      // 直近チャット（後入りへ再生・非永続）
     pub creator_uid: String,
     pub last_active: Mutex<u64>,
     pub ttl_days: Mutex<u64>, // 空き部屋の保持日数（オーナーが変更可、[MIN,MAX]）
@@ -65,6 +83,7 @@ impl Room {
             snap: Mutex::new(snap),
             tx,
             conns: Mutex::new(BTreeMap::new()),
+            chat: Mutex::new(VecDeque::new()),
             creator_uid,
             last_active: Mutex::new(now_secs()),
             ttl_days: Mutex::new(clamp_ttl_days(ttl_days)),
