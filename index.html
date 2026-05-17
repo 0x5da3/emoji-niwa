@@ -87,7 +87,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 .cattab{flex:0 0 auto;padding:3px 10px;font-size:11px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.04);color:var(--dim);cursor:pointer;transition:all .12s}
 .cattab.active{background:rgba(93,186,106,.22);color:var(--accent2);border-color:var(--accent)}
 #palette-wrap{position:fixed;bottom:0;left:0;right:0;z-index:28;background:var(--panel);border-top:1px solid var(--border);backdrop-filter:blur(14px);padding:6px 8px 14px}
-#palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;grid-auto-rows:42px;height:136px;overflow-y:auto;align-content:start;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:rgba(168,224,99,.4) transparent;-webkit-overflow-scrolling:touch}
+#palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;grid-auto-rows:42px;height:183px;overflow-y:auto;align-content:start;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:rgba(168,224,99,.4) transparent;-webkit-overflow-scrolling:touch}
 /* マルチプレイ用チャット（パレット上・既定3行・最小化/拡大可） */
 #mp-chat{display:none;flex-direction:column;gap:4px;margin-bottom:6px;border:1px solid rgba(120,210,130,.3);border-radius:10px;background:rgba(8,20,10,.55);padding:5px 6px}
 #mpc-head{display:flex;align-items:center;gap:10px;font-size:11px;color:#a8e063}
@@ -3531,6 +3531,7 @@ function updateRainFade(dt){
 }
 
 cv.addEventListener('mousedown',e=>{
+  closeAllPopups();   // 箱庭をクリックしたら開いているメニューを閉じる
   if(e.button===1||e.button===2){panning=true;panStart={x:e.clientX,y:e.clientY};panOrigin={x:targetOX,y:targetOY};return;}
   if(tryBubbleTap(e.clientX, e.clientY)) return;
   if(tryMoonTap(e.clientX, e.clientY)) return;
@@ -3553,6 +3554,7 @@ cv.addEventListener('wheel',e=>{
 // Touch: place only on touchend if tap (not drag), pan/pinch with 2 fingers
 cv.addEventListener('touchstart',e=>{
   e.preventDefault();
+  closeAllPopups();   // 箱庭をタップしたら開いているメニューを閉じる（touchはclick不発のため明示）
   if(e.touches.length===2){
     // 2-finger pan only (no pinch zoom)
     panStart={x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2};
