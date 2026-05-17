@@ -11,9 +11,16 @@ use tokio::sync::broadcast;
 
 pub const SESSION_TTL: u64 = 30 * 24 * 3600; // 30 days
 pub const OAUTH_STATE_TTL: u64 = 600; // 10 min
-pub const ROOM_IDLE_TTL: u64 = 6 * 3600; // evict empty rooms idle > 6h
+pub const DAY_SECS: u64 = 24 * 3600;
+pub const ROOM_TTL_DAYS_MIN: u64 = 1;
+pub const ROOM_TTL_DAYS_MAX: u64 = 30; // UI/サーバ共通の上限（空き部屋の保持日数）
 pub const SAVE_INTERVAL: u64 = 15; // persistence flush seconds
 pub const BCAST_CAP: usize = 64;
+
+/// 空き部屋の保持日数を許容範囲 [MIN, MAX] にクランプ。
+pub fn clamp_ttl_days(d: u64) -> u64 {
+    d.clamp(ROOM_TTL_DAYS_MIN, ROOM_TTL_DAYS_MAX)
+}
 
 pub fn now_secs() -> u64 {
     SystemTime::now()
@@ -48,10 +55,11 @@ pub struct Room {
     pub conns: Mutex<BTreeMap<u64, String>>, // conn id → display name ("" until hello)
     pub creator_uid: String,
     pub last_active: Mutex<u64>,
+    pub ttl_days: Mutex<u64>, // 空き部屋の保持日数（オーナーが変更可、[MIN,MAX]）
 }
 
 impl Room {
-    pub fn new(creator_uid: String, snap: Option<String>) -> Arc<Room> {
+    pub fn new(creator_uid: String, snap: Option<String>, ttl_days: u64) -> Arc<Room> {
         let (tx, _rx) = broadcast::channel(BCAST_CAP);
         Arc::new(Room {
             snap: Mutex::new(snap),
@@ -59,6 +67,7 @@ impl Room {
             conns: Mutex::new(BTreeMap::new()),
             creator_uid,
             last_active: Mutex::new(now_secs()),
+            ttl_days: Mutex::new(clamp_ttl_days(ttl_days)),
         })
     }
     pub fn touch(&self) {

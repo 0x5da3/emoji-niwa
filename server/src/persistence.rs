@@ -11,6 +11,8 @@ struct PersistRoom {
     id: String,
     snap: Option<String>,
     creator_uid: String,
+    #[serde(default)]
+    ttl_days: Option<u64>, // 旧 state.json は無 → 既定値で補完
 }
 
 #[derive(Serialize, Deserialize, Default)]
@@ -27,6 +29,7 @@ pub fn save(state: &AppState) {
             id: e.key().clone(),
             snap: e.value().snap.lock().unwrap().clone(),
             creator_uid: e.value().creator_uid.clone(),
+            ttl_days: Some(*e.value().ttl_days.lock().unwrap()),
         });
     }
     let nowt = now_secs();
@@ -66,7 +69,10 @@ pub fn load(state: &AppState) {
         }
     };
     for r in p.rooms {
-        state.rooms.insert(r.id, Room::new(r.creator_uid, r.snap));
+        let ttl = r.ttl_days.unwrap_or(state.cfg.room_ttl_days);
+        state
+            .rooms
+            .insert(r.id, Room::new(r.creator_uid, r.snap, ttl));
     }
     let nowt = now_secs();
     for (t, s) in p.sessions {
