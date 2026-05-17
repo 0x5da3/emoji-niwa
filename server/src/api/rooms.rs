@@ -10,7 +10,9 @@ use tokio::sync::broadcast;
 use serde::Deserialize;
 
 use crate::api::auth_uid;
-use crate::domain::{clamp_ttl_days, origin_ok, rand_room_id, Bcast, Room};
+use crate::domain::{
+    clamp_ttl_days, now_millis, origin_ok, rand_room_id, Bcast, ChatMsg, Room, CHAT_HISTORY_CAP,
+};
 use crate::state::Data;
 
 pub async fn new(state: Data, req: HttpRequest) -> HttpResponse {
@@ -115,6 +117,18 @@ pub async fn ws(
             .text(serde_json::json!({ "t": "snap", "d": d }).to_string())
             .await;
     }
+    // recent chat backlog so a late joiner sees messages from before they joined
+    let backlog: Vec<serde_json::Value> = {
+        let c = room.chat.lock().unwrap();
+        c.iter()
+            .map(|m| serde_json::json!({ "name": m.name, "text": m.text, "ts": m.ts }))
+            .collect()
+    };
+    if !backlog.is_empty() {
+        let _ = session
+            .text(serde_json::json!({ "t": "chatlog", "items": backlog }).to_string())
+            .await;
+    }
     let _ = room.tx.send(Bcast::Refresh);
 
     let room2 = room.clone();
@@ -177,6 +191,17 @@ pub async fn ws(
                                                     .get(&conn_id)
                                                     .cloned()
                                                     .unwrap_or_default();
+                                                {
+                                                    let mut h = room2.chat.lock().unwrap();
+                                                    while h.len() >= CHAT_HISTORY_CAP {
+                                                        h.pop_front();
+                                                    }
+                                                    h.push_back(ChatMsg {
+                                                        name: name.clone(),
+                                                        text: text.clone(),
+                                                        ts: now_millis(),
+                                                    });
+                                                }
                                                 let _ = room2
                                                     .tx
                                                     .send(Bcast::Chat { name, text });
