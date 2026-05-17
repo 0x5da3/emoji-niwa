@@ -295,6 +295,10 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
     <span style="font-size:12px;font-weight:600;color:var(--accent2)" id="mute-toggle-label">🔇 ミュート中</span>
     <span class="h-track"><span class="h-thumb"></span></span>
   </button>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <span data-i18n="volLabel" style="font-size:11px;color:rgba(180,220,180,.7);white-space:nowrap">🔊 音量</span>
+    <input type="range" id="vol-slider" min="0" max="100" value="85" step="5" style="flex:1;accent-color:#5dba6a">
+  </div>
   <div data-i18n="placementSound" style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:10px;text-align:center">配置時の効果音</div>
   <div id="sound-options" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
     <button class="tbtn sound-opt active" data-sound="pon" data-i18n="s.pon">🫧 ポンッ</button>
@@ -885,6 +889,97 @@ const KawaiiSounds = (function(){
       src.connect(bp).connect(ng).connect(getMaster());
       src.start(t); src.stop(t + 0.08);
     },
+    // ── イベント効果音（配置音とは独立。短く柔らかく、箱庭の世界観に合わせる）──
+    brush(){
+      const a=ac(), t=a.currentTime;
+      const o=a.createOscillator(), g=a.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(220,t); o.frequency.exponentialRampToValueAtTime(150,t+0.06);
+      env(g,t,{a:0.002,d:0.07,peak:0.26});
+      o.connect(g).connect(getMaster()); o.start(t); o.stop(t+0.12);
+      const s=a.createBufferSource(); s.buffer=noiseBuffer();
+      const lp=a.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=900;
+      const ng=a.createGain(); env(ng,t,{a:0.001,d:0.05,peak:0.1});
+      s.connect(lp).connect(ng).connect(getMaster()); s.start(t); s.stop(t+0.07);
+    },
+    erase(){
+      const a=ac(), t=a.currentTime;
+      const s=a.createBufferSource(); s.buffer=noiseBuffer();
+      const hp=a.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1600;
+      const g=a.createGain(); env(g,t,{a:0.003,d:0.12,peak:0.15});
+      s.connect(hp).connect(g).connect(getMaster()); s.start(t); s.stop(t+0.16);
+    },
+    lift(){
+      const a=ac(), t=a.currentTime;
+      const o=a.createOscillator(), g=a.createGain();
+      o.type='triangle'; o.frequency.setValueAtTime(480,t); o.frequency.exponentialRampToValueAtTime(760,t+0.08);
+      env(g,t,{a:0.002,d:0.09,peak:0.28});
+      o.connect(g).connect(getMaster()); o.start(t); o.stop(t+0.14);
+    },
+    drop(){
+      const a=ac(), t=a.currentTime;
+      const o=a.createOscillator(), g=a.createGain();
+      o.type='triangle'; o.frequency.setValueAtTime(480,t); o.frequency.exponentialRampToValueAtTime(300,t+0.09);
+      env(g,t,{a:0.002,d:0.1,peak:0.28});
+      o.connect(g).connect(getMaster()); o.start(t); o.stop(t+0.15);
+    },
+    generate(){
+      const a=ac(), t=a.currentTime;
+      const o=a.createOscillator(), g=a.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(330,t); o.frequency.exponentialRampToValueAtTime(990,t+0.3);
+      env(g,t,{a:0.01,d:0.34,peak:0.4});
+      o.connect(g).connect(getMaster()); o.start(t); o.stop(t+0.4);
+      const o2=a.createOscillator(), g2=a.createGain();
+      o2.type='sine'; o2.frequency.setValueAtTime(1320,t+0.08); o2.frequency.exponentialRampToValueAtTime(1980,t+0.34);
+      env(g2,t+0.08,{a:0.005,d:0.26,peak:0.15});
+      o2.connect(g2).connect(getMaster()); o2.start(t+0.08); o2.stop(t+0.42);
+    },
+    clear(){
+      const a=ac(), t=a.currentTime;
+      const o=a.createOscillator(), g=a.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(720,t); o.frequency.exponentialRampToValueAtTime(180,t+0.34);
+      env(g,t,{a:0.005,d:0.38,peak:0.32});
+      o.connect(g).connect(getMaster()); o.start(t); o.stop(t+0.45);
+      const s=a.createBufferSource(); s.buffer=noiseBuffer();
+      const lp=a.createBiquadFilter(); lp.type='lowpass';
+      lp.frequency.setValueAtTime(2000,t); lp.frequency.exponentialRampToValueAtTime(400,t+0.35);
+      const ng=a.createGain(); env(ng,t,{a:0.005,d:0.32,peak:0.1});
+      s.connect(lp).connect(ng).connect(getMaster()); s.start(t); s.stop(t+0.4);
+    },
+    sparkle(){
+      const a=ac(), t=a.currentTime;
+      [0,0.09,0.18,0.3].forEach((dt,i)=>{
+        const o=a.createOscillator(), g=a.createGain();
+        o.type='sine'; o.frequency.value=1760*Math.pow(1.18,i);
+        env(g,t+dt,{a:0.003,d:0.16,peak:0.15});
+        o.connect(g).connect(getMaster()); o.start(t+dt); o.stop(t+dt+0.22);
+      });
+    },
+    rainbow(){
+      const a=ac(), t=a.currentTime;
+      [523.25,659.25,783.99].forEach((f,i)=>{
+        const dt=i*0.13;
+        const o=a.createOscillator(), g=a.createGain();
+        o.type='triangle'; o.frequency.value=f;
+        env(g,t+dt,{a:0.008,d:0.34,peak:0.24});
+        o.connect(g).connect(getMaster()); o.start(t+dt); o.stop(t+dt+0.42);
+      });
+    },
+    thunder(){
+      const a=ac(), t=a.currentTime;
+      const s=a.createBufferSource(); s.buffer=noiseBuffer();
+      const lp=a.createBiquadFilter(); lp.type='lowpass';
+      lp.frequency.setValueAtTime(260,t); lp.frequency.exponentialRampToValueAtTime(90,t+0.65);
+      const g=a.createGain();
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.3,t+0.06);
+      g.gain.exponentialRampToValueAtTime(0.11,t+0.3);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.7);
+      s.connect(lp).connect(g).connect(getMaster()); s.start(t); s.stop(t+0.75);
+      const o=a.createOscillator(), og=a.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(70,t); o.frequency.exponentialRampToValueAtTime(40,t+0.6);
+      env(og,t,{a:0.02,d:0.6,peak:0.2});
+      o.connect(og).connect(getMaster()); o.start(t); o.stop(t+0.7);
+    },
   };
   return {
     play(name){
@@ -900,6 +995,7 @@ const KawaiiSounds = (function(){
 
 let muted = true; // master mute (controls all sound)
 let selectedSound = 'pon'; // placement sound type
+let sfxVolume = 0.85; // 効果音マスター音量（セッションのみ・非永続。既定＝既存マスター gain と一致）
 function playPlaceSound(){
   if(muted) return;
   if(selectedSound === 'none') return;
@@ -907,6 +1003,8 @@ function playPlaceSound(){
 }
 // 動物・人が食べ物を食べたときの効果音（配置音設定とは独立、ミュート尊重）
 function playEatSound(){ if(muted) return; KawaiiSounds.play('munch'); }
+// イベント効果音の汎用ゲート（配置音設定とは独立・ミュート尊重）
+function playSfx(name){ if(muted) return; KawaiiSounds.play(name); }
 // 真夜中FM入店音 B→G — drop-in (no deps)。呼び出し側で muted を尊重する
 const _a=()=>KawaiiSounds.ctx();   // 単一 AudioContext を共有（resume 経路を一本化）
 let _m,_w,_v;
@@ -1099,7 +1197,7 @@ const I18N = {
     placementSound:'配置時の効果音',
     's.pon':'🫧 ポンッ','s.koto':'🪵 コトッ','s.poyon':'🟢 ぽよん','s.fuwa':'☁️ ふわっ',
     's.tin':'🔔 ティン','s.pata':'📄 ぱた','s.pofu':'🧸 ぽふ','s.chari':'🪙 ちゃり','s.none':'🚫 なし',
-    muteOn:'🔇 ミュート中', muteOff:'🔊 サウンド ON',
+    muteOn:'🔇 ミュート中', muteOff:'🔊 サウンド ON', volLabel:'🔊 音量',
     fxNight:'🌙 夜の演出', fxNightLocked:'🌙 夜の演出（日没後に使えます）',
     fxDay:'☀️ 昼の演出', fxDayLocked:'☀️ 昼の演出（日の出後に使えます）',
     'fx.aurora':'🌌 オーロラ','fx.fireworks':'🎆 花火','fx.bubbles':'🫧 シャボン玉','fx.mist':'🌫 朝霧',
@@ -1173,7 +1271,7 @@ const I18N = {
     placementSound:'Placement sound',
     's.pon':'🫧 Pop','s.koto':'🪵 Knock','s.poyon':'🟢 Boing','s.fuwa':'☁️ Floaty',
     's.tin':'🔔 Ting','s.pata':'📄 Pata','s.pofu':'🧸 Pofu','s.chari':'🪙 Clink','s.none':'🚫 None',
-    muteOn:'🔇 Muted', muteOff:'🔊 Sound on',
+    muteOn:'🔇 Muted', muteOff:'🔊 Sound on', volLabel:'🔊 Volume',
     fxNight:'🌙 Night effects', fxNightLocked:'🌙 Night effects (after sunset)',
     fxDay:'☀️ Day effects', fxDayLocked:'☀️ Day effects (after sunrise)',
     'fx.aurora':'🌌 Aurora','fx.fireworks':'🎆 Fireworks','fx.bubbles':'🫧 Bubbles','fx.mist':'🌫 Morning mist',
@@ -2732,6 +2830,7 @@ function updateThunder(dt){
     thunderFlash = 0.9;
     thunderBolt = makeThunderBolt();
     thunderTimer = 3 + Math.random() * 5;
+    playSfx('thunder');
   }
 }
 
@@ -3592,17 +3691,20 @@ function act(c,r){
       if(old===selTerrain) return;
       terrain[key]=selTerrain;
       history.push({type:'terrain',key,c,r,old,terrain:selTerrain});
+      playSfx('brush');
     } else if(terrainAction==='up'){
       const oldH=heights[key]||0;
       if(oldH>=MAX_H) return;
       heights[key]=oldH+1;
       history.push({type:'height',key,c,r,old:oldH,new:heights[key]});
+      playSfx('lift');
     } else if(terrainAction==='down'){
       const oldH=heights[key]||0;
       if(oldH<=0) return;
       heights[key]=oldH-1;
       if(heights[key]===0) delete heights[key];
       history.push({type:'height',key,c,r,old:oldH,new:oldH-1});
+      playSfx('drop');
     }
   } else {
     const anchor = items[key] ? key : storeCovering(c,r);
@@ -3611,6 +3713,7 @@ function act(c,r){
       const [ac,ar] = anchor.split(',').map(Number);
       history.push({type:'erase', key:anchor, c:ac, r:ar, emoji:it.emoji, size:it.size||1});
       delete items[anchor];
+      playSfx('erase');
     }
   }
   mpTouch();
@@ -3657,6 +3760,7 @@ function tryMoonTap(sx, sy){
   for(let i = 0; i < total; i++){
     setTimeout(spawnMeteor, i * (60 + Math.random() * 140));
   }
+  playSfx('sparkle');
   return true;
 }
 
@@ -3692,6 +3796,7 @@ function updateRainFade(dt){
     refreshWeatherBtn();
     rainFading = false;
     rainbowOn = true;
+    playSfx('rainbow');
   }
 }
 
@@ -4088,6 +4193,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   clearSave();
   document.getElementById('menu-popup').style.display = 'none';
   showToast(tr('toast.clearAll'));
+  playSfx('clear');
   mpTouch();
 });
 
@@ -4099,6 +4205,8 @@ function refreshMuteToggle(){
   const tog = document.getElementById('mute-toggle');
   tog.classList.toggle('is-on', !muted);
   document.getElementById('mute-toggle-label').textContent = muted ? tr('muteOn') : tr('muteOff');
+  const vs = document.getElementById('vol-slider');
+  if(vs) vs.value = Math.round(sfxVolume*100);
 }
 document.getElementById('sound-btn').addEventListener('click',e=>{
   e.stopPropagation();
@@ -4122,6 +4230,14 @@ document.querySelectorAll('.sound-opt').forEach(btn=>{
     // Preview only if not muted, and not 'none'
     if(!muted && s !== 'none') KawaiiSounds.play(s);
   });
+});
+// 音量スライダー配線（sfxVolume は上部で宣言済み）
+const volSlider = document.getElementById('vol-slider');
+volSlider.addEventListener('input',e=>{
+  e.stopPropagation();
+  sfxVolume = parseInt(e.target.value)/100;
+  KawaiiSounds.setVolume(sfxVolume);
+  if(!muted && selectedSound !== 'none') KawaiiSounds.play(selectedSound);
 });
 refreshSoundBtn();
 refreshMuteToggle();
@@ -4954,6 +5070,7 @@ function genByIndex(idx, seed){
   let aePlaced = 0;
   if(aeOn) aePlaced = placeTerrainEmoji(seed, aeDensity);
   genClean = true;
+  playSfx('generate');
   return aePlaced;
 }
 document.getElementById('gen-mode-flat').addEventListener('click',e=>{
@@ -5154,6 +5271,7 @@ function fillSolid(hex){
   applyTerrainMap({terrain:tmap, heights:hmap});
   lastGen = null;       // 単色塗りつぶしはレシピ外＝以降の共有は厳密往復パスへ
   genClean = false;
+  playSfx('generate');
 }
 SOLID.forEach(({label,c})=>{
   const btn=document.createElement('button');btn.className='tbtn';
