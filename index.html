@@ -368,6 +368,22 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
         <button class="tbtn gen-mode-btn" id="gen-mode-flat" data-i18n="genFlat">⬜ 平らな地形</button>
         <button class="tbtn gen-mode-btn active" id="gen-mode-height" data-i18n="genHilly">⛰ 起伏あり</button>
       </div>
+      <div style="border-top:1px solid rgba(120,210,130,.12);margin:2px 0 8px"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span data-i18n="aeLabel" style="font-size:10px;color:rgba(180,220,180,.55)">🌱 地形に合う絵文字も置く</span>
+        <span style="display:flex;gap:6px">
+          <button class="tbtn sc-src-btn active" id="ae-on">ON</button>
+          <button class="tbtn sc-src-btn" id="ae-off">OFF</button></span>
+      </div>
+      <div id="ae-body">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+          <span id="ae-pct" style="font-size:18px;font-weight:800;color:#a8e063">30%</span>
+          <span id="ae-info" data-i18n="aeInfo" style="font-size:10px;color:rgba(180,220,180,.5)">配置の量</span>
+        </div>
+        <input type="range" id="ae-slider" min="0" max="100" value="30" step="5" style="width:100%;accent-color:#5dba6a;margin-bottom:8px">
+        <div id="ae-presets" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px"></div>
+      </div>
+      <div data-i18n="aeNote" style="font-size:10px;color:rgba(180,220,180,.45);margin-bottom:10px">土地を生成すると地形に合った絵文字も一緒に置かれます</div>
       <div data-i18n="selectMap" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
       <div id="gen-btns" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px"></div>
       <button class="tbtn" id="btn-gen-random" data-i18n="genRandom" style="width:100%;padding:8px">🎲 完全ランダム</button>
@@ -977,6 +993,22 @@ const TERRAIN_COLORS = {
 const TERRAIN_TYPES  = ['grass','sand','water','snow','dark'];
 const TERRAIN_LABELS = {grass:'🌿 草',sand:'🏜 砂',water:'🌊 水',snow:'❄️ 雪',dark:'⬛ 岩'};
 
+// 地形に合う絵文字の自動配置用テーブル。AE_SALT/AE_VER/pool/比率/順序を
+// 変えたら必ず AE_VER を +1（gv と同じ運用＝旧共有リンクの差異検知用）。
+const AE_SALT = 0x9E3779B1;
+const AE_VER  = 1;
+const TERRAIN_FILL = { grass:1.0, sand:0.45, water:0.6, snow:0.5, dark:0.4 };
+const TERRAIN_EMOJI = {
+  grass:{ decor:['🌳','🌲','🌷','🌻','🌼','🍀','🌿','🪴','🍄'], fauna:['🐇','🦋','🐝','🦊','🐿️','🦌','🐦'] },
+  sand: { decor:['🌵','🪨','🐚','🌴'],                          fauna:['🦎','🐍','🐌'] },
+  water:{ decor:['🪷','🌊'],                                    fauna:['🐟','🐠','🐡','🦆','🦀','🐢'] },
+  snow: { decor:['⛄','☃️','🌲','🪨','🐧'],                      fauna:['🐇','🦌','🦉'] },
+  dark: { decor:['🪨','🌲','🪵','⛰️'],                          fauna:['🦔','🦝','🦌'] },
+};
+// dev: fauna は必ず ANIMALS（徘徊・描画の前提）に属すること
+for(const _t in TERRAIN_EMOJI) for(const _e of TERRAIN_EMOJI[_t].fauna)
+  if(!ANIMALS.has(_e)) console.warn('[emoji-niwa] TERRAIN_EMOJI fauna not in ANIMALS:', _t, _e);
+
 // ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
@@ -1044,6 +1076,7 @@ const I18N = {
     scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
     scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
     scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
+    aeLabel:'🌱 地形に合う絵文字も置く', aeInfo:'配置の量', aeNote:'土地を生成すると地形に合った絵文字も一緒に置かれます',
     tt3d:'2D/3D 切り替え', ttHeights:'高さを表示', ttPalette:'パレットの折りたたみ',
     empty:'使った絵文字がここに記録されます',
     'cat:📌 履歴':'📌 履歴','cat:🌿 自然':'🌿 自然','cat:🐾 動物':'🐾 動物','cat:🏗 建物':'🏗 建物',
@@ -1062,6 +1095,7 @@ const I18N = {
     'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 全リセットしました', 'toast.newMap':'🆕 {n}×{n} マップを作成しました',
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
+    'toast.genMapDecor':'🗺 {name}を生成し絵文字を{n}個配置', 'toast.genRandomDecor':'🎲 ランダム生成＋絵文字{n}個',
     'toast.solidFill':'{label}で塗りつぶしました', 'toast.solidCustom':'🎨 カスタム色で塗りつぶしました',
     'toast.scatter':'🎲 {count}個をランダム配置！', 'toast.saved':'💾 セーブしました',
     'ttRoom':'多人数（共有プレイ）',
@@ -1108,6 +1142,7 @@ const I18N = {
     scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
     scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
     scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
+    aeLabel:'🌱 Also place matching emoji', aeInfo:'Amount', aeNote:'Generating land also scatters emoji that match the terrain',
     tt3d:'Toggle 2D/3D', ttHeights:'Show heights', ttPalette:'Collapse palette',
     empty:'Used emoji are recorded here',
     'cat:📌 履歴':'📌 History','cat:🌿 自然':'🌿 Nature','cat:🐾 動物':'🐾 Animals','cat:🏗 建物':'🏗 Buildings',
@@ -1126,6 +1161,7 @@ const I18N = {
     'fps:30':'30','fps:60':'60',
     'toast.clearAll':'🗑 Reset everything', 'toast.newMap':'🆕 Created a {n}×{n} map',
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
+    'toast.genMapDecor':'🗺 Generated {name} + {n} emoji', 'toast.genRandomDecor':'🎲 Random map + {n} emoji',
     'toast.solidFill':'Filled with {label}', 'toast.solidCustom':'🎨 Filled with custom color',
     'toast.scatter':'🎲 Scattered {count}!', 'toast.saved':'💾 Saved',
     'ttRoom':'Multiplayer (shared play)',
@@ -1159,6 +1195,7 @@ function applyLang(){
   if(typeof updateFxAvailability === 'function') updateFxAvailability();
   if(typeof updateLandSummary === 'function') updateLandSummary();
   if(typeof refreshScatterUI === 'function') refreshScatterUI();
+  if(typeof refreshAutoEmojiUI === 'function') refreshAutoEmojiUI();
   if(typeof refreshTimePopupUI === 'function') refreshTimePopupUI();
   if(typeof updateNmLabel === 'function') updateNmLabel();
   if(typeof buildCatTabs === 'function'){ buildCatTabs(); buildPalette(); }
@@ -3054,6 +3091,42 @@ function applyTerrainMap(result){
   Object.assign(heights, hmap);
 }
 
+// 地形タイプに合う絵文字を決定論で算出する純関数。配信側と開封側が
+// 同一入力（seed,density,terrain,grid）で同一の {it,an} を再現する。
+// it[k]=絵文字（装飾）、an=[[絵文字,c,r],...]（徘徊する動物）。
+function computeTerrainEmoji(seed, densityPct, terrainMap, grid){
+  const it = {}, an = [];
+  const d = Math.max(0, Math.min(100, densityPct)) / 100;
+  if(d <= 0) return { it, an };
+  const rng = mulberry32((seed + AE_SALT) >>> 0);
+  const cells = [];
+  for(let r=0;r<grid;r++) for(let c=0;c<grid;c++) cells.push([c,r]);
+  for(let i=cells.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); const t=cells[i]; cells[i]=cells[j]; cells[j]=t; }
+  const used = new Set();
+  for(const [c,r] of cells){
+    const k = `${c},${r}`;
+    const pool = TERRAIN_EMOJI[terrainMap[k]];
+    if(!pool) continue;                                  // 未塗り/カスタム色は対象外
+    if(rng() >= d * (TERRAIN_FILL[terrainMap[k]] || 0)) continue;
+    if(used.has(k)) continue;
+    const useFauna = rng() < 0.35 && pool.fauna.length > 0;
+    const arr = useFauna ? pool.fauna : pool.decor;
+    if(!arr.length) continue;
+    const e = arr[Math.floor(rng()*arr.length)];
+    if(e === '🏪') continue;                              // 🏪 は絶対に置かない
+    used.add(k);
+    if(useFauna) an.push([e,c,r]); else it[k] = e;
+  }
+  return { it, an };
+}
+// computeTerrainEmoji の結果をライブ世界へ実体化。戻り値＝配置総数（トースト用）。
+function placeTerrainEmoji(seed, density){
+  const { it, an } = computeTerrainEmoji(seed, density, terrain, GRID);
+  for(const k in it) items[k] = { emoji: it[k], bobOffset: Math.random()*Math.PI*2 };
+  for(const [e,c,r] of an) spawnAnimal(e,c,r);
+  return Object.keys(it).length + an.length;
+}
+
 // ═══════════════════════════════════════════
 // ANIMAL SYSTEM
 // ═══════════════════════════════════════════
@@ -3218,6 +3291,7 @@ function storeFits(ac, ar, n){
 
 function act(c,r){
   if(c<0||c>=GRID||r<0||r>=GRID) return;
+  genClean = false;   // 手編集＝recipe 純度を失う（共有は dense にフォールバック）
   const key=`${c},${r}`;
   if(key===lastKey) return;
   lastKey=key;
@@ -3725,6 +3799,7 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 
 document.getElementById('btn-undo').addEventListener('click',()=>{
   const last=history.pop();if(!last)return;
+  genClean = false;
   if(last.type==='place'){delete items[last.key];}
   else if(last.type==='animal'){removeAnimal(last.id);}
   else if(last.type==='erase'){const it={emoji:last.emoji,bobOffset:Math.random()*Math.PI*2};if(last.size>1)it.size=last.size;items[last.key]=it;}
@@ -3739,6 +3814,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   history=[];
+  lastGen=null; genClean=false;
   clearSave();
   document.getElementById('menu-popup').style.display = 'none';
   showToast(tr('toast.clearAll'));
@@ -4181,6 +4257,7 @@ document.getElementById('nm-create').addEventListener('click',()=>{
   for(const k in terrain)delete terrain[k];
   for(const k in heights)delete heights[k];
   history=[];
+  lastGen=null; genClean=false;
   nmPopup.style.display='none';
   resetView();
   if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
@@ -4333,6 +4410,7 @@ function applyGenResult(result){
 const GEN_NAMES = Object.keys(MAP_PRESETS);
 const GEN_VER = 1;            // 生成アルゴリズムを変えたら +1（旧レシピリンクの差異検知用）
 let lastGen = null;           // {n:プリセット番号, s:seed, gm:'flat'|'height'}／手編集や単色塗りで null
+let genClean = false;         // 直近に生成器で作られ手編集が無い世界か（recipe 共有＝自動絵文字を列挙しない前提）
 function withSeededRandom(seed, fn){
   const orig = Math.random, rng = mulberry32(seed >>> 0);
   Math.random = rng;
@@ -4342,6 +4420,15 @@ function genByIndex(idx){
   const seed = Math.floor(Math.random() * 99999);
   lastGen = { n: idx, s: seed, gm: genMode };
   applyGenResult(withSeededRandom(seed, () => MAP_PRESETS[GEN_NAMES[idx]](seed)));
+  // 「新世界」セマンティクス（scatter と同じ）＝旧 items/animals を捨て、
+  // 地形に合う絵文字を seed から決定論配置。history は空＝生成は不可分。
+  for(const k in items) delete items[k];
+  for(const k in animals) delete animals[k];
+  let aePlaced = 0;
+  if(aeOn) aePlaced = placeTerrainEmoji(seed, aeDensity);
+  history = [];
+  genClean = true;
+  return aePlaced;
 }
 document.getElementById('gen-mode-flat').addEventListener('click',e=>{
   e.stopPropagation();
@@ -4364,12 +4451,18 @@ Object.keys(MAP_PRESETS).forEach((name,idx)=>{
   btn.style.cssText='font-size:9px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1';
   const parts=name.split(' ');
   btn.innerHTML=`<span style="font-size:16px">${parts[0]}</span><span style="font-weight:600" data-i18n="map:${name}">${tr('map:'+name)}</span>`;
-  btn.addEventListener('click',()=>{genByIndex(idx);genPopup.style.display='none';showToast(tr('toast.genMap',{name:parts[0]+' '+tr('map:'+name)}));});
+  btn.addEventListener('click',()=>{
+    const n=genByIndex(idx);
+    genPopup.style.display='none';
+    const nm=parts[0]+' '+tr('map:'+name);
+    showToast(aeOn&&n>0 ? tr('toast.genMapDecor',{name:nm,n}) : tr('toast.genMap',{name:nm}));
+  });
   document.getElementById('gen-btns').appendChild(btn);
 });
 document.getElementById('btn-gen-random').addEventListener('click',()=>{
-  genByIndex(Math.floor(Math.random()*GEN_NAMES.length));
-  genPopup.style.display='none';showToast(tr('toast.genRandom'));
+  const n=genByIndex(Math.floor(Math.random()*GEN_NAMES.length));
+  genPopup.style.display='none';
+  showToast(aeOn&&n>0 ? tr('toast.genRandomDecor',{n}) : tr('toast.genRandom'));
 });
 let lastOpenAcc = 'land';
 function updateLandSummary(){
@@ -4392,6 +4485,7 @@ document.getElementById('btn-gen').addEventListener('click',e=>{
   togglePopup('gen-popup');
   if(!wasOpen){
     refreshScatterUI();
+    refreshAutoEmojiUI();
     document.querySelectorAll('.acc-section').forEach(s=>s.classList.remove('open'));
     if(lastOpenAcc){
       const h=document.querySelector(`.acc-header[data-acc="${lastOpenAcc}"]`);
@@ -4463,11 +4557,43 @@ scSlider.addEventListener('input',e=>{scCount=parseInt(e.target.value);refreshSc
 refreshScatterUI();
 updateLandSummary();
 
+// Auto terrain emoji（土地生成パネル内・セッションのみ／localStorage 非永続）
+let aeOn = true;
+let aeDensity = 30;
+const aeSlider = document.getElementById('ae-slider');
+const aePctEl  = document.getElementById('ae-pct');
+const aeBodyEl = document.getElementById('ae-body');
+const aeOnBtn  = document.getElementById('ae-on');
+const aeOffBtn = document.getElementById('ae-off');
+function refreshAutoEmojiUI(){
+  aeDensity = Math.max(0, Math.min(100, aeDensity));
+  aeSlider.value = aeDensity;
+  aePctEl.textContent = aeDensity + '%';
+  aeBodyEl.style.display = aeOn ? '' : 'none';
+  aeOnBtn.classList.toggle('active', aeOn);
+  aeOffBtn.classList.toggle('active', !aeOn);
+  document.querySelectorAll('#ae-presets .ae-preset').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.val) === aeDensity));
+}
+aeOnBtn.addEventListener('click', e=>{ e.stopPropagation(); aeOn=true;  refreshAutoEmojiUI(); });
+aeOffBtn.addEventListener('click', e=>{ e.stopPropagation(); aeOn=false; refreshAutoEmojiUI(); });
+aeSlider.addEventListener('input', e=>{ aeDensity=parseInt(e.target.value); refreshAutoEmojiUI(); });
+[0,15,30,50,75].forEach(p=>{
+  const btn=document.createElement('button');
+  btn.className='tbtn ae-preset';
+  btn.dataset.val=p;
+  btn.style.cssText='font-size:10px;padding:6px 2px;font-weight:600';
+  btn.textContent=p+'%';
+  btn.addEventListener('click',e=>{ e.stopPropagation(); aeDensity=p; refreshAutoEmojiUI(); });
+  document.getElementById('ae-presets').appendChild(btn);
+});
+refreshAutoEmojiUI();
+
 // Solid color
 function lighten(hex,amt){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);const cl=v=>Math.max(0,Math.min(255,Math.round(v+255*amt)));return`#${cl(r).toString(16).padStart(2,'0')}${cl(g).toString(16).padStart(2,'0')}${cl(b).toString(16).padStart(2,'0')}`;}
 const SOLID=[{label:'🌿 草',c:'#4a8a3a'},{label:'🏜 砂',c:'#d4aa5a'},{label:'🌊 水',c:'#2a6e9a'},{label:'❄️ 雪',c:'#ddeeff'},{label:'⬛ 岩',c:'#3a3530'},{label:'🟫 土',c:'#8b5e3c'},{label:'🟪 紫',c:'#7a4a9a'},{label:'🟥 赤',c:'#9a3a3a'}];
 function fillSolid(hex){
-  lastGen = null;   // 単色塗りはレシピ非対象→共有は dense フォールバック
+  lastGen = null; genClean = false;   // 単色塗りはレシピ非対象→共有は dense フォールバック
   TERRAIN_COLORS[hex]=[hex, hex];
   const tmap={};for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)tmap[`${c},${r}`]=hex;
   applyTerrainMap({terrain:tmap, heights:{}});
@@ -4540,6 +4666,7 @@ function refreshAllFxToggles(){
 refreshAllFxToggles();
 
 document.getElementById('btn-scatter').addEventListener('click',()=>{
+  genClean=false;   // ランダム散布は seed から再現不可＝recipe 非対象
   let favs;
   if(scSource === 'recent'){
     favs = [...(CATEGORIES['📌 履歴']||[])];
@@ -4672,7 +4799,7 @@ function mapEquals(a, b){
 // 生成直後（地形が無編集）なら超短縮レシピ(sf:3)。情景は非既定のみ載せる。
 function recipePayload(){
   const { it, an } = compactEntities();
-  const p = { v: SAVE_VERSION, sf: 3, g: GRID, gv: GEN_VER,
+  const p = { v: SAVE_VERSION, sf: 3, g: GRID, gv: GEN_VER, av: AE_VER,
               G: lastGen.n, s: lastGen.s, gm: (lastGen.gm === 'flat' ? 'f' : 'h'),
               t: Math.round(timeOfDay*1e4)/1e4, w: weather, dm: drawMode,
               sh: showHeights ? 1 : 0 };
@@ -4682,8 +4809,13 @@ function recipePayload(){
   if(weatherRandomPool && weatherRandomPool.size) p.wp = [...weatherRandomPool];
   const fxb = (auroraOn?1:0)|(fireworksOn?2:0)|(bubblesOn?4:0)|(mistOn?8:0);
   if(fxb) p.fx = fxb;
-  if(Object.keys(it).length) p.it = it;
-  if(an.length) p.an = an;
+  if(aeOn && genClean){
+    // 自動絵文字は (s, ae) から決定論再生成可能＝列挙しない（高密度50×50でも極小）
+    p.ae = aeDensity;
+  } else {
+    if(Object.keys(it).length) p.it = it;
+    if(an.length) p.an = an;
+  }
   return p;
 }
 function worldPayload(){
@@ -4705,10 +4837,14 @@ function expandShared(d){
     // 変わりうる（グリッドは保持していないため最善努力で再生成する）。
     GRID = d.g || GRID;
     const base = regenTerrain({ G:d.G, s:d.s, gm:d.gm }) || { terrain:{}, heights:{} };
+    // 自動絵文字（純パス）は同じ seed/density から再生成。手編集ありの非純パスは
+    // d.ae 不在＝aeIt/aeAn 空＝従来どおり d.it/d.an のみで挙動不変。
+    let aeIt = {}, aeAn = [];
+    if(d.ae != null){ const ae = computeTerrainEmoji(d.s, d.ae, base.terrain, d.g || GRID); aeIt = ae.it; aeAn = ae.an; }
     d = {
       v: d.v, sf: 2, grid: d.g,
       terrain: base.terrain, heights: base.heights,
-      it: d.it || {}, an: d.an || [],
+      it: { ...aeIt, ...(d.it || {}) }, an: [ ...aeAn, ...(d.an || []) ],
       timeOfDay: (d.t != null ? d.t : 0.5),
       dayPaused: !!d.dp, weather: (d.w != null ? d.w : 'clear'),
       drawMode: (d.dm != null ? d.dm : 'place'),
@@ -4843,6 +4979,7 @@ function applyState(data){
     repl(items,   data.items);
     repl(heights, data.heights);
     repl(animals, data.animals);
+    genClean = false;   // ロード/共有閲覧はスナップショット＝再共有は dense
     if(typeof data.animalId === 'number') animalId = data.animalId;
 
     // Custom solid/paint colors are stored straight into terrain as hex
