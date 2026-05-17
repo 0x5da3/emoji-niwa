@@ -23,12 +23,12 @@ body{background:#0a150b;overflow:hidden;font-family:'Hiragino Kaku Gothic ProN',
 .acc-header{width:100%;display:flex;align-items:center;gap:8px;padding:10px 12px;background:none;border:none;cursor:pointer;color:var(--text);text-align:left;transition:background .12s}
 .acc-header:active{background:rgba(93,186,106,.12)}
 .acc-arrow{display:inline-block;font-size:9px;color:rgba(168,224,99,.7);transition:transform .2s;width:10px;flex:0 0 auto}
-.acc-section.open .acc-arrow{transform:rotate(90deg)}
+.acc-section.open > .acc-header .acc-arrow{transform:rotate(90deg)}
 .acc-title{flex:1;font-size:12px;font-weight:600;color:#a8e063;letter-spacing:.03em}
 .acc-summary{font-size:10px;color:rgba(180,220,180,.45);flex:0 0 auto}
-.acc-section.open .acc-summary{display:none}
+.acc-section.open > .acc-header .acc-summary{display:none}
 .acc-content{display:none;padding:0 12px 12px}
-.acc-section.open .acc-content{display:block;padding-top:10px}
+.acc-section.open > .acc-content{display:block;padding-top:10px}
 body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast{display:none !important}
 body.fullscreen #map-btns{top:auto;bottom:14px;right:14px}
 body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
@@ -393,15 +393,29 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
         <input type="range" id="ae-slider" min="0" max="100" value="30" step="5" style="flex:1;min-width:36px;accent-color:#5dba6a">
         <span id="ae-pct" style="font-size:11px;font-weight:700;color:#a8e063;width:32px;text-align:right">30%</span>
       </div>
-      <div data-i18n="selectMap" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
-      <div id="gen-btns" style="margin-bottom:8px"></div>
-      <button class="tbtn" id="btn-gen-random" data-i18n="genRandom" style="width:100%;padding:8px">🎲 完全ランダム</button>
-      <div data-i18n="solidFill" style="font-size:10px;color:rgba(180,220,180,.55);margin:14px 0 6px">🎨 単色で塗りつぶす</div>
-      <div id="solid-presets" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px"></div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <input type="color" id="color-picker" value="#4a8a3a" style="width:32px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0">
-        <span data-i18n="customColor" style="font-size:11px;color:rgba(180,220,180,.5);flex:1">カスタム色</span>
-        <button class="tbtn" id="btn-solid-custom" data-i18n="paint">塗る</button>
+      <div class="acc-section open" style="margin-top:10px">
+        <button class="acc-header" data-sub="map">
+          <span class="acc-arrow">▶</span>
+          <span class="acc-title" data-i18n="selectMap">マップを選択</span>
+        </button>
+        <div class="acc-content">
+          <div id="gen-btns" style="margin-bottom:8px"></div>
+          <button class="tbtn" id="btn-gen-random" data-i18n="genRandom" style="width:100%;padding:8px">🎲 完全ランダム</button>
+        </div>
+      </div>
+      <div class="acc-section">
+        <button class="acc-header" data-sub="solid">
+          <span class="acc-arrow">▶</span>
+          <span class="acc-title" data-i18n="solidFill">🎨 単色で塗りつぶす</span>
+        </button>
+        <div class="acc-content">
+          <div id="solid-presets" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px"></div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="color" id="color-picker" value="#4a8a3a" style="width:32px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0">
+            <span data-i18n="customColor" style="font-size:11px;color:rgba(180,220,180,.5);flex:1">カスタム色</span>
+            <button class="tbtn" id="btn-solid-custom" data-i18n="paint">塗る</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -4971,13 +4985,24 @@ function updateLandSummary(){
   const sum=document.getElementById('acc-summary-land');
   if(sum) sum.textContent = genMode==='flat'?tr('landFlat'):tr('landHilly');
 }
-document.querySelectorAll('.acc-header').forEach(h=>{
+// トップレベル（土地の生成／ランダム配置）の単一開閉
+document.querySelectorAll('#gen-popup > .acc-section > .acc-header').forEach(h=>{
   h.addEventListener('click',e=>{
     e.stopPropagation();
     const sec=h.parentElement;
     const isOpen=sec.classList.contains('open');
-    document.querySelectorAll('.acc-section').forEach(s=>s.classList.remove('open'));
+    document.querySelectorAll('#gen-popup > .acc-section').forEach(s=>s.classList.remove('open'));
     if(!isOpen){sec.classList.add('open');lastOpenAcc=h.dataset.acc;}else{lastOpenAcc=null;}
+  });
+});
+// 土地の生成内のサブアコーディオン（マップを選択／単色で塗りつぶす）。親とは独立。
+document.querySelectorAll('#gen-popup .acc-header[data-sub]').forEach(h=>{
+  h.addEventListener('click',e=>{
+    e.stopPropagation();
+    const sec=h.parentElement;
+    const isOpen=sec.classList.contains('open');
+    sec.parentElement.querySelectorAll(':scope > .acc-section').forEach(s=>s.classList.remove('open'));
+    if(!isOpen) sec.classList.add('open');
   });
 });
 
@@ -4988,9 +5013,9 @@ document.getElementById('btn-gen').addEventListener('click',e=>{
   if(!wasOpen){
     refreshScatterUI();
     refreshAutoEmojiUI();
-    document.querySelectorAll('.acc-section').forEach(s=>s.classList.remove('open'));
+    document.querySelectorAll('#gen-popup > .acc-section').forEach(s=>s.classList.remove('open'));
     if(lastOpenAcc){
-      const h=document.querySelector(`.acc-header[data-acc="${lastOpenAcc}"]`);
+      const h=document.querySelector(`#gen-popup > .acc-section > .acc-header[data-acc="${lastOpenAcc}"]`);
       if(h) h.parentElement.classList.add('open');
     }
   }
