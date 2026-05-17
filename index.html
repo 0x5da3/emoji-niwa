@@ -4271,9 +4271,14 @@ function _gifEncode(frames, size, delayCs){
 // 等倍縮小する。背景（空/星/月）はキャンバス基準で描かれるため、サイズを
 // 変えると縮んで見える＝今回はサイズ非変更なので背景も画面と同じ比率のまま。
 // アニメ状態のみ進めて復元（rAF と非干渉）。
+// 撮影エリア上端のオフセット（トップバーぶん下げ＝トップバーは撮影に入れない）
+function gifTopOffset(){
+  const tb=document.getElementById('topbar');
+  return tb ? Math.max(0, Math.round(tb.getBoundingClientRect().bottom)) : 0;
+}
 function _gifCapture(){
-  const W0=cv.width, H0=cv.height;
-  const side=Math.min(W0,H0), sx=(W0-side)/2, sy=0;   // 上辺は画面最上部から
+  const W0=cv.width, H0=cv.height, top=gifTopOffset();
+  const side=Math.min(W0, H0-top), sx=(W0-side)/2, sy=top;   // 上端=トップバー下
   const sT=animT, sDay=timeOfDay, sAn=JSON.stringify(animals), sAid=animalId;
   const g=document.createElement('canvas'); g.width=g.height=GIF_SIZE;
   const gx=g.getContext('2d', { willReadFrequently:true });
@@ -4301,11 +4306,12 @@ function _gifHintKey(){
 
 // 撮影される正方形（短辺・中央）。_gifCapture の切り出し矩形と一致＝WYSIWYG
 function layoutGifFrame(){
-  const W=window.innerWidth, H=window.innerHeight, side=Math.min(W,H);
+  const W=window.innerWidth, H=window.innerHeight, top=gifTopOffset();
+  const side=Math.min(W, H-top);
   const sq=document.getElementById('gif-frame-sq');
   sq.style.width=sq.style.height=side+'px';
   sq.style.left=((W-side)/2)+'px';
-  sq.style.top='0px';                 // 上辺を画面最上部から
+  sq.style.top=top+'px';              // 上端=トップバー下（トップバーは含めない）
 }
 function showGifFrame(on){
   gifFraming = on;                    // 枠表示中は箱庭の移動/ズームのみ（配置は抑止）
