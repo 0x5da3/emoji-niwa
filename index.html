@@ -4100,26 +4100,24 @@ function _gifEncode(frames, size, delayCs){
   return new Blob([new Uint8Array(b)],{type:'image/gif'});
 }
 
-// 「今の見たまま」を正方形に収めて GIF_FPS で同期収集（rAF と非干渉）。
-// 投影 screen = OX + projected·scale（線形）。短辺基準で見たままを正方形へ
-// フィットし、現在の画面中心の世界点を GIF 中央へ合わせる。
+// 「今の見たまま」を正方形に。キャンバスのサイズ・スケール・カメラは一切
+// 変更せず現状のまま描画し、中央の正方形（短辺）を切り出して GIF_SIZE へ
+// 等倍縮小する。背景（空/星/月）はキャンバス基準で描かれるため、サイズを
+// 変えると縮んで見える＝今回はサイズ非変更なので背景も画面と同じ比率のまま。
+// アニメ状態のみ進めて復元（rAF と非干渉）。
 function _gifCapture(){
-  const W0=cv.width,H0=cv.height;
-  const sOX=OX,sOY=OY,sSc=scale,tOX=targetOX,tOY=targetOY,tSc=targetScale;
+  const W0=cv.width, H0=cv.height;
+  const side=Math.min(W0,H0), sx=(W0-side)/2, sy=(H0-side)/2;
   const sT=animT, sDay=timeOfDay, sAn=JSON.stringify(animals), sAid=animalId;
-  cv.width=GIF_SIZE; cv.height=GIF_SIZE;
-  const nSc = sSc * GIF_SIZE / Math.min(W0,H0);            // 見たまま（短辺基準）
-  const Ax = (W0/2 - sOX) / sSc, Ay = (H0/2 - sOY) / sSc;  // 画面中心の世界点
-  OX = GIF_SIZE/2 - Ax*nSc; OY = GIF_SIZE/2 - Ay*nSc;
-  scale=nSc; targetOX=OX; targetOY=OY; targetScale=nSc;
+  const g=document.createElement('canvas'); g.width=g.height=GIF_SIZE;
+  const gx=g.getContext('2d', { willReadFrequently:true });
   const n=Math.round(GIF_SECONDS*GIF_FPS), dt=1/GIF_FPS, frames=[];
   for(let i=0;i<n;i++){
     updateAnimals(dt); animT+=dt;          // timeOfDay/天気は据え置き
     render();
-    frames.push(ctx.getImageData(0,0,GIF_SIZE,GIF_SIZE).data);
+    gx.drawImage(cv, sx, sy, side, side, 0, 0, GIF_SIZE, GIF_SIZE);  // 中央正方形→等倍縮小
+    frames.push(gx.getImageData(0,0,GIF_SIZE,GIF_SIZE).data);
   }
-  cv.width=W0; cv.height=H0;
-  OX=sOX;OY=sOY;scale=sSc;targetOX=tOX;targetOY=tOY;targetScale=tSc;
   animT=sT; timeOfDay=sDay; animalId=sAid;
   for(const k in animals) delete animals[k];
   Object.assign(animals, JSON.parse(sAn));
