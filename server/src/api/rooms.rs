@@ -1,6 +1,7 @@
 //! Room issuance (member-only) + WebSocket join/relay. Adapter layer.
 
 use std::sync::atomic::Ordering;
+use std::time::Duration;
 
 use actix_web::{web, HttpRequest, HttpResponse};
 use actix_ws::AggregatedMessage;
@@ -12,6 +13,7 @@ use serde::Deserialize;
 use crate::api::auth_uid;
 use crate::domain::{
     clamp_ttl_days, now_millis, origin_ok, rand_room_id, Bcast, ChatMsg, Room, CHAT_HISTORY_CAP,
+    RECONNECT_GRACE_MS,
 };
 use crate::state::Data;
 
@@ -129,7 +131,26 @@ pub async fn ws(
             .text(serde_json::json!({ "t": "chatlog", "items": backlog }).to_string())
             .await;
     }
-    let _ = room.tx.send(Bcast::Refresh);
+    // 参加直後は本人にだけ初期状態を直接送る（全体ブロードキャストしない）。
+    // hello で全体反映。これで更新/瞬断の再接続時に他者が一瞬ロスターから
+    // 外して誤った参加ログを出すのを防ぐ。
+    {
+        let (n, names, first) = room.roster();
+        let owner = first == Some(conn_id);
+        let ttl_days = *room.ttl_days.lock().unwrap();
+        let _ = session
+            .text(
+                serde_json::json!({ "t": "peers", "n": n, "cap": cap, "names": names })
+                    .to_string(),
+            )
+            .await;
+        let _ = session
+            .text(
+                serde_json::json!({ "t": "role", "owner": owner, "ttlDays": ttl_days })
+                    .to_string(),
+            )
+            .await;
+    }
 
     let room2 = room.clone();
     actix_web::rt::spawn(async move {
@@ -168,8 +189,9 @@ pub async fn ws(
                                             if let Some(slot) =
                                                 room2.conns.lock().unwrap().get_mut(&conn_id)
                                             {
-                                                *slot = nm;
+                                                *slot = nm.clone();
                                             }
+                                            room2.mark_back(&nm); // 戻ってきたら猶予リストから外す
                                             let _ = room2.tx.send(Bcast::Refresh);
                                         }
                                         Some("chat") => {
@@ -233,19 +255,8 @@ pub async fn ws(
                             }
                         }
                         Ok(Bcast::Refresh) => {
-                            let (n, owner, names) = {
-                                let c = room2.conns.lock().unwrap();
-                                let names: Vec<String> = c
-                                    .values()
-                                    .filter(|s| !s.is_empty())
-                                    .cloned()
-                                    .collect();
-                                (
-                                    c.len(),
-                                    c.keys().next().copied() == Some(conn_id),
-                                    names,
-                                )
-                            };
+                            let (n, names, first) = room2.roster();
+                            let owner = first == Some(conn_id);
                             let _ = session
                                 .text(
                                     serde_json::json!({ "t": "peers", "n": n, "cap": cap, "names": names })
@@ -275,13 +286,24 @@ pub async fn ws(
                 }
             }
         }
-        // cleanup
-        {
+        // cleanup: 切断。名前を猶予リストに記録し、その間は他者のロスターに
+        // 残す（更新/瞬断の再接続なら入退室の揺れ・誤参加ログが出ない）。
+        // 即時 Refresh で人数等は更新しつつ、猶予満了後にもう一度 Refresh して
+        // 戻らなかった場合の最終ロスターを反映する。
+        let left_name = {
             let mut c = room2.conns.lock().unwrap();
+            let nm = c.get(&conn_id).cloned().unwrap_or_default();
             c.remove(&conn_id);
-        }
+            nm
+        };
+        room2.mark_left(&left_name);
         room2.touch();
         let _ = room2.tx.send(Bcast::Refresh);
+        let tx = room2.tx.clone();
+        actix_web::rt::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(RECONNECT_GRACE_MS + 500)).await;
+            let _ = tx.send(Bcast::Refresh);
+        });
         let _ = session.close(None).await;
     });
 

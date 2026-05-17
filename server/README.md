@@ -124,3 +124,6 @@ Security knobs:
   clamped to `1`..`30`). Per-room overridable by the room owner via
   `POST /room/{id}/ttl`; the GC drops a room only after it has been empty
   (no connections) for longer than its retention.
+- Reconnect grace (30s): a disconnected participant is kept in the roster for
+  ~30s, so a browser refresh / brief network blip does not churn the
+  participant list or re-trigger join logs for others.
