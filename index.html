@@ -386,12 +386,14 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
         <button class="tbtn gen-mode-btn" id="gen-mode-flat" data-i18n="genFlat">⬜ 平らな地形</button>
         <button class="tbtn gen-mode-btn active" id="gen-mode-height" data-i18n="genHilly">⛰ 起伏あり</button>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-        <span data-i18n="aeLabel" style="font-size:10px;color:rgba(180,220,180,.55);white-space:nowrap">🌳 地形に合った絵文字</span>
-        <button class="tbtn ae-on-btn active" id="ae-on" style="padding:4px 7px">ON</button>
-        <button class="tbtn ae-on-btn" id="ae-off" style="padding:4px 7px">OFF</button>
-        <input type="range" id="ae-slider" min="0" max="100" value="30" step="5" style="flex:1;min-width:36px;accent-color:#5dba6a">
-        <span id="ae-pct" style="font-size:11px;font-weight:700;color:#a8e063;width:32px;text-align:right">30%</span>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span data-i18n="aeLabel" style="font-size:10px;color:rgba(180,220,180,.55);flex:1">🌳 地形に合った絵文字</span>
+        <button class="tbtn ae-on-btn active" id="ae-on" style="padding:4px 10px">ON</button>
+        <button class="tbtn ae-on-btn" id="ae-off" style="padding:4px 10px">OFF</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <input type="range" id="ae-slider" min="0" max="100" value="30" step="5" style="flex:1;accent-color:#5dba6a">
+        <span id="ae-pct" style="font-size:12px;font-weight:700;color:#a8e063;width:34px;text-align:right">30%</span>
       </div>
       <div class="acc-section open" style="margin-top:10px">
         <button class="acc-header" data-sub="map">
@@ -5129,8 +5131,17 @@ function lighten(hex,amt){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.sli
 const SOLID=[{label:'🌿 草',c:'#4a8a3a'},{label:'🏜 砂',c:'#d4aa5a'},{label:'🌊 水',c:'#2a6e9a'},{label:'❄️ 雪',c:'#ddeeff'},{label:'⬛ 岩',c:'#3a3530'},{label:'🟫 土',c:'#8b5e3c'},{label:'🟪 紫',c:'#7a4a9a'},{label:'🟥 赤',c:'#9a3a3a'}];
 function fillSolid(hex){
   TERRAIN_COLORS[hex]=[hex, hex];
-  const tmap={};for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)tmap[`${c},${r}`]=hex;
-  applyTerrainMap({terrain:tmap, heights:{}});
+  const tmap={}, hmap={};
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++) tmap[`${c},${r}`]=hex;
+  if(genMode==='height'){   // 「⛰ 起伏あり」選択時は単色のまま起伏（高さ）を付ける
+    const s=Math.floor(Math.random()*99999), n=makeNoise(s), n2=makeNoise(s+1);
+    for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+      const v = n(c/9,r/9)*0.55 + n2(c/4,r/4)*0.30 + n2(c/2,r/2)*0.15;
+      hmap[`${c},${r}`] = Math.max(0, Math.round((v+0.4)*6));
+    }
+    smoothHeights(hmap, 1);
+  }
+  applyTerrainMap({terrain:tmap, heights:hmap});
   lastGen = null;       // 単色塗りつぶしはレシピ外＝以降の共有は厳密往復パスへ
   genClean = false;
 }
