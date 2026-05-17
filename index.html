@@ -2601,8 +2601,16 @@ function render(){
   }
 
   if(weather!=='clear'){
+    if(weather==='sandstorm'){
+      if(--sandWindTimer<=0){   // ランダム周期で突風の向き・強さを切替（約2〜8秒）
+        sandWindTarget=(Math.random()<0.5?-1:1)*(0.4+Math.random()*0.9);
+        sandWindTimer=60+Math.floor(Math.random()*240);
+      }
+      sandWind += (sandWindTarget - sandWind)*0.02;   // 突風を滑らかに
+    }
     for(const p of particles){
-      p.x+=p.vx; p.y+=p.vy;
+      if(weather==='sandstorm'){ p.x += p.vx*sandWind; p.y += p.vy; }
+      else { p.x+=p.vx; p.y+=p.vy; }
       p.rot = (p.rot||0) + (p.rotSpeed||0);
       if(p.y>cv.height + 20){p.y=-20;p.x=Math.random()*cv.width;}
       if(p.x>cv.width + 20){p.x=-20;}
@@ -2622,7 +2630,7 @@ function render(){
         ctx.beginPath();ctx.arc(p.x-p.size*.2,p.y-p.size*.2,p.size/5,0,Math.PI*2);ctx.fill();
       } else if(weather==='sandstorm'){
         ctx.fillStyle=`rgba(210,170,90,${p.op*0.7})`;
-        ctx.fillRect(p.x, p.y, p.size*2, p.size*0.3);
+        ctx.fillRect(p.x, p.y, p.size*1.2, p.size*0.3);   // エレメントを短く
       } else if(weather==='sakura' || weather==='leaves'){
         const emoji = p.emoji;
         const img = getEmojiImg(emoji, Math.floor(p.size));
@@ -2638,6 +2646,8 @@ function render(){
 
 // Weather particles
 const particles = [];
+// 砂嵐の風：向き・強さがランダム周期の突風で変わる（左右どちらにも流れる）
+let sandWind = 1, sandWindTarget = 1, sandWindTimer = 0;
 let thunderFlash = 0;
 let thunderTimer = 0;
 let thunderBolt = null;
@@ -2658,6 +2668,12 @@ function initWeather(type){
   };
   const c = config[type];
   if(!c) return;
+
+  if(type==='sandstorm'){
+    // 初期風をランダム方向に＋次の切替までをランダム周期に
+    sandWind = sandWindTarget = (Math.random()<0.5?-1:1) * (0.4 + Math.random()*0.9);
+    sandWindTimer = 60 + Math.floor(Math.random()*240);
+  }
 
   for(let i = 0; i < c.count; i++){
     const p = {
