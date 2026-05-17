@@ -299,6 +299,15 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
     <span data-i18n="volLabel" style="font-size:11px;color:rgba(180,220,180,.7);white-space:nowrap">🔊 音量</span>
     <input type="range" id="vol-slider" min="0" max="100" value="85" step="5" style="flex:1;accent-color:#5dba6a">
   </div>
+  <!-- BGM (天気・時刻で自動変化・SFXとは独立) -->
+  <button class="h-toggle" id="bgm-toggle" style="width:100%;justify-content:space-between;padding:8px 12px;height:36px;margin-bottom:8px">
+    <span style="font-size:12px;font-weight:600;color:var(--accent2)" id="bgm-toggle-label">🎵 BGM オフ</span>
+    <span class="h-track"><span class="h-thumb"></span></span>
+  </button>
+  <div id="bgm-vol-row" style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <span style="font-size:11px;color:rgba(180,220,180,.7)" data-i18n="bgmVol">🔉 音量</span>
+    <input type="range" id="bgm-vol" min="0" max="100" value="50" step="5" style="flex:1;accent-color:#5dba6a">
+  </div>
   <div data-i18n="placementSound" style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:10px;text-align:center">配置時の効果音</div>
   <div id="sound-options" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
     <button class="tbtn sound-opt active" data-sound="pon" data-i18n="s.pon">🫧 ポンッ</button>
@@ -996,6 +1005,7 @@ const KawaiiSounds = (function(){
 let muted = true; // master mute (controls all sound)
 let selectedSound = 'pon'; // placement sound type
 let sfxVolume = 0.85; // 効果音マスター音量（セッションのみ・非永続。既定＝既存マスター gain と一致）
+let bgmOn = false, bgmVol = 0.5; // BGM（SFXミュートとは独立・既定オフ）
 function playPlaceSound(){
   if(muted) return;
   if(selectedSound === 'none') return;
@@ -1033,8 +1043,114 @@ function resumeAudio(){ try{ KawaiiSounds.resume(); }catch(e){} }
 ['pointerdown','touchstart','keydown'].forEach(ev =>
   window.addEventListener(ev, resumeAudio, { passive: true }));
 document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible') resumeAudio();
+  if(document.visibilityState === 'visible'){ resumeAudio(); if(bgmOn) KawaiiBGM.resume(); }
+  else KawaiiBGM.suspend();
 });
+
+// ─────────────────────────────────────────────
+// 🎵 KawaiiBGM — 天気・昼夜に追従する自動生成アンビエント
+//   依存ゼロ・音声ファイル無し。共有 AudioContext を使い、SFX とは独立した
+//   bgmGain → destination 直結（getMaster/muted を経由しない）。
+// ─────────────────────────────────────────────
+const KawaiiBGM = (function(){
+  const S = {
+    majp:[0,2,4,7,9], minp:[0,3,5,7,10], lyd:[0,2,4,6,7,9,11],
+    dor:[0,2,3,5,7,9,10], whole:[0,2,4,6,8,10], minpb:[0,3,5,6,7,10],
+  };
+  const m=(sc,root,bo,dn,st,wv,pw,cut,dt,lr,ld,gn)=>({sc,root,bo,dn,st,wv,pw,cut,dt,lr,ld,gn});
+  const MOODS={
+    clear:{d:m('majp',261.6,1,.45,.50,'triangle','sine',2600,6,.05,250,.50),
+           n:m('majp',196.0,0,.28,.75,'sine','sine',1300,9,.03,180,.55)},
+    rain:{d:m('dor',220.0,1,.40,.55,'sine','triangle',1800,10,.06,200,.50),
+          n:m('dor',174.6,0,.24,.85,'sine','sine',1100,12,.025,150,.50)},
+    snow:{d:m('lyd',293.7,1,.38,.60,'triangle','sine',2400,5,.04,220,.55),
+          n:m('lyd',220.0,0,.22,.95,'sine','sine',1500,7,.02,170,.55)},
+    thunder:{d:m('minp',196.0,0,.42,.50,'triangle','triangle',1600,14,.10,350,.42),
+             n:m('minpb',146.8,0,.30,.70,'sine','triangle',1000,16,.08,300,.42)},
+    hail:{d:m('minp',246.9,1,.50,.40,'triangle','sine',2200,8,.07,240,.46),
+          n:m('minp',185.0,0,.30,.65,'sine','sine',1300,10,.04,190,.46)},
+    sandstorm:{d:m('whole',207.6,0,.32,.65,'sawtooth','triangle',1400,18,.09,320,.42),
+               n:m('whole',164.8,0,.20,.90,'sine','triangle',950,20,.05,240,.42)},
+    sakura:{d:m('majp',329.6,1,.48,.45,'triangle','sine',2800,5,.05,260,.50),
+            n:m('majp',246.9,0,.30,.70,'sine','sine',1600,7,.03,200,.52)},
+    leaves:{d:m('dor',233.1,0,.40,.55,'triangle','triangle',2000,9,.05,220,.50),
+            n:m('minp',174.6,0,.26,.80,'sine','sine',1200,11,.03,170,.50)},
+  };
+  const CF=3, AHEAD=0.2;
+  let g, lp, lfo, lfoG, pads=[], built=false, on=false, vol=0.5, susp=false;
+  let timer=null, nextT=0, cur=MOODS.clear.d;
+  function build(){
+    const a=_a();
+    g=a.createGain(); g.gain.value=0;
+    lp=a.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.7; lp.frequency.value=cur.cut;
+    lp.connect(g).connect(a.destination);
+    lfo=a.createOscillator(); lfo.type='sine'; lfo.frequency.value=cur.lr;
+    lfoG=a.createGain(); lfoG.gain.value=cur.ld;
+    lfo.connect(lfoG).connect(lp.frequency); lfo.start();
+    for(let i=0;i<3;i++){
+      const o=a.createOscillator(); o.type=cur.pw;
+      const v=a.createGain(); v.gain.value=0;
+      o.connect(v).connect(lp); o.start();
+      pads.push({o,v});
+    }
+    built=true;
+    applyMood(cur,0.01);
+  }
+  function gTarget(){ return (on && !susp) ? vol : 0; }
+  function reGain(){ if(g) g.gain.setTargetAtTime(gTarget(), _a().currentTime, .25); }
+  function applyMood(M,when){
+    cur=M;
+    if(!built) return;
+    const a=_a(), t=a.currentTime, T=(when==null?CF:when)/3;
+    const f=[M.root, M.root*1.5, M.root*2], pv=M.gn*0.16;
+    pads.forEach((p,i)=>{
+      p.o.type=M.pw;
+      p.o.frequency.setTargetAtTime(f[i], t, T);
+      p.o.detune.setTargetAtTime((i-1)*M.dt, t, T);
+      p.v.gain.setTargetAtTime(i<2?pv:pv*0.45, t, T);
+    });
+    lp.frequency.setTargetAtTime(M.cut, t, T);
+    lfo.frequency.setTargetAtTime(M.lr, t, T);
+    lfoG.gain.setTargetAtTime(M.ld, t, T);
+  }
+  function note(t){
+    if(Math.random()>cur.dn) return;
+    const a=_a();
+    const sc=S[cur.sc]||S.majp;
+    const deg=sc[(Math.random()*sc.length)|0];
+    const oct=cur.bo + (Math.random()<0.18?1:0);
+    const fr=cur.root*Math.pow(2,oct)*Math.pow(2,deg/12);
+    const o=a.createOscillator(); o.type=cur.wv; o.frequency.value=fr;
+    const v=a.createGain(), dur=Math.min(1.8,cur.st*2.4);
+    v.gain.setValueAtTime(0.0001,t);
+    v.gain.exponentialRampToValueAtTime(0.16*cur.gn,t+0.02);
+    v.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(v).connect(lp);
+    o.start(t); o.stop(t+dur+0.05);
+  }
+  function tick(){
+    if(!built||!on||susp) return;
+    const now=_a().currentTime;
+    if(nextT<now) nextT=now+0.05;
+    while(nextT < now+AHEAD){
+      note(nextT);
+      nextT += cur.st*(0.8+Math.random()*0.5);
+    }
+  }
+  function startTimer(){ if(timer==null) timer=setInterval(tick,25); }
+  function stopTimer(){ if(timer!=null){ clearInterval(timer); timer=null; } }
+  return {
+    setMood(w,night){ const e=MOODS[w]||MOODS.clear; applyMood(night?e.n:e.d, built?CF:0.01); },
+    setEnabled(v){
+      on=!!v;
+      if(on){ if(!built) build(); startTimer(); reGain(); }
+      else { reGain(); stopTimer(); }
+    },
+    setVolume(v){ vol=Math.max(0,Math.min(1,v)); reGain(); },
+    suspend(){ susp=true; reGain(); stopTimer(); },
+    resume(){ susp=false; if(on){ startTimer(); reGain(); } },
+  };
+})();
 // Duration (seconds) of each launch whistle — used to sync shell flight
 const FW_LAUNCH_DUR = { '1': 1.15, '2': 0.75, '3': 1.3, '4': 1.6 };
 // Pick a random launch+boom combo for each firework
@@ -1198,6 +1314,7 @@ const I18N = {
     's.pon':'🫧 ポンッ','s.koto':'🪵 コトッ','s.poyon':'🟢 ぽよん','s.fuwa':'☁️ ふわっ',
     's.tin':'🔔 ティン','s.pata':'📄 ぱた','s.pofu':'🧸 ぽふ','s.chari':'🪙 ちゃり','s.none':'🚫 なし',
     muteOn:'🔇 ミュート中', muteOff:'🔊 サウンド ON', volLabel:'🔊 音量',
+    bgmToggleOn:'🎵 BGM オン', bgmToggleOff:'🎵 BGM オフ', bgmVol:'🔉 音量',
     fxNight:'🌙 夜の演出', fxNightLocked:'🌙 夜の演出（日没後に使えます）',
     fxDay:'☀️ 昼の演出', fxDayLocked:'☀️ 昼の演出（日の出後に使えます）',
     'fx.aurora':'🌌 オーロラ','fx.fireworks':'🎆 花火','fx.bubbles':'🫧 シャボン玉','fx.mist':'🌫 朝霧',
@@ -1272,6 +1389,7 @@ const I18N = {
     's.pon':'🫧 Pop','s.koto':'🪵 Knock','s.poyon':'🟢 Boing','s.fuwa':'☁️ Floaty',
     's.tin':'🔔 Ting','s.pata':'📄 Pata','s.pofu':'🧸 Pofu','s.chari':'🪙 Clink','s.none':'🚫 None',
     muteOn:'🔇 Muted', muteOff:'🔊 Sound on', volLabel:'🔊 Volume',
+    bgmToggleOn:'🎵 BGM on', bgmToggleOff:'🎵 BGM off', bgmVol:'🔉 Volume',
     fxNight:'🌙 Night effects', fxNightLocked:'🌙 Night effects (after sunset)',
     fxDay:'☀️ Day effects', fxDayLocked:'☀️ Day effects (after sunrise)',
     'fx.aurora':'🌌 Aurora','fx.fireworks':'🎆 Fireworks','fx.bubbles':'🫧 Bubbles','fx.mist':'🌫 Morning mist',
@@ -1339,6 +1457,7 @@ function applyLang(){
   // Dynamic / JS-driven text that the generic pass above can't cover
   if(typeof refreshWeatherBtn === 'function') refreshWeatherBtn();
   if(typeof refreshMuteToggle === 'function') refreshMuteToggle();
+  if(typeof refreshBgmToggle === 'function') refreshBgmToggle();
   if(typeof updateFxAvailability === 'function') updateFxAvailability();
   if(typeof updateLandSummary === 'function') updateLandSummary();
   if(typeof refreshScatterUI === 'function') refreshScatterUI();
@@ -4212,6 +4331,7 @@ document.getElementById('sound-btn').addEventListener('click',e=>{
   e.stopPropagation();
   togglePopup('sound-popup');
   refreshMuteToggle();
+  refreshBgmToggle();
 });
 document.getElementById('mute-toggle').addEventListener('click',e=>{
   e.stopPropagation();
@@ -4241,6 +4361,31 @@ volSlider.addEventListener('input',e=>{
 });
 refreshSoundBtn();
 refreshMuteToggle();
+
+// BGM トグル＋音量（SFXミュートとは独立）
+function refreshBgmToggle(){
+  const tog=document.getElementById('bgm-toggle');
+  if(!tog) return;
+  tog.classList.toggle('is-on', bgmOn);
+  document.getElementById('bgm-toggle-label').textContent = bgmOn ? tr('bgmToggleOn') : tr('bgmToggleOff');
+  document.getElementById('bgm-vol').value = Math.round(bgmVol*100);
+}
+document.getElementById('bgm-toggle').addEventListener('click',e=>{
+  e.stopPropagation();
+  bgmOn = !bgmOn;
+  refreshBgmToggle();
+  resumeAudio();                       // このジェスチャで共有 ctx を resume
+  KawaiiBGM.setVolume(bgmVol);
+  KawaiiBGM.setEnabled(bgmOn);
+  if(bgmOn) KawaiiBGM.setMood(weather, isNight());
+  saveState();
+});
+document.getElementById('bgm-vol').addEventListener('input',e=>{
+  bgmVol = (+e.target.value)/100;
+  KawaiiBGM.setVolume(bgmVol);
+});
+document.getElementById('bgm-vol').addEventListener('change',()=>saveState());
+refreshBgmToggle();
 
 // ⚙️ Settings menu
 const menuPopup = document.getElementById('menu-popup');
@@ -4964,6 +5109,7 @@ function applyWeather(w){
   rainbowOn = false;
   rainFading = false;
   refreshWeatherBtn();
+  if(bgmOn) KawaiiBGM.setMood(w, isNight());   // 手動/復元/ランダム回転を一括カバー
 }
 
 function pickRandomWeather(){
@@ -5590,7 +5736,7 @@ function saveState(){
       selCat, selEmoji, selTerrain, mode,
       timeOfDay, dayPaused, weather,
       drawMode, showHeights, heightsTouched,
-      muted, selectedSound,
+      muted, selectedSound, bgmOn, bgmVol,
       weatherRandomOn,
       weatherRandomPool: [...weatherRandomPool],
       fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
@@ -5666,6 +5812,8 @@ function applyState(data){
     // muted も共有ペイロードには無い。無い場合は閲覧者のミュート設定を維持。
     if(typeof data.muted === 'boolean') muted = !!data.muted;
     if(typeof data.selectedSound === 'string') selectedSound = data.selectedSound;
+    if(typeof data.bgmOn === 'boolean') bgmOn = data.bgmOn;
+    if(typeof data.bgmVol === 'number') bgmVol = Math.max(0, Math.min(1, data.bgmVol));
 
     weatherRandomOn = !!data.weatherRandomOn;
     weatherRandomPool = new Set(Array.isArray(data.weatherRandomPool) ? data.weatherRandomPool : []);
@@ -5693,6 +5841,9 @@ function applyState(data){
     refreshDimToggle();
     refreshHeightsBtn();
     refreshSoundBtn(); refreshMuteToggle();
+    refreshBgmToggle();
+    KawaiiBGM.setVolume(bgmVol);
+    KawaiiBGM.setEnabled(bgmOn);   // 復元時オンでも共有ctx resume まで無音（オートプレイ非抵触）
     document.querySelectorAll('.sound-opt').forEach(b => b.classList.toggle('active', b.dataset.sound === selectedSound));
     refreshAllFxToggles();
     applyWeather(typeof data.weather === 'string' ? data.weather : weather);
@@ -5805,6 +5956,7 @@ applyLang();
 const DAY_SPEED=0.00008;
 let last=performance.now(), mmTimer=0;
 
+let _bgmPrevNight = null;   // 昼夜境界クロス検出（BGM crossfade トリガ）
 function loop(now){
   requestAnimationFrame(loop);
   if(fpsCap>0 && now-last < 1000/fpsCap - 1) return; // フレーム間引き（rAFは自走）
@@ -5821,6 +5973,8 @@ function loop(now){
 
   // Auto-stop time-locked effects when time of day changes
   const night = timeOfDay < 0.27 || timeOfDay > 0.73;
+  if(bgmOn && _bgmPrevNight !== night) KawaiiBGM.setMood(weather, night);
+  _bgmPrevNight = night;
   // Night-only: aurora — stop if day arrives
   if(auroraOn && !night){ auroraOn = false; refreshAurora(); }
   if(fireworksOn && !night){ fireworksOn = false; refreshFireworks(); }
