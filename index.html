@@ -378,16 +378,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
       <div data-i18n="selectMap" style="font-size:10px;color:rgba(180,220,180,.55);margin-bottom:6px">マップを選択</div>
       <div id="gen-btns" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px"></div>
       <button class="tbtn" id="btn-gen-random" data-i18n="genRandom" style="width:100%;padding:8px">🎲 完全ランダム</button>
-    </div>
-  </div>
-
-  <div class="acc-section">
-    <button class="acc-header" data-acc="solid">
-      <span class="acc-arrow">▶</span>
-      <span class="acc-title" data-i18n="solidFill">🎨 単色で塗りつぶす</span>
-      <span class="acc-summary" data-i18n="solidSummary">8色＋カスタム</span>
-    </button>
-    <div class="acc-content">
+      <div data-i18n="solidFill" style="font-size:10px;color:rgba(180,220,180,.55);margin:14px 0 6px">🎨 単色で塗りつぶす</div>
       <div id="solid-presets" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px"></div>
       <div style="display:flex;align-items:center;gap:6px">
         <input type="color" id="color-picker" value="#4a8a3a" style="width:32px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0">
@@ -1063,7 +1054,7 @@ const I18N = {
     genLand:'🗺 土地の生成', landFlat:'平らな地形', landHilly:'起伏のある地形',
     terrainTypeLabel:'地形のタイプ', genFlat:'⬜ 平らな地形', genHilly:'⛰ 起伏あり',
     selectMap:'マップを選択', genRandom:'🎲 完全ランダム',
-    solidFill:'🎨 単色で塗りつぶす', solidSummary:'8色＋カスタム', customColor:'カスタム色', paint:'塗る',
+    solidFill:'🎨 単色で塗りつぶす', customColor:'カスタム色', paint:'塗る',
     scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
     scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
     scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
@@ -1129,7 +1120,7 @@ const I18N = {
     genLand:'🗺 Land generation', landFlat:'Flat terrain', landHilly:'Hilly terrain',
     terrainTypeLabel:'Terrain type', genFlat:'⬜ Flat', genHilly:'⛰ Hilly',
     selectMap:'Select a map', genRandom:'🎲 Fully random',
-    solidFill:'🎨 Fill with solid color', solidSummary:'8 colors + custom', customColor:'Custom color', paint:'Paint',
+    solidFill:'🎨 Fill with solid color', customColor:'Custom color', paint:'Paint',
     scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
     scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
     scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
