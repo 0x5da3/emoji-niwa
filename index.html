@@ -175,6 +175,12 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 .weather-opt.checked .w-check{background:rgba(93,186,106,.7);border-color:rgba(168,224,99,.9)}
 .weather-opt.checked .w-check::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff}
 #toast{position:fixed;top:98px;left:50%;transform:translateX(-50%);background:rgba(93,186,106,.88);color:#fff;font-size:12px;padding:6px 16px;border-radius:20px;pointer-events:none;z-index:50;opacity:0;transition:opacity .3s}
+#gif-frame-overlay{display:none;position:fixed;inset:0;z-index:60}
+#gif-frame-sq{position:absolute;border:2px solid rgba(168,224,99,.95);box-shadow:0 0 0 9999px rgba(0,0,0,.55);border-radius:6px;pointer-events:none}
+#gif-frame-cap{position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:61;font-size:12px;color:#a8e063;background:rgba(8,20,10,.92);border:1px solid rgba(120,210,130,.3);border-radius:10px;padding:6px 12px;white-space:nowrap}
+#gif-frame-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:61;display:flex;gap:10px;align-items:center;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(14px)}
+#gif-frame-bar .tbtn{padding:8px 16px}
+#btn-gif-ok{background:rgba(93,186,106,.3);border-color:rgba(168,224,99,.6)}
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 #map-btns{position:fixed;right:10px;top:60px;z-index:27;display:grid;grid-template-columns:repeat(2,36px);gap:6px;justify-items:center}
 #map-btns #btn-3d{grid-column:1/-1;width:auto;min-width:76px;box-sizing:border-box;justify-content:center;height:30px;justify-self:center;margin-top:2px}
@@ -298,6 +304,17 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
     <button class="tbtn sound-opt" data-sound="pofu" data-i18n="s.pofu">🧸 ぽふ</button>
     <button class="tbtn sound-opt" data-sound="chari" data-i18n="s.chari">🪙 ちゃり</button>
     <button class="tbtn sound-opt" data-sound="none" data-i18n="s.none">🚫 なし</button>
+  </div>
+</div>
+
+<!-- GIF CAPTURE-FRAME OVERLAY (📸 で撮影範囲を提示→OKで実行) -->
+
+<div id="gif-frame-overlay">
+  <div id="gif-frame-sq"></div>
+  <div id="gif-frame-cap" data-i18n="gifFrameHint">📸 この範囲がGIFになります</div>
+  <div id="gif-frame-bar">
+    <button class="tbtn" id="btn-gif-cancel" data-i18n="gifFrameCancel">キャンセル</button>
+    <button class="tbtn" id="btn-gif-ok" data-i18n="gifFrameOk">📸 GIFを作成</button>
   </div>
 </div>
 
@@ -1072,6 +1089,7 @@ const I18N = {
     'toast.gifHint':'💾 保存後、iOSのショートカット/対応アプリでGIF→Live Photoに変換できます',
     'toast.gifHintAndroid':'💾 GIFを保存しました。ライブ壁紙/動く画像アプリで活用できます',
     'toast.gifHintSaved':'💾 GIFを保存しました',
+    gifFrameHint:'📸 この範囲がGIFになります', gifFrameOk:'📸 GIFを作成', gifFrameCancel:'キャンセル',
     weatherRandom:'🎲 ランダム切替',
     weatherRandomHint:'候補から30〜60秒ごとに切替（タップで候補を選択）',
     weatherSelect:'天気を選択',
@@ -1147,6 +1165,7 @@ const I18N = {
     'toast.gifHint':'💾 After saving, convert GIF→Live Photo via an iOS Shortcut/app',
     'toast.gifHintAndroid':'💾 GIF saved — use it in a live-wallpaper / motion-photo app',
     'toast.gifHintSaved':'💾 GIF saved',
+    gifFrameHint:'📸 This area becomes the GIF', gifFrameOk:'📸 Make GIF', gifFrameCancel:'Cancel',
     weatherRandom:'🎲 Random switch',
     weatherRandomHint:'Switches among picks every 30–60s (tap to choose picks)',
     weatherSelect:'Select weather',
@@ -4273,12 +4292,21 @@ function _gifHintKey(){
   return 'toast.gifHintSaved';
 }
 
-document.getElementById('btn-gif').addEventListener('click', async e=>{
-  e.stopPropagation();
+// 撮影される正方形（短辺・中央）。_gifCapture の切り出し矩形と一致＝WYSIWYG
+function layoutGifFrame(){
+  const W=window.innerWidth, H=window.innerHeight, side=Math.min(W,H);
+  const sq=document.getElementById('gif-frame-sq');
+  sq.style.width=sq.style.height=side+'px';
+  sq.style.left=((W-side)/2)+'px';
+  sq.style.top=((H-side)/2)+'px';
+}
+function showGifFrame(on){
+  document.getElementById('gif-frame-overlay').style.display = on ? 'block' : 'none';
+}
+async function runGifExport(){
   if(gifBusy) return;
   gifBusy=true;
   try{
-    closeAllPopups();
     showToast(tr('toast.gifMaking'));
     await new Promise(r=>setTimeout(r,50));      // トースト描画を待つ
     const frames=_gifCapture();
@@ -4299,6 +4327,26 @@ document.getElementById('btn-gif').addEventListener('click', async e=>{
     if(saved) showToast(tr(_gifHintKey()));   // 保存した時だけヒントを出す
   }catch(err){ showToast(tr('toast.gifError')); }
   finally{ gifBusy=false; }
+}
+
+document.getElementById('btn-gif').addEventListener('click', e=>{
+  e.stopPropagation();
+  if(gifBusy) return;
+  closeAllPopups();
+  layoutGifFrame();
+  showGifFrame(true);          // 撮影範囲を提示。OK で実行
+});
+document.getElementById('btn-gif-cancel').addEventListener('click', e=>{
+  e.stopPropagation();
+  showGifFrame(false);
+});
+document.getElementById('btn-gif-ok').addEventListener('click', e=>{
+  e.stopPropagation();
+  showGifFrame(false);
+  runGifExport();
+});
+window.addEventListener('resize', ()=>{
+  if(document.getElementById('gif-frame-overlay').style.display==='block') layoutGifFrame();
 });
 
 // 共有URL閲覧バーの表示と操作
