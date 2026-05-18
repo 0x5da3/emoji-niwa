@@ -189,6 +189,8 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 #map-btns #btn-heights{grid-column:1/-1;width:auto;min-width:76px;box-sizing:border-box;justify-content:center;height:30px;justify-self:center}
 #corner-btns{position:fixed;left:8px;top:56px;z-index:27;display:flex;flex-direction:column;gap:6px}
 #corner-btns .tbtn{width:46px;text-align:center;background:var(--panel);backdrop-filter:blur(10px)}
+#btn-cornermin{font-size:12px;padding:3px 0;color:rgba(180,220,180,.7)}
+body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 #btn-room{position:relative}
 #mp-count-badge{display:none;position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;line-height:1;padding:1px 5px;border-radius:7px;background:rgba(8,16,10,.94);color:#a8e063;border:1px solid rgba(168,224,99,.55);pointer-events:none;white-space:nowrap;z-index:2}
 #btn-save{position:relative}
@@ -211,6 +213,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 
 <!-- Settings / Save / Sound — vertical stack under the top-left -->
 <div id="corner-btns">
+  <button class="tbtn" id="btn-cornermin" data-i18n-title="ttCornerMin" title="ボタン列の最小化">▾</button>
   <button class="tbtn" id="btn-help" data-i18n-title="ttHelp" title="遊び方">📖</button>
   <button class="tbtn" id="btn-menu" data-i18n-title="ttSettings" title="設定">⚙️</button>
   <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
@@ -1238,7 +1241,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.10.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.11.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -1409,7 +1412,7 @@ const I18N = {
     scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
     scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
     scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
-    tt3d:'2D/3D 切り替え', ttHeights:'高さを表示', ttPalette:'パレットの折りたたみ',
+    tt3d:'2D/3D 切り替え', ttHeights:'高さを表示', ttPalette:'パレットの折りたたみ', ttCornerMin:'ボタン列の最小化',
     empty:'使った絵文字がここに記録されます',
     'cat:📌 履歴':'📌 履歴','cat:🌿 自然':'🌿 自然','cat:🐾 動物':'🐾 動物','cat:🏗 建物':'🏗 建物',
     'cat:🌍 地形':'🌍 地形','cat:✨ 空':'✨ 空','cat:🍎 食べ物':'🍎 食べ物','cat:🚗 乗り物':'🚗 乗り物',
@@ -1496,7 +1499,7 @@ const I18N = {
     scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
     scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
     scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
-    tt3d:'Toggle 2D/3D', ttHeights:'Show heights', ttPalette:'Collapse palette',
+    tt3d:'Toggle 2D/3D', ttHeights:'Show heights', ttPalette:'Collapse palette', ttCornerMin:'Collapse button column',
     empty:'Used emoji are recorded here',
     'cat:📌 履歴':'📌 History','cat:🌿 自然':'🌿 Nature','cat:🐾 動物':'🐾 Animals','cat:🏗 建物':'🏗 Buildings',
     'cat:🌍 地形':'🌍 Terrain','cat:✨ 空':'✨ Sky','cat:🍎 食べ物':'🍎 Food','cat:🚗 乗り物':'🚗 Vehicles',
@@ -4195,6 +4198,14 @@ document.getElementById('btn-palmin').addEventListener('click',e=>{
   e.currentTarget.textContent = on ? '▴' : '▾';
 });
 
+// 左ボタン列の最小化（先頭の ▾ ボタン。最小化時はこのボタンのみ表示）
+document.getElementById('btn-cornermin').addEventListener('click',e=>{
+  e.stopPropagation();
+  const on=document.body.classList.toggle('corner-collapsed');
+  e.currentTarget.textContent = on ? '▴' : '▾';
+  if(typeof mpPlace==='function') mpPlace();   // 列の高さ変化に追従して mp-bar を再配置
+});
+
 // 3D toggle
 mm.addEventListener('click',e=>{
   const rect=mm.getBoundingClientRect();
@@ -5663,6 +5674,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.11.0',
+    ja:['↕️ 左の縦ボタン列をワンタップで折りたためるようになりました'],
+    en:['↕️ The left button column can now be collapsed with one tap'] },
   { v:'0.10.1',
     ja:['🗺 マップが下のパレットに隠れて見えづらい問題を修正'],
     en:['🗺 Fixed the map being hidden behind the bottom palette'] },
