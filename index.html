@@ -211,6 +211,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 
 <!-- Settings / Save / Sound — vertical stack under the top-left -->
 <div id="corner-btns">
+  <button class="tbtn" id="btn-help" data-i18n-title="ttHelp" title="遊び方">📖</button>
   <button class="tbtn" id="btn-menu" data-i18n-title="ttSettings" title="設定">⚙️</button>
   <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
   <button class="tbtn" id="sound-btn" data-i18n-title="ttSound" title="サウンド">🔇</button>
@@ -286,7 +287,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
     </div>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:8px;text-align:center">
-    <span id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em">v0.8.0</span>
+    <span id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em">v0.9.0</span>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:8px;padding-top:8px">
     <div data-i18n="changelogLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:4px">📝 更新履歴</div>
@@ -326,6 +327,26 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
     <button class="tbtn sound-opt" data-sound="pofu" data-i18n="s.pofu">🧸 ぽふ</button>
     <button class="tbtn sound-opt" data-sound="chari" data-i18n="s.chari">🪙 ちゃり</button>
     <button class="tbtn sound-opt" data-sound="none" data-i18n="s.none">🚫 なし</button>
+  </div>
+</div>
+
+<!-- HELP / HOW-TO-PLAY POPUP -->
+
+<div id="help-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw;max-height:80vh;overflow-y:auto">
+  <div data-i18n="helpTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">📖 遊び方</div>
+  <div data-i18n="helpStartLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🌱 はじめに</div>
+  <div data-i18n="helpStartBody" style="font-size:12px;color:rgba(210,235,210,.85);line-height:1.7;white-space:pre-line"></div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="helpCtrlLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🖱 基本操作</div>
+    <div data-i18n="helpCtrlBody" style="font-size:12px;color:rgba(210,235,210,.85);line-height:1.7;white-space:pre-line"></div>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="helpTopLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">⬆️ 上部のボタン</div>
+    <div data-i18n="helpTopBody" style="font-size:12px;color:rgba(210,235,210,.85);line-height:1.7;white-space:pre-line"></div>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="helpMapLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🗺 マップとメニュー</div>
+    <div data-i18n="helpMapBody" style="font-size:12px;color:rgba(210,235,210,.85);line-height:1.7;white-space:pre-line"></div>
   </div>
 </div>
 
@@ -1180,7 +1201,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.8.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.9.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -1318,6 +1339,16 @@ const I18N = {
     'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
     settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
+    ttHelp:'遊び方',
+    helpTitle:'📖 遊び方',
+    helpStartLabel:'🌱 はじめに',
+    helpStartBody:'1. 🎲 生成 で土地をつくる（または 🆕 設定→新規マップ）\n2. 下のパレットから絵文字を選ぶ\n3. マップをタップして配置\n4. ☀️ 天気 や 時刻バーで世界を演出\n5. 自動で保存されます（💾 で手動保存も可）',
+    helpCtrlLabel:'🖱 基本操作',
+    helpCtrlBody:'タップ / クリック：配置（または地形を塗る・消す）\nドラッグ / 2本指：視点を動かす\n＋ / －：ズーム\n↩ 戻す：直前の操作を取り消し\n🌙 をタップ：流星群 ／ ☀️ をタップ（雨天時）：虹',
+    helpTopLabel:'⬆️ 上部のボタン',
+    helpTopBody:'☀️ 天気：天気を選ぶ／ランダム切替\n時刻バー：時間帯を変える・止める\n🎲 生成：地形プリセット・単色塗り・ランダム散布\n✨ 演出：花火・オーロラ・シャボン玉・朝霧\n✏️ 配置 / 🎨 地形 / 🧹 消去：操作モード切替',
+    helpMapLabel:'🗺 マップとメニュー',
+    helpMapBody:'＋ － ⊡：ズーム／視点リセット　🗺：ミニマップ　⛶：全画面\n2D/3D：表示切替　#️⃣：高さ表示\n⚙️ 設定（言語・新規マップ・全リセット）　💾 保存\n🔇 サウンド　📸 GIF書き出し　🔗 共有リンク　👥 マルチプレイ',
     autosaveInterval:'💾 オートセーブ間隔', fpsLabel:'🎞️ フレームレート', langLabel:'🌐 言語 / Language',
     changelogLabel:'📝 更新履歴',
     placementSound:'配置時の効果音',
@@ -1394,6 +1425,16 @@ const I18N = {
     'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
     settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
+    ttHelp:'How to play',
+    helpTitle:'📖 How to Play',
+    helpStartLabel:'🌱 Getting started',
+    helpStartBody:'1. Make terrain with 🎲 Generate (or 🆕 Settings → New map)\n2. Pick an emoji from the palette below\n3. Tap the map to place it\n4. Set the scene with ☀️ Weather and the time bar\n5. Auto-saved (💾 for manual save too)',
+    helpCtrlLabel:'🖱 Basic controls',
+    helpCtrlBody:'Tap / click: place (or paint/erase terrain)\nDrag / two fingers: pan the view\n＋ / －: zoom\n↩ Undo: undo last action\nTap 🌙: meteor shower / Tap ☀️ (while raining): rainbow',
+    helpTopLabel:'⬆️ Top buttons',
+    helpTopBody:'☀️ Weather: pick weather / random rotation\nTime bar: change or pause time of day\n🎲 Generate: terrain presets, solid fill, random scatter\n✨ Effects: fireworks, aurora, bubbles, morning mist\n✏️ Place / 🎨 Terrain / 🧹 Erase: switch tool mode',
+    helpMapLabel:'🗺 Map & menu buttons',
+    helpMapBody:'＋ － ⊡: zoom / reset view　🗺: minimap　⛶: fullscreen\n2D/3D: view mode　#️⃣: show heights\n⚙️ Settings (language, new map, reset all)　💾 Save\n🔇 Sound　📸 Export GIF　🔗 Share link　👥 Multiplayer',
     autosaveInterval:'💾 Autosave interval', fpsLabel:'🎞️ Frame rate', langLabel:'🌐 言語 / Language',
     changelogLabel:'📝 What’s new',
     placementSound:'Placement sound',
@@ -4403,7 +4444,7 @@ refreshBgmToggle();
 const menuPopup = document.getElementById('menu-popup');
 
 // Exclusive popup helper
-const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup'];
+const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','help-popup'];
 function openPopup(id){
   for(const p of ALL_POPUPS) document.getElementById(p).style.display = (p === id ? 'block' : 'none');
 }
@@ -4419,6 +4460,10 @@ function togglePopup(id){
 document.getElementById('btn-menu').addEventListener('click',e=>{
   e.stopPropagation();
   togglePopup('menu-popup');
+});
+document.getElementById('btn-help').addEventListener('click',e=>{
+  e.stopPropagation();
+  togglePopup('help-popup');
 });
 
 // 🔗 ワールドを URL で共有（ハッシュにエンコード、サーバー不要）
@@ -5465,7 +5510,7 @@ document.getElementById('btn-effects').addEventListener('click',e=>{
 
 document.addEventListener('click',e=>{
   const insideAnyPopup = ALL_POPUPS.some(id => document.getElementById(id).contains(e.target));
-  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn'].includes(e.target.id);
+  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn','btn-help'].includes(e.target.id);
   if(!insideAnyPopup && !isTriggerBtn) closeAllPopups();
 });
 
@@ -5547,6 +5592,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.9.0',
+    ja:['📖 「遊び方」ボタンを追加（はじめ方と各ボタンの説明）'],
+    en:['📖 Added a “How to Play” button (getting started + button guide)'] },
   { v:'0.8.0',
     ja:['🏷️ バージョンと更新履歴が見られるようになりました',
         '🎵 天気や時間に合わせて BGM が流れます（オン/オフ切替）',
