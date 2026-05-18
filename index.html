@@ -266,7 +266,9 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 <!-- SETTINGS MENU POPUP -->
 
 <div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
-  <div data-i18n="settingsTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">⚙️ 設定</div>
+  <div data-i18n="appTitle" style="font-size:15px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:2px">🌿 絵文字庭</div>
+  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.10.0</div>
+  <div data-i18n="settingsTitle" style="font-size:12px;font-weight:600;color:rgba(180,220,180,.6);text-align:center;margin-bottom:10px">⚙️ 設定</div>
   <div style="display:flex;flex-direction:column;gap:6px">
     <button class="tbtn" id="btn-newmap" data-i18n="newMap">🆕 新規マップ</button>
     <button class="tbtn" id="btn-clear-all" data-i18n="clearAll">🗑 全リセット</button>
@@ -286,10 +288,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
       <button class="tbtn lang-opt" data-lang="en">🇺🇸 English</button>
     </div>
   </div>
-  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:8px;text-align:center">
-    <span id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em">v0.10.0</span>
-  </div>
-  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:8px;padding-top:8px">
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="changelogLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:4px">📝 更新履歴</div>
     <div id="changelog" style="font-size:11px;color:rgba(180,220,180,.75);max-height:140px;overflow-y:auto;line-height:1.5;scrollbar-width:thin"></div>
   </div>
@@ -1348,7 +1347,7 @@ const I18N = {
     'wlabel:clear':'晴','wlabel:rain':'雨','wlabel:snow':'雪','wlabel:thunder':'雷',
     'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
-    settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
+    appTitle:'🌿 絵文字庭', settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
     ttHelp:'遊び方',
     helpTitle:'📖 遊び方',
     helpStartLabel:'🌱 はじめに',
@@ -1434,7 +1433,7 @@ const I18N = {
     'wlabel:clear':'Clear','wlabel:rain':'Rain','wlabel:snow':'Snow','wlabel:thunder':'Storm',
     'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
-    settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
+    appTitle:'🌿 emoji-niwa', settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
     ttHelp:'How to play',
     helpTitle:'📖 How to Play',
     helpStartLabel:'🌱 Getting started',
