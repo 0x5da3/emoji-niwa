@@ -217,8 +217,9 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 .mapbtn:active{background:rgba(93,186,106,.3)}
 #dpad{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:27;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,32px);gap:8px;padding:4px;border-radius:14px;opacity:.72;transition:opacity .15s}
 #dpad:hover{opacity:1}
-.dpadbtn{width:32px;height:32px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.dpadbtn{width:32px;height:32px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s,opacity .12s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .dpadbtn:active{background:rgba(93,186,106,.3)}
+.dpadbtn:disabled{opacity:.28;cursor:not-allowed;pointer-events:none}
 .dpad-mid{background:rgba(93,186,106,.22);border-color:rgba(168,224,99,.5);font-size:16px}
 .mapbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 .tbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
@@ -4253,7 +4254,10 @@ function keepActiveVisible(){
   if(dx||dy){ targetOX+=dx; targetOY+=dy; }
 }
 // 矢印方向はスクリーン空間で1タイル進めて screenToIso で戻す（回転/2D3D/ズーム不問）
+// 戻り値：実際にアクティブマスが動いたか（境界で動けなかった場合 false → 長押しリピートも自動停止する）
+const DPAD_DIRS={'dp-ul':[-1,-1],'dp-u':[0,-1],'dp-ur':[1,-1],'dp-l':[-1,0],'dp-r':[1,0],'dp-dl':[-1,1],'dp-d':[0,1],'dp-dr':[1,1]};
 function moveActive(dx,dy){
+  const oc=activeCell.c, or=activeCell.r;
   const {TW,TH}=getTileDims();
   const stepX=TW*scale*(drawMode==='3d'?0.5:1);
   const stepY=TH*scale*(drawMode==='3d'?0.5:1);
@@ -4264,6 +4268,9 @@ function moveActive(dx,dy){
   activeCell.c=Math.max(0,Math.min(GRID-1,n.c));
   activeCell.r=Math.max(0,Math.min(GRID-1,n.r));
   keepActiveVisible();
+  const moved = (activeCell.c!==oc) || (activeCell.r!==or);
+  if(moved) refreshDpad();   // 境界に達した方向のボタンを暗くする（disabled）
+  return moved;
 }
 function dpadPlace(){ lastKey=null; act(activeCell.c,activeCell.r); }   // mode別配置/塗り/消去（連打可）
 function refreshDpad(){
@@ -4274,16 +4281,27 @@ function refreshDpad(){
   if(sh) sh.classList.toggle('is-on', dpadVisible);
   const t=document.getElementById('dpad-toggle');
   if(t) t.classList.toggle('is-on', dpadVisible);
+  // 進めない方向（境界外）のボタンを disable にして「行き止まり」を視覚化
+  const c = activeCell.c, r = activeCell.r;
+  for(const id in DPAD_DIRS){
+    const [dx,dy] = DPAD_DIRS[id];
+    const b = document.getElementById(id);
+    if(!b) continue;
+    const nc = c+dx, nr = r+dy;
+    b.disabled = (nc<0 || nc>=GRID || nr<0 || nr>=GRID);
+  }
 }
 (function wireDpad(){
-  const DIRS={'dp-ul':[-1,-1],'dp-u':[0,-1],'dp-ur':[1,-1],'dp-l':[-1,0],'dp-r':[1,0],'dp-dl':[-1,1],'dp-d':[0,1],'dp-dr':[1,1]};
   const stopHold=()=>{ if(dpadRepeat){ clearTimeout(dpadRepeat.t); clearInterval(dpadRepeat.i); dpadRepeat=null; } };
-  for(const id in DIRS){
+  for(const id in DPAD_DIRS){
     const b=document.getElementById(id); if(!b) continue;
-    const [dx,dy]=DIRS[id];
+    const [dx,dy]=DPAD_DIRS[id];
     b.addEventListener('pointerdown',ev=>{
-      ev.preventDefault(); stopHold(); moveActive(dx,dy);
-      dpadRepeat={ t:setTimeout(()=>{ dpadRepeat={ i:setInterval(()=>moveActive(dx,dy),110) }; }, 350) };
+      ev.preventDefault(); stopHold();
+      if(!moveActive(dx,dy)) return;   // 境界で動けなければリピート開始しない
+      dpadRepeat={ t:setTimeout(()=>{ dpadRepeat={ i:setInterval(()=>{
+        if(!moveActive(dx,dy)) stopHold();   // 移動中に境界到達でリピート自動停止
+      },110) }; }, 350) };
     });
     b.addEventListener('pointerup',stopHold);
     b.addEventListener('pointerleave',stopHold);
