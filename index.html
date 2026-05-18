@@ -4106,11 +4106,22 @@ function applyZoom(factor){
 document.getElementById('btn-zoom-in') .addEventListener('click',()=>applyZoom(1.25));
 document.getElementById('btn-zoom-out').addEventListener('click',()=>applyZoom(0.8));
 
+// 上部バー(#topbar)と下部パレット(#palette-wrap)に隠れない縦領域。
+// パレット高さは可変（4行化・最小化・MPチャット）なので実測する。
+function uiFreeBand(){
+  const tb=document.getElementById('topbar');
+  const pw=document.getElementById('palette-wrap');
+  const top = tb ? Math.max(0, Math.round(tb.getBoundingClientRect().bottom)) : 50;
+  const bot = (pw && pw.style.display!=='none') ? Math.ceil(pw.getBoundingClientRect().height) : 0;
+  const h = Math.max(120, cv.height - top - bot);
+  return { top, bot, h, cy: top + h/2 };   // cy = 自由領域の縦中心
+}
+
 // マップ全体が画面に収まるスケール（resetView と最小ズームで共有）
 function getFitScale(){
   const {TW,TH} = getTileDims();
   const maxW = cv.width  * 0.88;
-  const maxH = (cv.height - 120) * 0.88;
+  const maxH = uiFreeBand().h * 0.88;       // パレット/上部バーに被らない領域で fit
   // 3D は高い柱（最大 MAX_H、1段=TH*0.5 持ち上げ）が上にはみ出すので、
   // 縦の必要量にピーク分の余白を見込んで fit させる。
   const gridH = drawMode==='3d' ? (GRID + MAX_H*0.5) * TH : GRID * TH;
@@ -4123,15 +4134,16 @@ function getFitScale(){
 function resetView(){
   const {TW,TH} = getTileDims();
   const fitScale = getFitScale();
+  const cy = uiFreeBand().cy;               // 上部バー〜パレットの中間に中心を置く
   let ox, oy;
   if(drawMode==='3d'){
     // OX = screen center (iso origin is center-top of diamond)
     ox = cv.width / 2;
     // ピーク余白の半分だけ下げ、高い柱が上端で切れないようにする
-    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20 + (MAX_H * TH * fitScale * 0.5) / 2;
+    oy = cy - (GRID * TH / 2) * fitScale + 20 + (MAX_H * TH * fitScale * 0.5) / 2;
   } else {
     ox = cv.width  / 2 - (GRID * TW / 2) * fitScale - 30;
-    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
+    oy = cy - (GRID * TH / 2) * fitScale + 20;
   }
   targetScale = fitScale;
   targetOX = ox;
