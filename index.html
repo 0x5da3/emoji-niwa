@@ -29,7 +29,7 @@ body{background:#0a150b;overflow:hidden;font-family:'Hiragino Kaku Gothic ProN',
 .acc-section.open > .acc-header .acc-summary{display:none}
 .acc-content{display:none;padding:0 12px 12px}
 .acc-section.open > .acc-content{display:block;padding-top:10px}
-body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast{display:none !important}
+body.fullscreen #topbar,body.fullscreen #modebar,body.fullscreen #cattabs,body.fullscreen #palette-wrap,body.fullscreen #minimap,body.fullscreen #btn-zoom-in,body.fullscreen #btn-zoom-out,body.fullscreen #btn-reset-view,body.fullscreen #btn-3d,body.fullscreen #btn-minimap,body.fullscreen #btn-heights,body.fullscreen #corner-btns,body.fullscreen #toast,body.fullscreen #dpad{display:none !important}
 body.fullscreen #map-btns{top:auto;bottom:14px;right:14px}
 body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 .mapbtn.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
@@ -189,14 +189,17 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 #map-btns #btn-heights{grid-column:1/-1;width:auto;min-width:76px;box-sizing:border-box;justify-content:center;height:30px;justify-self:center}
 #corner-btns{position:fixed;left:8px;top:56px;z-index:27;display:flex;flex-direction:column;gap:6px}
 #corner-btns .tbtn{width:46px;text-align:center;background:var(--panel);backdrop-filter:blur(10px)}
-#btn-cornermin{font-size:12px;padding:3px 0;color:rgba(180,220,180,.7)}
-body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 #btn-room{position:relative}
 #mp-count-badge{display:none;position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;line-height:1;padding:1px 5px;border-radius:7px;background:rgba(8,16,10,.94);color:#a8e063;border:1px solid rgba(168,224,99,.55);pointer-events:none;white-space:nowrap;z-index:2}
 #btn-save{position:relative}
 #btn-save.saved::after{content:"✅";position:absolute;top:-7px;right:-7px;font-size:11px;line-height:1;pointer-events:none}
 .mapbtn{width:36px;height:36px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s}
 .mapbtn:active{background:rgba(93,186,106,.3)}
+#dpad{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:27;display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(3,40px);gap:18px;padding:6px;border-radius:16px}
+.dpadbtn{width:40px;height:40px;border:1px solid var(--border);background:var(--panel);border-radius:10px;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.dpadbtn:active{background:rgba(93,186,106,.3)}
+.dpad-mid{background:rgba(93,186,106,.22);border-color:rgba(168,224,99,.5);font-size:20px}
+.tbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 </style>
 
 </head>
@@ -213,7 +216,6 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 
 <!-- Settings / Save / Sound — vertical stack under the top-left -->
 <div id="corner-btns">
-  <button class="tbtn" id="btn-cornermin" data-i18n-title="ttCornerMin" title="ボタン列の最小化">▾</button>
   <button class="tbtn" id="btn-help" data-i18n-title="ttHelp" title="遊び方">📖</button>
   <button class="tbtn" id="btn-menu" data-i18n-title="ttSettings" title="設定">⚙️</button>
   <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
@@ -270,7 +272,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 
 <div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
   <div data-i18n="appTitle" style="font-size:15px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:2px">🌿 絵文字庭</div>
-  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.10.1</div>
+  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.11.0</div>
   <div style="border-top:1px solid rgba(120,210,130,.22);margin:0 -4px 12px"></div>
   <div data-i18n="settingsTitle" style="font-size:12px;font-weight:600;color:rgba(180,220,180,.6);text-align:center;margin-bottom:10px">⚙️ 設定</div>
   <div style="display:flex;flex-direction:column;gap:6px">
@@ -291,6 +293,9 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
       <button class="tbtn lang-opt" data-lang="ja">🇯🇵 日本語</button>
       <button class="tbtn lang-opt" data-lang="en">🇺🇸 English</button>
     </div>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <button class="tbtn" id="dpad-toggle" data-i18n="dpad.toggle" style="width:100%">🎮 十字キーを表示</button>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="changelogLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:4px">📝 更新履歴</div>
@@ -538,6 +543,18 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
     <span class="h-label">#️⃣</span>
     <span class="h-track"><span class="h-thumb"></span></span>
   </button>
+</div>
+
+<div id="dpad" role="group" data-i18n-title="dpad.title" title="十字キー（カーソル移動）">
+  <button class="dpadbtn" id="dp-ul" data-i18n-title="dpad.ul" title="左上へ">↖</button>
+  <button class="dpadbtn" id="dp-u"  data-i18n-title="dpad.u"  title="上へ">↑</button>
+  <button class="dpadbtn" id="dp-ur" data-i18n-title="dpad.ur" title="右上へ">↗</button>
+  <button class="dpadbtn" id="dp-l"  data-i18n-title="dpad.l"  title="左へ">←</button>
+  <button class="dpadbtn dpad-mid" id="dp-c" data-i18n-title="dpad.place" title="ここに置く">⚪</button>
+  <button class="dpadbtn" id="dp-r"  data-i18n-title="dpad.r"  title="右へ">→</button>
+  <button class="dpadbtn" id="dp-dl" data-i18n-title="dpad.dl" title="左下へ">↙</button>
+  <button class="dpadbtn" id="dp-d"  data-i18n-title="dpad.d"  title="下へ">↓</button>
+  <button class="dpadbtn" id="dp-dr" data-i18n-title="dpad.dr" title="右下へ">↘</button>
 </div>
 
 <script>
@@ -1351,6 +1368,9 @@ let dayPaused = false;
 let weather   = 'clear';
 let animT     = 0;
 let hoverCell = null;
+let activeCell = { c:(GRID/2)|0, r:(GRID/2)|0 };   // 矢印D-padで動かすアクティブマス（初期=中央）
+let dpadVisible = true;          // D-pad表示（設定で切替・セーブに保存）
+let dpadRepeat = null;           // 長押し連続移動タイマー
 let drawMode  = '3d'; // '2d' | '3d'
 let moonScreenPos = null; // {x, y, r} or null when moon not visible
 let sunScreenPos = null;  // {x, y, r} or null when sun not visible
@@ -1380,6 +1400,9 @@ const I18N = {
     'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
     appTitle:'🌿 絵文字庭', settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
+    'dpad.title':'十字キー（カーソル移動）','dpad.toggle':'🎮 十字キーを表示',
+    'dpad.ul':'左上へ','dpad.u':'上へ','dpad.ur':'右上へ','dpad.l':'左へ','dpad.r':'右へ',
+    'dpad.dl':'左下へ','dpad.d':'下へ','dpad.dr':'右下へ','dpad.place':'ここに置く（選択中の絵文字）',
     ttHelp:'遊び方',
     helpTitle:'📖 遊び方',
     helpStartLabel:'🌱 はじめに',
@@ -1412,7 +1435,7 @@ const I18N = {
     scatterTitle:'🎲 ランダム配置', scatterSource:'どこから絵文字を選ぶ？',
     scAll:'🗂 全カテゴリ', scRecent:'📌 履歴から', scatterBtn:'🎲 ランダム配置',
     scInfo:'マップの {pct}% (最大 {max})', scatterSummary:'{n}個',
-    tt3d:'2D/3D 切り替え', ttHeights:'高さを表示', ttPalette:'パレットの折りたたみ', ttCornerMin:'ボタン列の最小化',
+    tt3d:'2D/3D 切り替え', ttHeights:'高さを表示', ttPalette:'パレットの折りたたみ',
     empty:'使った絵文字がここに記録されます',
     'cat:📌 履歴':'📌 履歴','cat:🌿 自然':'🌿 自然','cat:🐾 動物':'🐾 動物','cat:🏗 建物':'🏗 建物',
     'cat:🌍 地形':'🌍 地形','cat:✨ 空':'✨ 空','cat:🍎 食べ物':'🍎 食べ物','cat:🚗 乗り物':'🚗 乗り物',
@@ -1467,6 +1490,9 @@ const I18N = {
     'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
     appTitle:'🌿 emoji-niwa', settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
+    'dpad.title':'D-pad (move cursor)','dpad.toggle':'🎮 Show D-pad',
+    'dpad.ul':'Move up-left','dpad.u':'Move up','dpad.ur':'Move up-right','dpad.l':'Move left','dpad.r':'Move right',
+    'dpad.dl':'Move down-left','dpad.d':'Move down','dpad.dr':'Move down-right','dpad.place':'Place here (selected emoji)',
     ttHelp:'How to play',
     helpTitle:'📖 How to Play',
     helpStartLabel:'🌱 Getting started',
@@ -1499,7 +1525,7 @@ const I18N = {
     scatterTitle:'🎲 Random scatter', scatterSource:'Where to pick emoji from?',
     scAll:'🗂 All categories', scRecent:'📌 From history', scatterBtn:'🎲 Scatter',
     scInfo:'{pct}% of map (max {max})', scatterSummary:'{n}',
-    tt3d:'Toggle 2D/3D', ttHeights:'Show heights', ttPalette:'Collapse palette', ttCornerMin:'Collapse button column',
+    tt3d:'Toggle 2D/3D', ttHeights:'Show heights', ttPalette:'Collapse palette',
     empty:'Used emoji are recorded here',
     'cat:📌 履歴':'📌 History','cat:🌿 自然':'🌿 Nature','cat:🐾 動物':'🐾 Animals','cat:🏗 建物':'🏗 Buildings',
     'cat:🌍 地形':'🌍 Terrain','cat:✨ 空':'✨ Sky','cat:🍎 食べ物':'🍎 Food','cat:🚗 乗り物':'🚗 Vehicles',
@@ -1877,6 +1903,7 @@ function drawTile(c, r){
   const tw = TW * scale, th = TH * scale;
   const type = terrain[`${c},${r}`] || 'grass';
   const isHover = hoverCell && hoverCell.c===c && hoverCell.r===r;
+  const isActive = activeCell && activeCell.c===c && activeCell.r===r;
 
   let col0, col1;
   if(type === 'water'){
@@ -1886,8 +1913,9 @@ function drawTile(c, r){
     const cc = TERRAIN_COLORS[type] || TERRAIN_COLORS.grass;
     col0 = cc[0]; col1 = cc[1];
   }
-  const hCol = isHover ? (mode==='erase'?'#ff6666':mode==='terrain'?'#ffcc44':col0) : col0;
-  const hCol1 = isHover ? hCol : col1;
+  let hCol = isHover ? (mode==='erase'?'#ff6666':mode==='terrain'?'#ffcc44':col0) : col0;
+  let hCol1 = isHover ? hCol : col1;
+  if(isActive){ hCol = '#3fd6c8'; hCol1 = '#2fb8ab'; }   // アクティブマス＝シアン（hover より優先）
 
   if(drawMode === '3d'){
     const depth = th * 0.5;
@@ -4021,7 +4049,9 @@ cv.addEventListener('mousedown',e=>{
   if(tryMoonTap(e.clientX, e.clientY)) return;
   if(trySunTap(e.clientX, e.clientY)) return;
   placing=true; lastKey=null;
-  const {c,r}=screenToIso(e.clientX,e.clientY); act(c,r);
+  const {c,r}=screenToIso(e.clientX,e.clientY);
+  if(c>=0&&c<GRID&&r>=0&&r<GRID) activeCell={c,r};   // タップしたマスをアクティブ化
+  act(c,r);
 });
 cv.addEventListener('mousemove',e=>{
   const {c,r}=screenToIso(e.clientX,e.clientY);
@@ -4079,6 +4109,7 @@ cv.addEventListener('touchend',e=>{
       return;
     }
     const {c,r}=screenToIso(touchDownPos.x, touchDownPos.y);
+    if(c>=0&&c<GRID&&r>=0&&r<GRID) activeCell={c,r};   // タップしたマスをアクティブ化
     lastKey=null;
     act(c,r);
   }
@@ -4181,6 +4212,80 @@ btnHeights.addEventListener('click',()=>{
 });
 refreshHeightsBtn();
 
+// ── 矢印D-pad：アクティブマス指定＋⚪で配置 ──────────────────
+function clampActive(){
+  if(!activeCell) activeCell={c:0,r:0};
+  activeCell.c = Math.max(0, Math.min(GRID-1, activeCell.c|0));
+  activeCell.r = Math.max(0, Math.min(GRID-1, activeCell.r|0));
+}
+clampActive();
+// アクティブマスが画面外に出そうなときだけ最小限カメラを寄せる（手動パン非妨害）
+function keepActiveVisible(){
+  const {x,y}=isoToScreen(activeCell.c,activeCell.r);
+  const mX=70, mTop=90, mBot=230;
+  let dx=0, dy=0;
+  if(x<mX) dx=mX-x; else if(x>cv.width-mX) dx=(cv.width-mX)-x;
+  if(y<mTop) dy=mTop-y; else if(y>cv.height-mBot) dy=(cv.height-mBot)-y;
+  if(dx||dy){ targetOX+=dx; targetOY+=dy; }
+}
+// 矢印方向はスクリーン空間で1タイル進めて screenToIso で戻す（回転/2D3D/ズーム不問）
+function moveActive(dx,dy){
+  const {TW,TH}=getTileDims();
+  const stepX=TW*scale*(drawMode==='3d'?0.5:1);
+  const stepY=TH*scale*(drawMode==='3d'?0.5:1);
+  const cur=isoToScreen(activeCell.c,activeCell.r);
+  const biasX=(drawMode==='3d')?0:0.5*TW*scale;   // タイル中心を狙い floor の取りこぼし防止
+  const biasY=0.5*TH*scale;
+  const n=screenToIso(cur.x+dx*stepX+biasX, cur.y+dy*stepY+biasY);
+  activeCell.c=Math.max(0,Math.min(GRID-1,n.c));
+  activeCell.r=Math.max(0,Math.min(GRID-1,n.r));
+  keepActiveVisible();
+}
+function dpadPlace(){ lastKey=null; act(activeCell.c,activeCell.r); }   // mode別配置/塗り/消去（連打可）
+function refreshDpad(){
+  clampActive();
+  const el=document.getElementById('dpad');
+  if(el) el.style.display = dpadVisible ? '' : 'none';
+  const t=document.getElementById('dpad-toggle');
+  if(t) t.classList.toggle('is-on', dpadVisible);
+}
+(function wireDpad(){
+  const DIRS={'dp-ul':[-1,-1],'dp-u':[0,-1],'dp-ur':[1,-1],'dp-l':[-1,0],'dp-r':[1,0],'dp-dl':[-1,1],'dp-d':[0,1],'dp-dr':[1,1]};
+  const stopHold=()=>{ if(dpadRepeat){ clearTimeout(dpadRepeat.t); clearInterval(dpadRepeat.i); dpadRepeat=null; } };
+  for(const id in DIRS){
+    const b=document.getElementById(id); if(!b) continue;
+    const [dx,dy]=DIRS[id];
+    b.addEventListener('pointerdown',ev=>{
+      ev.preventDefault(); stopHold(); moveActive(dx,dy);
+      dpadRepeat={ t:setTimeout(()=>{ dpadRepeat={ i:setInterval(()=>moveActive(dx,dy),110) }; }, 350) };
+    });
+    b.addEventListener('pointerup',stopHold);
+    b.addEventListener('pointerleave',stopHold);
+    b.addEventListener('pointercancel',stopHold);
+  }
+  const c=document.getElementById('dp-c');
+  if(c) c.addEventListener('click',e=>{ e.stopPropagation(); dpadPlace(); });
+  window.addEventListener('blur',stopHold);
+})();
+// キーボード（PC）：矢印/WASD移動、Space/Enter配置。入力中・ポップアップ中・修飾キー時は無効
+window.addEventListener('keydown',e=>{
+  if(!dpadVisible || e.ctrlKey || e.metaKey || e.altKey) return;
+  const ae=document.activeElement;
+  if(ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName)) return;
+  if(typeof ALL_POPUPS!=='undefined' && ALL_POPUPS.some(id=>{const p=document.getElementById(id);return p&&p.style.display!=='none';})) return;
+  const K={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],
+           w:[0,-1],s:[0,1],a:[-1,0],d:[1,0],W:[0,-1],S:[0,1],A:[-1,0],D:[1,0]};
+  if(K[e.key]){ e.preventDefault(); moveActive(K[e.key][0],K[e.key][1]); return; }
+  if(e.key===' '||e.key==='Enter'){ e.preventDefault(); dpadPlace(); }
+});
+document.getElementById('dpad-toggle')?.addEventListener('click',e=>{
+  e.stopPropagation();
+  dpadVisible=!dpadVisible;
+  refreshDpad();
+  if(typeof saveState==='function') saveState();
+});
+refreshDpad();
+
 // Fullscreen toggle
 const btnFullscreen = document.getElementById('btn-fullscreen');
 btnFullscreen.addEventListener('click',()=>{
@@ -4196,14 +4301,6 @@ document.getElementById('btn-palmin').addEventListener('click',e=>{
   e.stopPropagation();
   const on=document.body.classList.toggle('palette-collapsed');
   e.currentTarget.textContent = on ? '▴' : '▾';
-});
-
-// 左ボタン列の最小化（先頭の ▾ ボタン。最小化時はこのボタンのみ表示）
-document.getElementById('btn-cornermin').addEventListener('click',e=>{
-  e.stopPropagation();
-  const on=document.body.classList.toggle('corner-collapsed');
-  e.currentTarget.textContent = on ? '▴' : '▾';
-  if(typeof mpPlace==='function') mpPlace();   // 列の高さ変化に追従して mp-bar を再配置
 });
 
 // 3D toggle
@@ -5675,11 +5772,13 @@ const SAVE_VERSION = 1;
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
   { v:'0.11.0',
-    ja:['↕️ 左の縦ボタン列をワンタップで折りたためるようになりました'],
-    en:['↕️ The left button column can now be collapsed with one tap'] },
+    ja:['🎮 十字キー（8方向）を追加。⚪ で選択中の絵文字をその場所に置けます（タップ/キーボードも対応）'],
+    en:['🎮 Added an 8-direction D-pad. Press ⚪ to place the selected emoji on the active cell (tap/keyboard too)'] },
   { v:'0.10.1',
-    ja:['🗺 マップが下のパレットに隠れて見えづらい問題を修正'],
-    en:['🗺 Fixed the map being hidden behind the bottom palette'] },
+    ja:['🗺 マップが下のパレットに隠れて見えづらい問題を修正',
+        '🔈 音がたまに鳴らなくなる問題を改善（必要なときは「タップで音が出る」とお知らせ）'],
+    en:['🗺 Fixed the map being hidden behind the bottom palette',
+        '🔈 Fixed sound occasionally cutting out (with a “tap to enable sound” notice when needed)'] },
   { v:'0.10.0',
     ja:['🔗 共有リンクは「シェア」か「リンクをコピー」を選べるようになりました'],
     en:['🔗 Share link now lets you choose Share or Copy link'] },
@@ -5917,7 +6016,7 @@ function saveState(){
       recent: CATEGORIES['📌 履歴'],
       selCat, selEmoji, selTerrain, mode,
       timeOfDay, dayPaused, weather,
-      drawMode, showHeights, heightsTouched,
+      drawMode, showHeights, heightsTouched, dpadVisible,
       muted, selectedSound, bgmOn, bgmVol,
       weatherRandomOn,
       weatherRandomPool: [...weatherRandomPool],
@@ -5990,6 +6089,7 @@ function applyState(data){
     rotation = drawMode === '2d' ? 1 : 0;
     showHeights    = !!data.showHeights;
     heightsTouched = !!data.heightsTouched;
+    dpadVisible    = data.dpadVisible !== false;   // 旧セーブ（未設定）は既定ON
 
     // muted も共有ペイロードには無い。無い場合は閲覧者のミュート設定を維持。
     if(typeof data.muted === 'boolean') muted = !!data.muted;
@@ -6022,6 +6122,7 @@ function applyState(data){
     updateModeUI();
     refreshDimToggle();
     refreshHeightsBtn();
+    if(typeof refreshDpad==='function') refreshDpad();   // 表示反映＋activeCellをGRIDにclamp
     refreshSoundBtn(); refreshMuteToggle();
     refreshBgmToggle();
     KawaiiBGM.setVolume(bgmVol);
