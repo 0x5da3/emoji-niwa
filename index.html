@@ -213,11 +213,11 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 #mp-count-badge{display:none;position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;line-height:1;padding:1px 5px;border-radius:7px;background:rgba(8,16,10,.94);color:#a8e063;border:1px solid rgba(168,224,99,.55);pointer-events:none;white-space:nowrap;z-index:2}
 #btn-save{position:relative}
 #btn-save.saved::after{content:"✅";position:absolute;top:-7px;right:-7px;font-size:11px;line-height:1;pointer-events:none}
-.mapbtn{width:36px;height:36px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s}
+.mapbtn{width:36px;height:36px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .mapbtn:active{background:rgba(93,186,106,.3)}
-#dpad{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:27;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,32px);gap:8px;padding:4px;border-radius:14px;opacity:.72;transition:opacity .15s}
+#dpad{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:27;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,32px);gap:8px;padding:4px;border-radius:14px;opacity:.72;transition:opacity .15s;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #dpad:hover{opacity:1}
-.dpadbtn{width:32px;height:32px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s,opacity .12s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.dpadbtn{width:32px;height:32px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s,opacity .12s;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .dpadbtn:active{background:rgba(93,186,106,.3)}
 .dpadbtn:disabled{opacity:.28;cursor:not-allowed;pointer-events:none}
 .dpad-mid{background:rgba(93,186,106,.22);border-color:rgba(168,224,99,.5);font-size:16px}
@@ -4293,6 +4293,12 @@ function refreshDpad(){
 }
 (function wireDpad(){
   const stopHold=()=>{ if(dpadRepeat){ clearTimeout(dpadRepeat.t); clearInterval(dpadRepeat.i); dpadRepeat=null; } };
+  // 長押しで iOS Safari の callout（コピー/共有メニュー）やテキスト選択モードに入らないよう、
+  // dpad コンテナ／🎮 ボタンの contextmenu を一括で抑止する。
+  ['dpad','dpad-show'].forEach(id=>{
+    const e=document.getElementById(id);
+    if(e) e.addEventListener('contextmenu',ev=>ev.preventDefault());
+  });
   for(const id in DPAD_DIRS){
     const b=document.getElementById(id); if(!b) continue;
     const [dx,dy]=DPAD_DIRS[id];
@@ -4308,7 +4314,10 @@ function refreshDpad(){
     b.addEventListener('pointercancel',stopHold);
   }
   const c=document.getElementById('dp-c');
-  if(c) c.addEventListener('click',e=>{ e.stopPropagation(); dpadPlace(); });
+  if(c){
+    // 中央 ⚪ も長押しで callout が出ないよう pointerdown で確定（click は二重発火しない）
+    c.addEventListener('pointerdown',ev=>{ ev.preventDefault(); ev.stopPropagation(); dpadPlace(); });
+  }
   window.addEventListener('blur',stopHold);
 })();
 // キーボード（PC）：矢印/WASD移動、Space/Enter配置。入力中・ポップアップ中・修飾キー時は無効
