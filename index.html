@@ -287,7 +287,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
     </div>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:8px;text-align:center">
-    <span id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em">v0.9.0</span>
+    <span id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em">v0.10.0</span>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:8px;padding-top:8px">
     <div data-i18n="changelogLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:4px">📝 更新履歴</div>
@@ -347,6 +347,16 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="helpMapLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🗺 マップとメニュー</div>
     <div data-i18n="helpMapBody" style="font-size:12px;color:rgba(210,235,210,.85);line-height:1.7;white-space:pre-line"></div>
+  </div>
+</div>
+
+<!-- SHARE-LINK CHOICE POPUP -->
+
+<div id="share-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw">
+  <div data-i18n="share" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">🔗 共有リンク</div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <button class="tbtn" id="share-do" data-i18n="shareDo">📤 シェア</button>
+    <button class="tbtn" id="share-copy" data-i18n="shareCopy">🔗 リンクをコピー</button>
   </div>
 </div>
 
@@ -1201,7 +1211,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.9.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.10.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -1402,7 +1412,7 @@ const I18N = {
     'toast.inviteCopied':'👥 招待リンクをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
     'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ マルチプレイサーバー未設定です',
     'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'👥 招待リンクをコピー','mp.leave':'↩ 退出','mp.namePrompt':'マルチプレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信','chat.joined':'{name} が参加しました','mp.ttl':'空き部屋の保持(日)','mp.ttlSet':'設定','toast.ttlSet':'🗓 空き部屋の保持を{n}日に設定','toast.ttlErr':'⚠️ 保持日数を設定できませんでした',
-    'share':'🔗 共有リンク', 'toast.shareCopied':'🔗 共有リンクをコピーしました！', 'toast.shareError':'⚠️ 共有リンクのデータを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
+    'share':'🔗 共有リンク', shareDo:'📤 シェア', shareCopy:'🔗 リンクをコピー', 'toast.shareCopied':'🔗 共有リンクをコピーしました！', 'toast.shareError':'⚠️ 共有リンクのデータを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
     'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
@@ -1488,7 +1498,7 @@ const I18N = {
     'toast.inviteCopied':'👥 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
     'mp.bar':'👥 Room {room} ({n})','mp.copy':'👥 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for multiplayer','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send','chat.joined':'{name} joined','mp.ttl':'Keep empty room (days)','mp.ttlSet':'Set','toast.ttlSet':'🗓 Empty-room retention set to {n} days','toast.ttlErr':'⚠️ Could not set retention',
-    'share':'🔗 Share link', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read share link data', 'toast.kept':'💾 Saved this world as your own',
+    'share':'🔗 Share link', shareDo:'📤 Share', shareCopy:'🔗 Copy link', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read share link data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
     'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
@@ -4444,7 +4454,7 @@ refreshBgmToggle();
 const menuPopup = document.getElementById('menu-popup');
 
 // Exclusive popup helper
-const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','help-popup'];
+const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','help-popup','share-popup'];
 function openPopup(id){
   for(const p of ALL_POPUPS) document.getElementById(p).style.display = (p === id ? 'block' : 'none');
 }
@@ -4467,18 +4477,38 @@ document.getElementById('btn-help').addEventListener('click',e=>{
 });
 
 // 🔗 ワールドを URL で共有（ハッシュにエンコード、サーバー不要）
-document.getElementById('btn-share').addEventListener('click', async e=>{
+async function buildShareUrl(){
+  return location.origin + location.pathname + '#w=' + await encodeWorld(worldPayload());
+}
+async function copyShareUrl(){
+  let url;
+  try{ url = await buildShareUrl(); }
+  catch(_){ showToast(tr('toast.shareError')); return; }
+  try{ await navigator.clipboard.writeText(url); showToast(tr('toast.shareCopied')); }
+  catch(_){ window.prompt(tr('share'), url); }   // clipboard 不可（非secure等）はURL提示
+}
+// 🔗 はシェア／リンクコピーを選べるポップアップを開く
+document.getElementById('btn-share').addEventListener('click', e=>{
+  e.stopPropagation();
+  togglePopup('share-popup');
+});
+document.getElementById('share-do').addEventListener('click', async e=>{
   e.stopPropagation();
   closeAllPopups();
-  let url;
-  try{ url = location.origin + location.pathname + '#w=' + await encodeWorld(worldPayload()); }
-  catch(err){ showToast(tr('toast.shareError')); return; }
-  try{
-    await navigator.clipboard.writeText(url);
-    showToast(tr('toast.shareCopied'));
-  }catch(err){
-    window.prompt(tr('share'), url);   // clipboard 不可（非secure等）はURL提示
+  if(navigator.share){
+    let url;
+    try{ url = await buildShareUrl(); }
+    catch(_){ showToast(tr('toast.shareError')); return; }
+    try{ await navigator.share({title:'emoji-niwa', url}); }
+    catch(_){ /* キャンセル等は無視（保存系ではないのでトーストなし） */ }
+  } else {
+    await copyShareUrl();   // シェア非対応端末はコピーにフォールバック
   }
+});
+document.getElementById('share-copy').addEventListener('click', async e=>{
+  e.stopPropagation();
+  closeAllPopups();
+  await copyShareUrl();
 });
 
 // ═══════════════════════════════════════════
@@ -5510,7 +5540,7 @@ document.getElementById('btn-effects').addEventListener('click',e=>{
 
 document.addEventListener('click',e=>{
   const insideAnyPopup = ALL_POPUPS.some(id => document.getElementById(id).contains(e.target));
-  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn','btn-help'].includes(e.target.id);
+  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn','btn-help','btn-share'].includes(e.target.id);
   if(!insideAnyPopup && !isTriggerBtn) closeAllPopups();
 });
 
@@ -5592,6 +5622,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.10.0',
+    ja:['🔗 共有リンクは「シェア」か「リンクをコピー」を選べるようになりました'],
+    en:['🔗 Share link now lets you choose Share or Copy link'] },
   { v:'0.9.0',
     ja:['📖 「遊び方」ボタンを追加（はじめ方と各ボタンの説明）'],
     en:['📖 Added a “How to Play” button (getting started + button guide)'] },
