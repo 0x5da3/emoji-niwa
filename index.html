@@ -289,6 +289,10 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:8px;text-align:center">
     <span id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em">v0.9.0</span>
   </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:8px;padding-top:8px">
+    <div data-i18n="changelogLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:4px">📝 更新履歴</div>
+    <div id="changelog" style="font-size:11px;color:rgba(180,220,180,.75);max-height:140px;overflow-y:auto;line-height:1.5;scrollbar-width:thin"></div>
+  </div>
 </div>
 
 <!-- SOUND POPUP -->
@@ -1346,6 +1350,7 @@ const I18N = {
     helpMapLabel:'🗺 マップとメニュー',
     helpMapBody:'＋ － ⊡：ズーム／視点リセット　🗺：ミニマップ　⛶：全画面\n2D/3D：表示切替　#️⃣：高さ表示\n⚙️ 設定（言語・新規マップ・全リセット）　💾 保存\n🔇 サウンド　📸 GIF書き出し　🔗 共有リンク　👥 マルチプレイ',
     autosaveInterval:'💾 オートセーブ間隔', fpsLabel:'🎞️ フレームレート', langLabel:'🌐 言語 / Language',
+    changelogLabel:'📝 更新履歴',
     placementSound:'配置時の効果音',
     's.pon':'🫧 ポンッ','s.koto':'🪵 コトッ','s.poyon':'🟢 ぽよん','s.fuwa':'☁️ ふわっ',
     's.tin':'🔔 ティン','s.pata':'📄 ぱた','s.pofu':'🧸 ぽふ','s.chari':'🪙 ちゃり','s.none':'🚫 なし',
@@ -1431,6 +1436,7 @@ const I18N = {
     helpMapLabel:'🗺 Map & menu buttons',
     helpMapBody:'＋ － ⊡: zoom / reset view　🗺: minimap　⛶: fullscreen\n2D/3D: view mode　#️⃣: show heights\n⚙️ Settings (language, new map, reset all)　💾 Save\n🔇 Sound　📸 Export GIF　🔗 Share link　👥 Multiplayer',
     autosaveInterval:'💾 Autosave interval', fpsLabel:'🎞️ Frame rate', langLabel:'🌐 言語 / Language',
+    changelogLabel:'📝 What’s new',
     placementSound:'Placement sound',
     's.pon':'🫧 Pop','s.koto':'🪵 Knock','s.poyon':'🟢 Boing','s.fuwa':'☁️ Floaty',
     's.tin':'🔔 Ting','s.pata':'📄 Pata','s.pofu':'🧸 Pofu','s.chari':'🪙 Clink','s.none':'🚫 None',
@@ -1510,6 +1516,7 @@ function applyLang(){
   if(typeof refreshAutoEmojiUI === 'function') refreshAutoEmojiUI();
   if(typeof refreshTimePopupUI === 'function') refreshTimePopupUI();
   if(typeof updateNmLabel === 'function') updateNmLabel();
+  if(typeof renderChangelog === 'function') renderChangelog();
   if(typeof buildCatTabs === 'function'){ buildCatTabs(); buildPalette(); }
   document.querySelectorAll('#lang-opts .lang-opt').forEach(b =>
     b.classList.toggle('active', b.dataset.lang === lang));
@@ -5582,6 +5589,40 @@ document.getElementById('btn-scatter').addEventListener('click',()=>{
 // ═══════════════════════════════════════════
 const SAVE_KEY = 'emoji-niwa-save';
 const SAVE_VERSION = 1;
+// 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
+// バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
+const CHANGELOG = [
+  { v:'0.9.0',
+    ja:['📖 「遊び方」ボタンを追加（はじめ方と各ボタンの説明）'],
+    en:['📖 Added a “How to Play” button (getting started + button guide)'] },
+  { v:'0.8.0',
+    ja:['🏷️ バージョンと更新履歴が見られるようになりました',
+        '🎵 天気や時間に合わせて BGM が流れます（オン/オフ切替）',
+        '📸 箱庭を GIF に保存できます（写る範囲を確認してから）',
+        '👥 友だちと共有していっしょに編集（あとから来てもチャットが読めます）',
+        '🌿 地形に合った絵文字が自動で並びます／かわいい効果音も増えました'],
+    en:['🏷️ See the app version and what’s new',
+        '🎵 Music that changes with the weather and time of day (toggle on/off)',
+        '📸 Save your garden as a GIF (preview what’s in frame first)',
+        '👥 Share & build together with friends (latecomers can read the chat)',
+        '🌿 Emoji auto-placed to match the terrain, plus more cute sound effects'] },
+];
+function renderChangelog(){
+  const box=document.getElementById('changelog'); if(!box) return;
+  box.textContent='';
+  for(const e of CHANGELOG){
+    const h=document.createElement('div');
+    h.style.cssText='color:#a8e063;font-weight:700;margin:6px 0 2px';
+    h.textContent='v'+e.v;
+    box.appendChild(h);
+    for(const line of (lang==='en'?e.en:e.ja)){
+      const li=document.createElement('div');
+      li.style.cssText='padding:1px 0 1px 16px;text-indent:-16px';
+      li.textContent=line;
+      box.appendChild(li);
+    }
+  }
+}
 const HISTORY_SAVE_CAP = 1000; // bound persisted undo stack so it can't exceed the storage quota
 const AUTOSAVE_PRESETS = [
   {ms:0,      label:'オフ'},
