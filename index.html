@@ -211,6 +211,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 
 <!-- Settings / Save / Sound — vertical stack under the top-left -->
 <div id="corner-btns">
+  <button class="tbtn" id="btn-help" data-i18n-title="ttHelp" title="遊び方">📖</button>
   <button class="tbtn" id="btn-menu" data-i18n-title="ttSettings" title="設定">⚙️</button>
   <button class="tbtn" id="btn-save" data-i18n-title="ttSave" title="保存">💾</button>
   <button class="tbtn" id="sound-btn" data-i18n-title="ttSound" title="サウンド">🔇</button>
@@ -265,7 +266,9 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 <!-- SETTINGS MENU POPUP -->
 
 <div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
-  <div data-i18n="settingsTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">⚙️ 設定</div>
+  <div data-i18n="appTitle" style="font-size:15px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:2px">🌿 絵文字庭</div>
+  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.10.0</div>
+  <div data-i18n="settingsTitle" style="font-size:12px;font-weight:600;color:rgba(180,220,180,.6);text-align:center;margin-bottom:10px">⚙️ 設定</div>
   <div style="display:flex;flex-direction:column;gap:6px">
     <button class="tbtn" id="btn-newmap" data-i18n="newMap">🆕 新規マップ</button>
     <button class="tbtn" id="btn-clear-all" data-i18n="clearAll">🗑 全リセット</button>
@@ -285,6 +288,10 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
       <button class="tbtn lang-opt" data-lang="en">🇺🇸 English</button>
     </div>
   </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="changelogLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:4px">📝 更新履歴</div>
+    <div id="changelog" style="font-size:11px;color:rgba(180,220,180,.75);max-height:140px;overflow-y:auto;line-height:1.5;scrollbar-width:thin"></div>
+  </div>
 </div>
 
 <!-- SOUND POPUP -->
@@ -299,6 +306,15 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
     <span data-i18n="volLabel" style="font-size:11px;color:rgba(180,220,180,.7);white-space:nowrap">🔊 音量</span>
     <input type="range" id="vol-slider" min="0" max="100" value="85" step="5" style="flex:1;accent-color:#5dba6a">
   </div>
+  <!-- BGM (天気・時刻で自動変化・SFXとは独立) -->
+  <button class="h-toggle" id="bgm-toggle" style="width:100%;justify-content:space-between;padding:8px 12px;height:36px;margin-bottom:8px">
+    <span style="font-size:12px;font-weight:600;color:var(--accent2)" id="bgm-toggle-label">🎵 BGM オフ</span>
+    <span class="h-track"><span class="h-thumb"></span></span>
+  </button>
+  <div id="bgm-vol-row" style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <span style="font-size:11px;color:rgba(180,220,180,.7)" data-i18n="bgmVol">🔉 音量</span>
+    <input type="range" id="bgm-vol" min="0" max="100" value="50" step="5" style="flex:1;accent-color:#5dba6a">
+  </div>
   <div data-i18n="placementSound" style="font-size:12px;color:rgba(180,220,180,.7);margin-bottom:10px;text-align:center">配置時の効果音</div>
   <div id="sound-options" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
     <button class="tbtn sound-opt active" data-sound="pon" data-i18n="s.pon">🫧 ポンッ</button>
@@ -310,6 +326,36 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
     <button class="tbtn sound-opt" data-sound="pofu" data-i18n="s.pofu">🧸 ぽふ</button>
     <button class="tbtn sound-opt" data-sound="chari" data-i18n="s.chari">🪙 ちゃり</button>
     <button class="tbtn sound-opt" data-sound="none" data-i18n="s.none">🚫 なし</button>
+  </div>
+</div>
+
+<!-- HELP / HOW-TO-PLAY POPUP -->
+
+<div id="help-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw;max-height:80vh;overflow-y:auto">
+  <div data-i18n="helpTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">📖 遊び方</div>
+  <div data-i18n="helpStartLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🌱 はじめに</div>
+  <div data-i18n="helpStartBody" style="font-size:12px;color:rgba(210,235,210,.85);line-height:1.7;white-space:pre-line"></div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="helpCtrlLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🖱 基本操作</div>
+    <div data-i18n="helpCtrlBody" style="font-size:12px;color:rgba(210,235,210,.85);line-height:1.7;white-space:pre-line"></div>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="helpTopLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">⬆️ 上部のボタン</div>
+    <div data-i18n="helpTopBody" style="font-size:12px;color:rgba(210,235,210,.85);line-height:1.7;white-space:pre-line"></div>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="helpMapLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🗺 マップとメニュー</div>
+    <div data-i18n="helpMapBody" style="font-size:12px;color:rgba(210,235,210,.85);line-height:1.7;white-space:pre-line"></div>
+  </div>
+</div>
+
+<!-- SHARE-LINK CHOICE POPUP -->
+
+<div id="share-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px;max-width:92vw">
+  <div data-i18n="share" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">🔗 共有リンク</div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <button class="tbtn" id="share-do" data-i18n="shareDo">📤 シェア</button>
+    <button class="tbtn" id="share-copy" data-i18n="shareCopy">🔗 リンクをコピー</button>
   </div>
 </div>
 
@@ -474,11 +520,11 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 <canvas id="minimap" width="80" height="80"></canvas>
 
 <div id="map-btns">
-  <button class="mapbtn" id="btn-minimap">🗺</button>
   <button class="mapbtn" id="btn-zoom-in">＋</button>
   <button class="mapbtn" id="btn-zoom-out">－</button>
   <button class="mapbtn" id="btn-reset-view">⊡</button>
   <button class="mapbtn" id="btn-fullscreen">⛶</button>
+  <button class="mapbtn" id="btn-minimap">🗺</button>
   <button class="mapbtn dim-toggle" id="btn-3d" data-i18n-title="tt3d" title="2D/3D 切り替え">
     <span class="dim-label dim-2d">2D</span>
     <span class="dim-track"><span class="dim-thumb"></span></span>
@@ -996,6 +1042,7 @@ const KawaiiSounds = (function(){
 let muted = true; // master mute (controls all sound)
 let selectedSound = 'pon'; // placement sound type
 let sfxVolume = 0.85; // 効果音マスター音量（セッションのみ・非永続。既定＝既存マスター gain と一致）
+let bgmOn = false, bgmVol = 0.5; // BGM（SFXミュートとは独立・既定オフ）
 function playPlaceSound(){
   if(muted) return;
   if(selectedSound === 'none') return;
@@ -1033,8 +1080,114 @@ function resumeAudio(){ try{ KawaiiSounds.resume(); }catch(e){} }
 ['pointerdown','touchstart','keydown'].forEach(ev =>
   window.addEventListener(ev, resumeAudio, { passive: true }));
 document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible') resumeAudio();
+  if(document.visibilityState === 'visible'){ resumeAudio(); if(bgmOn) KawaiiBGM.resume(); }
+  else KawaiiBGM.suspend();
 });
+
+// ─────────────────────────────────────────────
+// 🎵 KawaiiBGM — 天気・昼夜に追従する自動生成アンビエント
+//   依存ゼロ・音声ファイル無し。共有 AudioContext を使い、SFX とは独立した
+//   bgmGain → destination 直結（getMaster/muted を経由しない）。
+// ─────────────────────────────────────────────
+const KawaiiBGM = (function(){
+  const S = {
+    majp:[0,2,4,7,9], minp:[0,3,5,7,10], lyd:[0,2,4,6,7,9,11],
+    dor:[0,2,3,5,7,9,10], whole:[0,2,4,6,8,10], minpb:[0,3,5,6,7,10],
+  };
+  const m=(sc,root,bo,dn,st,wv,pw,cut,dt,lr,ld,gn)=>({sc,root,bo,dn,st,wv,pw,cut,dt,lr,ld,gn});
+  const MOODS={
+    clear:{d:m('majp',261.6,1,.45,.50,'triangle','sine',2600,6,.05,250,.50),
+           n:m('majp',196.0,0,.28,.75,'sine','sine',1300,9,.03,180,.55)},
+    rain:{d:m('dor',220.0,1,.40,.55,'sine','triangle',1800,10,.06,200,.50),
+          n:m('dor',174.6,0,.24,.85,'sine','sine',1100,12,.025,150,.50)},
+    snow:{d:m('lyd',293.7,1,.38,.60,'triangle','sine',2400,5,.04,220,.55),
+          n:m('lyd',220.0,0,.22,.95,'sine','sine',1500,7,.02,170,.55)},
+    thunder:{d:m('minp',196.0,0,.42,.50,'triangle','triangle',1600,14,.10,350,.42),
+             n:m('minpb',146.8,0,.30,.70,'sine','triangle',1000,16,.08,300,.42)},
+    hail:{d:m('minp',246.9,1,.50,.40,'triangle','sine',2200,8,.07,240,.46),
+          n:m('minp',185.0,0,.30,.65,'sine','sine',1300,10,.04,190,.46)},
+    sandstorm:{d:m('whole',207.6,0,.32,.65,'sawtooth','triangle',1400,18,.09,320,.42),
+               n:m('whole',164.8,0,.20,.90,'sine','triangle',950,20,.05,240,.42)},
+    sakura:{d:m('majp',329.6,1,.48,.45,'triangle','sine',2800,5,.05,260,.50),
+            n:m('majp',246.9,0,.30,.70,'sine','sine',1600,7,.03,200,.52)},
+    leaves:{d:m('dor',233.1,0,.40,.55,'triangle','triangle',2000,9,.05,220,.50),
+            n:m('minp',174.6,0,.26,.80,'sine','sine',1200,11,.03,170,.50)},
+  };
+  const CF=3, AHEAD=0.2;
+  let g, lp, lfo, lfoG, pads=[], built=false, on=false, vol=0.5, susp=false;
+  let timer=null, nextT=0, cur=MOODS.clear.d;
+  function build(){
+    const a=_a();
+    g=a.createGain(); g.gain.value=0;
+    lp=a.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.7; lp.frequency.value=cur.cut;
+    lp.connect(g).connect(a.destination);
+    lfo=a.createOscillator(); lfo.type='sine'; lfo.frequency.value=cur.lr;
+    lfoG=a.createGain(); lfoG.gain.value=cur.ld;
+    lfo.connect(lfoG).connect(lp.frequency); lfo.start();
+    for(let i=0;i<3;i++){
+      const o=a.createOscillator(); o.type=cur.pw;
+      const v=a.createGain(); v.gain.value=0;
+      o.connect(v).connect(lp); o.start();
+      pads.push({o,v});
+    }
+    built=true;
+    applyMood(cur,0.01);
+  }
+  function gTarget(){ return (on && !susp) ? vol : 0; }
+  function reGain(){ if(g) g.gain.setTargetAtTime(gTarget(), _a().currentTime, .25); }
+  function applyMood(M,when){
+    cur=M;
+    if(!built) return;
+    const a=_a(), t=a.currentTime, T=(when==null?CF:when)/3;
+    const f=[M.root, M.root*1.5, M.root*2], pv=M.gn*0.16;
+    pads.forEach((p,i)=>{
+      p.o.type=M.pw;
+      p.o.frequency.setTargetAtTime(f[i], t, T);
+      p.o.detune.setTargetAtTime((i-1)*M.dt, t, T);
+      p.v.gain.setTargetAtTime(i<2?pv:pv*0.45, t, T);
+    });
+    lp.frequency.setTargetAtTime(M.cut, t, T);
+    lfo.frequency.setTargetAtTime(M.lr, t, T);
+    lfoG.gain.setTargetAtTime(M.ld, t, T);
+  }
+  function note(t){
+    if(Math.random()>cur.dn) return;
+    const a=_a();
+    const sc=S[cur.sc]||S.majp;
+    const deg=sc[(Math.random()*sc.length)|0];
+    const oct=cur.bo + (Math.random()<0.18?1:0);
+    const fr=cur.root*Math.pow(2,oct)*Math.pow(2,deg/12);
+    const o=a.createOscillator(); o.type=cur.wv; o.frequency.value=fr;
+    const v=a.createGain(), dur=Math.min(1.8,cur.st*2.4);
+    v.gain.setValueAtTime(0.0001,t);
+    v.gain.exponentialRampToValueAtTime(0.16*cur.gn,t+0.02);
+    v.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(v).connect(lp);
+    o.start(t); o.stop(t+dur+0.05);
+  }
+  function tick(){
+    if(!built||!on||susp) return;
+    const now=_a().currentTime;
+    if(nextT<now) nextT=now+0.05;
+    while(nextT < now+AHEAD){
+      note(nextT);
+      nextT += cur.st*(0.8+Math.random()*0.5);
+    }
+  }
+  function startTimer(){ if(timer==null) timer=setInterval(tick,25); }
+  function stopTimer(){ if(timer!=null){ clearInterval(timer); timer=null; } }
+  return {
+    setMood(w,night){ const e=MOODS[w]||MOODS.clear; applyMood(night?e.n:e.d, built?CF:0.01); },
+    setEnabled(v){
+      on=!!v;
+      if(on){ if(!built) build(); startTimer(); reGain(); }
+      else { reGain(); stopTimer(); }
+    },
+    setVolume(v){ vol=Math.max(0,Math.min(1,v)); reGain(); },
+    suspend(){ susp=true; reGain(); stopTimer(); },
+    resume(){ susp=false; if(on){ startTimer(); reGain(); } },
+  };
+})();
 // Duration (seconds) of each launch whistle — used to sync shell flight
 const FW_LAUNCH_DUR = { '1': 1.15, '2': 0.75, '3': 1.3, '4': 1.6 };
 // Pick a random launch+boom combo for each firework
@@ -1057,6 +1210,8 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
+const APP_VERSION = '0.10.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
   '📌 履歴':    [],
@@ -1192,12 +1347,24 @@ const I18N = {
     'wlabel:clear':'晴','wlabel:rain':'雨','wlabel:snow':'雪','wlabel:thunder':'雷',
     'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
-    settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
+    appTitle:'🌿 絵文字庭', settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
+    ttHelp:'遊び方',
+    helpTitle:'📖 遊び方',
+    helpStartLabel:'🌱 はじめに',
+    helpStartBody:'1. 🎲 生成 で土地をつくる（または 🆕 設定→新規マップ）\n2. 下のパレットから絵文字を選ぶ\n3. マップをタップして配置\n4. ☀️ 天気 や 時刻バーで世界を演出\n5. 自動で保存されます（💾 で手動保存も可）\n\n💡 3Dで地形の高さを上げると狙った場所に置きづらいので、2D表示にすると配置しやすいよ',
+    helpCtrlLabel:'🖱 基本操作',
+    helpCtrlBody:'タップ / クリック：配置（または地形を塗る・消す）\nドラッグ / 2本指：視点を動かす\n＋ / －：ズーム\n↩ 戻す：直前の操作を取り消し\n🌙 をタップ：流星群 ／ ☀️ をタップ（雨天時）：虹',
+    helpTopLabel:'⬆️ 上部のボタン',
+    helpTopBody:'☀️ 天気：天気を選ぶ／ランダム切替\n時刻バー：時間帯を変える・止める\n🎲 生成：地形プリセット・単色塗り・ランダム散布\n✨ 演出：花火・オーロラ・シャボン玉・朝霧\n✏️ 配置 / 🎨 地形 / 🧹 消去：操作モード切替',
+    helpMapLabel:'🗺 マップとメニュー',
+    helpMapBody:'＋ / －：ズーム\n⊡：視点をリセット\n🗺：ミニマップ表示\n⛶：全画面表示\n2D / 3D：表示モード切替\n#️⃣：高さの数値を表示\n⚙️ 設定：言語・新規マップ・全リセット\n💾 保存：手動セーブ\n🔇 サウンド：効果音・BGM\n📸 GIF書き出し\n🔗 共有リンク\n👥 マルチプレイ',
     autosaveInterval:'💾 オートセーブ間隔', fpsLabel:'🎞️ フレームレート', langLabel:'🌐 言語 / Language',
+    changelogLabel:'📝 更新履歴',
     placementSound:'配置時の効果音',
     's.pon':'🫧 ポンッ','s.koto':'🪵 コトッ','s.poyon':'🟢 ぽよん','s.fuwa':'☁️ ふわっ',
     's.tin':'🔔 ティン','s.pata':'📄 ぱた','s.pofu':'🧸 ぽふ','s.chari':'🪙 ちゃり','s.none':'🚫 なし',
     muteOn:'🔇 ミュート中', muteOff:'🔊 サウンド ON', volLabel:'🔊 音量',
+    bgmToggleOn:'🎵 BGM オン', bgmToggleOff:'🎵 BGM オフ', bgmVol:'🔉 音量',
     fxNight:'🌙 夜の演出', fxNightLocked:'🌙 夜の演出（日没後に使えます）',
     fxDay:'☀️ 昼の演出', fxDayLocked:'☀️ 昼の演出（日の出後に使えます）',
     'fx.aurora':'🌌 オーロラ','fx.fireworks':'🎆 花火','fx.bubbles':'🫧 シャボン玉','fx.mist':'🌫 朝霧',
@@ -1244,7 +1411,7 @@ const I18N = {
     'toast.inviteCopied':'👥 招待リンクをコピーしました','toast.roomLeft':'👋 ルームを退出しました','toast.roomFull':'🈵 ルームが満員です（最大8人）',
     'toast.mpDisconnected':'⚠️ 接続が切れました（再接続中…）','toast.mpUnconfigured':'⚠️ マルチプレイサーバー未設定です',
     'mp.bar':'👥 ルーム {room}（{n}人）','mp.copy':'👥 招待リンクをコピー','mp.leave':'↩ 退出','mp.namePrompt':'マルチプレイの表示名を入力してください','chat.title':'💬 チャット','chat.ph':'メッセージ…','chat.send':'送信','chat.joined':'{name} が参加しました','mp.ttl':'空き部屋の保持(日)','mp.ttlSet':'設定','toast.ttlSet':'🗓 空き部屋の保持を{n}日に設定','toast.ttlErr':'⚠️ 保持日数を設定できませんでした',
-    'share':'🔗 共有リンク', 'toast.shareCopied':'🔗 共有リンクをコピーしました！', 'toast.shareError':'⚠️ 共有リンクのデータを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
+    'share':'🔗 共有リンク', shareDo:'📤 シェア', shareCopy:'🔗 リンクをコピー', 'toast.shareCopied':'🔗 共有リンクをコピーしました！', 'toast.shareError':'⚠️ 共有リンクのデータを読めませんでした', 'toast.kept':'💾 この世界を自分の箱庭にしました',
     'visiting.title':'👀 共有された箱庭を閲覧中（自動保存は停止中）', 'visiting.back':'↩ 自分の箱庭に戻る', 'visiting.keep':'💾 これを自分のものに',
     'toast.storeOnce':'🏪 は1つだけ置けます',
     'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
@@ -1266,12 +1433,24 @@ const I18N = {
     'wlabel:clear':'Clear','wlabel:rain':'Rain','wlabel:snow':'Snow','wlabel:thunder':'Storm',
     'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
-    settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
+    appTitle:'🌿 emoji-niwa', settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
+    ttHelp:'How to play',
+    helpTitle:'📖 How to Play',
+    helpStartLabel:'🌱 Getting started',
+    helpStartBody:'1. Make terrain with 🎲 Generate (or 🆕 Settings → New map)\n2. Pick an emoji from the palette below\n3. Tap the map to place it\n4. Set the scene with ☀️ Weather and the time bar\n5. Auto-saved (💾 for manual save too)\n\n💡 Raising terrain height in 3D makes precise placing tricky — switch to 2D to place exactly where you want',
+    helpCtrlLabel:'🖱 Basic controls',
+    helpCtrlBody:'Tap / click: place (or paint/erase terrain)\nDrag / two fingers: pan the view\n＋ / －: zoom\n↩ Undo: undo last action\nTap 🌙: meteor shower / Tap ☀️ (while raining): rainbow',
+    helpTopLabel:'⬆️ Top buttons',
+    helpTopBody:'☀️ Weather: pick weather / random rotation\nTime bar: change or pause time of day\n🎲 Generate: terrain presets, solid fill, random scatter\n✨ Effects: fireworks, aurora, bubbles, morning mist\n✏️ Place / 🎨 Terrain / 🧹 Erase: switch tool mode',
+    helpMapLabel:'🗺 Map & menu buttons',
+    helpMapBody:'＋ / －: zoom\n⊡: reset view\n🗺: minimap\n⛶: fullscreen\n2D / 3D: view mode\n#️⃣: show height numbers\n⚙️ Settings: language, new map, reset all\n💾 Save: manual save\n🔇 Sound: SFX & BGM\n📸 Export GIF\n🔗 Share link\n👥 Multiplayer',
     autosaveInterval:'💾 Autosave interval', fpsLabel:'🎞️ Frame rate', langLabel:'🌐 言語 / Language',
+    changelogLabel:'📝 What’s new',
     placementSound:'Placement sound',
     's.pon':'🫧 Pop','s.koto':'🪵 Knock','s.poyon':'🟢 Boing','s.fuwa':'☁️ Floaty',
     's.tin':'🔔 Ting','s.pata':'📄 Pata','s.pofu':'🧸 Pofu','s.chari':'🪙 Clink','s.none':'🚫 None',
     muteOn:'🔇 Muted', muteOff:'🔊 Sound on', volLabel:'🔊 Volume',
+    bgmToggleOn:'🎵 BGM on', bgmToggleOff:'🎵 BGM off', bgmVol:'🔉 Volume',
     fxNight:'🌙 Night effects', fxNightLocked:'🌙 Night effects (after sunset)',
     fxDay:'☀️ Day effects', fxDayLocked:'☀️ Day effects (after sunrise)',
     'fx.aurora':'🌌 Aurora','fx.fireworks':'🎆 Fireworks','fx.bubbles':'🫧 Bubbles','fx.mist':'🌫 Morning mist',
@@ -1318,7 +1497,7 @@ const I18N = {
     'toast.inviteCopied':'👥 Invite link copied','toast.roomLeft':'👋 Left the room','toast.roomFull':'🈵 Room is full (max 8)',
     'toast.mpDisconnected':'⚠️ Disconnected (reconnecting…)','toast.mpUnconfigured':'⚠️ Multiplayer server not configured',
     'mp.bar':'👥 Room {room} ({n})','mp.copy':'👥 Copy invite','mp.leave':'↩ Leave','mp.namePrompt':'Enter your display name for multiplayer','chat.title':'💬 Chat','chat.ph':'Message…','chat.send':'Send','chat.joined':'{name} joined','mp.ttl':'Keep empty room (days)','mp.ttlSet':'Set','toast.ttlSet':'🗓 Empty-room retention set to {n} days','toast.ttlErr':'⚠️ Could not set retention',
-    'share':'🔗 Share link', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read share link data', 'toast.kept':'💾 Saved this world as your own',
+    'share':'🔗 Share link', shareDo:'📤 Share', shareCopy:'🔗 Copy link', 'toast.shareCopied':'🔗 Share link copied!', 'toast.shareError':'⚠️ Could not read share link data', 'toast.kept':'💾 Saved this world as your own',
     'visiting.title':'👀 Viewing a shared garden (autosave paused)', 'visiting.back':'↩ Back to my garden', 'visiting.keep':'💾 Make this mine',
     'toast.storeOnce':'Only one 🏪 can be placed',
     'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
@@ -1339,12 +1518,14 @@ function applyLang(){
   // Dynamic / JS-driven text that the generic pass above can't cover
   if(typeof refreshWeatherBtn === 'function') refreshWeatherBtn();
   if(typeof refreshMuteToggle === 'function') refreshMuteToggle();
+  if(typeof refreshBgmToggle === 'function') refreshBgmToggle();
   if(typeof updateFxAvailability === 'function') updateFxAvailability();
   if(typeof updateLandSummary === 'function') updateLandSummary();
   if(typeof refreshScatterUI === 'function') refreshScatterUI();
   if(typeof refreshAutoEmojiUI === 'function') refreshAutoEmojiUI();
   if(typeof refreshTimePopupUI === 'function') refreshTimePopupUI();
   if(typeof updateNmLabel === 'function') updateNmLabel();
+  if(typeof renderChangelog === 'function') renderChangelog();
   if(typeof buildCatTabs === 'function'){ buildCatTabs(); buildPalette(); }
   document.querySelectorAll('#lang-opts .lang-opt').forEach(b =>
     b.classList.toggle('active', b.dataset.lang === lang));
@@ -4212,6 +4393,7 @@ document.getElementById('sound-btn').addEventListener('click',e=>{
   e.stopPropagation();
   togglePopup('sound-popup');
   refreshMuteToggle();
+  refreshBgmToggle();
 });
 document.getElementById('mute-toggle').addEventListener('click',e=>{
   e.stopPropagation();
@@ -4242,11 +4424,36 @@ volSlider.addEventListener('input',e=>{
 refreshSoundBtn();
 refreshMuteToggle();
 
+// BGM トグル＋音量（SFXミュートとは独立）
+function refreshBgmToggle(){
+  const tog=document.getElementById('bgm-toggle');
+  if(!tog) return;
+  tog.classList.toggle('is-on', bgmOn);
+  document.getElementById('bgm-toggle-label').textContent = bgmOn ? tr('bgmToggleOn') : tr('bgmToggleOff');
+  document.getElementById('bgm-vol').value = Math.round(bgmVol*100);
+}
+document.getElementById('bgm-toggle').addEventListener('click',e=>{
+  e.stopPropagation();
+  bgmOn = !bgmOn;
+  refreshBgmToggle();
+  resumeAudio();                       // このジェスチャで共有 ctx を resume
+  KawaiiBGM.setVolume(bgmVol);
+  KawaiiBGM.setEnabled(bgmOn);
+  if(bgmOn) KawaiiBGM.setMood(weather, isNight());
+  saveState();
+});
+document.getElementById('bgm-vol').addEventListener('input',e=>{
+  bgmVol = (+e.target.value)/100;
+  KawaiiBGM.setVolume(bgmVol);
+});
+document.getElementById('bgm-vol').addEventListener('change',()=>saveState());
+refreshBgmToggle();
+
 // ⚙️ Settings menu
 const menuPopup = document.getElementById('menu-popup');
 
 // Exclusive popup helper
-const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup'];
+const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','help-popup','share-popup'];
 function openPopup(id){
   for(const p of ALL_POPUPS) document.getElementById(p).style.display = (p === id ? 'block' : 'none');
 }
@@ -4263,20 +4470,44 @@ document.getElementById('btn-menu').addEventListener('click',e=>{
   e.stopPropagation();
   togglePopup('menu-popup');
 });
+document.getElementById('btn-help').addEventListener('click',e=>{
+  e.stopPropagation();
+  togglePopup('help-popup');
+});
 
 // 🔗 ワールドを URL で共有（ハッシュにエンコード、サーバー不要）
-document.getElementById('btn-share').addEventListener('click', async e=>{
+async function buildShareUrl(){
+  return location.origin + location.pathname + '#w=' + await encodeWorld(worldPayload());
+}
+async function copyShareUrl(){
+  let url;
+  try{ url = await buildShareUrl(); }
+  catch(_){ showToast(tr('toast.shareError')); return; }
+  try{ await navigator.clipboard.writeText(url); showToast(tr('toast.shareCopied')); }
+  catch(_){ window.prompt(tr('share'), url); }   // clipboard 不可（非secure等）はURL提示
+}
+// 🔗 はシェア／リンクコピーを選べるポップアップを開く
+document.getElementById('btn-share').addEventListener('click', e=>{
+  e.stopPropagation();
+  togglePopup('share-popup');
+});
+document.getElementById('share-do').addEventListener('click', async e=>{
   e.stopPropagation();
   closeAllPopups();
-  let url;
-  try{ url = location.origin + location.pathname + '#w=' + await encodeWorld(worldPayload()); }
-  catch(err){ showToast(tr('toast.shareError')); return; }
-  try{
-    await navigator.clipboard.writeText(url);
-    showToast(tr('toast.shareCopied'));
-  }catch(err){
-    window.prompt(tr('share'), url);   // clipboard 不可（非secure等）はURL提示
+  if(navigator.share){
+    let url;
+    try{ url = await buildShareUrl(); }
+    catch(_){ showToast(tr('toast.shareError')); return; }
+    try{ await navigator.share({title:'emoji-niwa', url}); }
+    catch(_){ /* キャンセル等は無視（保存系ではないのでトーストなし） */ }
+  } else {
+    await copyShareUrl();   // シェア非対応端末はコピーにフォールバック
   }
+});
+document.getElementById('share-copy').addEventListener('click', async e=>{
+  e.stopPropagation();
+  closeAllPopups();
+  await copyShareUrl();
 });
 
 // ═══════════════════════════════════════════
@@ -4964,6 +5195,7 @@ function applyWeather(w){
   rainbowOn = false;
   rainFading = false;
   refreshWeatherBtn();
+  if(bgmOn) KawaiiBGM.setMood(w, isNight());   // 手動/復元/ランダム回転を一括カバー
 }
 
 function pickRandomWeather(){
@@ -5307,7 +5539,7 @@ document.getElementById('btn-effects').addEventListener('click',e=>{
 
 document.addEventListener('click',e=>{
   const insideAnyPopup = ALL_POPUPS.some(id => document.getElementById(id).contains(e.target));
-  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn'].includes(e.target.id);
+  const isTriggerBtn = ['btn-menu','btn-newmap','btn-gen','btn-effects','weather-btn','clock-display','sound-btn','btn-help','btn-share'].includes(e.target.id);
   if(!insideAnyPopup && !isTriggerBtn) closeAllPopups();
 });
 
@@ -5386,6 +5618,43 @@ document.getElementById('btn-scatter').addEventListener('click',()=>{
 // ═══════════════════════════════════════════
 const SAVE_KEY = 'emoji-niwa-save';
 const SAVE_VERSION = 1;
+// 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
+// バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
+const CHANGELOG = [
+  { v:'0.10.0',
+    ja:['🔗 共有リンクは「シェア」か「リンクをコピー」を選べるようになりました'],
+    en:['🔗 Share link now lets you choose Share or Copy link'] },
+  { v:'0.9.0',
+    ja:['📖 「遊び方」ボタンを追加（はじめ方と各ボタンの説明）'],
+    en:['📖 Added a “How to Play” button (getting started + button guide)'] },
+  { v:'0.8.0',
+    ja:['🏷️ バージョンと更新履歴が見られるようになりました',
+        '🎵 天気や時間に合わせて BGM が流れます（オン/オフ切替）',
+        '📸 箱庭を GIF に保存できます（写る範囲を確認してから）',
+        '👥 友だちと共有していっしょに編集（あとから来てもチャットが読めます）',
+        '🌿 地形に合った絵文字が自動で並びます／かわいい効果音も増えました'],
+    en:['🏷️ See the app version and what’s new',
+        '🎵 Music that changes with the weather and time of day (toggle on/off)',
+        '📸 Save your garden as a GIF (preview what’s in frame first)',
+        '👥 Share & build together with friends (latecomers can read the chat)',
+        '🌿 Emoji auto-placed to match the terrain, plus more cute sound effects'] },
+];
+function renderChangelog(){
+  const box=document.getElementById('changelog'); if(!box) return;
+  box.textContent='';
+  for(const e of CHANGELOG){
+    const h=document.createElement('div');
+    h.style.cssText='color:#a8e063;font-weight:700;margin:6px 0 2px';
+    h.textContent='v'+e.v;
+    box.appendChild(h);
+    for(const line of (lang==='en'?e.en:e.ja)){
+      const li=document.createElement('div');
+      li.style.cssText='padding:1px 0 1px 16px;text-indent:-16px';
+      li.textContent=line;
+      box.appendChild(li);
+    }
+  }
+}
 const HISTORY_SAVE_CAP = 1000; // bound persisted undo stack so it can't exceed the storage quota
 const AUTOSAVE_PRESETS = [
   {ms:0,      label:'オフ'},
@@ -5590,7 +5859,7 @@ function saveState(){
       selCat, selEmoji, selTerrain, mode,
       timeOfDay, dayPaused, weather,
       drawMode, showHeights, heightsTouched,
-      muted, selectedSound,
+      muted, selectedSound, bgmOn, bgmVol,
       weatherRandomOn,
       weatherRandomPool: [...weatherRandomPool],
       fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
@@ -5666,6 +5935,8 @@ function applyState(data){
     // muted も共有ペイロードには無い。無い場合は閲覧者のミュート設定を維持。
     if(typeof data.muted === 'boolean') muted = !!data.muted;
     if(typeof data.selectedSound === 'string') selectedSound = data.selectedSound;
+    if(typeof data.bgmOn === 'boolean') bgmOn = data.bgmOn;
+    if(typeof data.bgmVol === 'number') bgmVol = Math.max(0, Math.min(1, data.bgmVol));
 
     weatherRandomOn = !!data.weatherRandomOn;
     weatherRandomPool = new Set(Array.isArray(data.weatherRandomPool) ? data.weatherRandomPool : []);
@@ -5693,6 +5964,9 @@ function applyState(data){
     refreshDimToggle();
     refreshHeightsBtn();
     refreshSoundBtn(); refreshMuteToggle();
+    refreshBgmToggle();
+    KawaiiBGM.setVolume(bgmVol);
+    KawaiiBGM.setEnabled(bgmOn);   // 復元時オンでも共有ctx resume まで無音（オートプレイ非抵触）
     document.querySelectorAll('.sound-opt').forEach(b => b.classList.toggle('active', b.dataset.sound === selectedSound));
     refreshAllFxToggles();
     applyWeather(typeof data.weather === 'string' ? data.weather : weather);
@@ -5805,6 +6079,7 @@ applyLang();
 const DAY_SPEED=0.00008;
 let last=performance.now(), mmTimer=0;
 
+let _bgmPrevNight = null;   // 昼夜境界クロス検出（BGM crossfade トリガ）
 function loop(now){
   requestAnimationFrame(loop);
   if(fpsCap>0 && now-last < 1000/fpsCap - 1) return; // フレーム間引き（rAFは自走）
@@ -5821,6 +6096,8 @@ function loop(now){
 
   // Auto-stop time-locked effects when time of day changes
   const night = timeOfDay < 0.27 || timeOfDay > 0.73;
+  if(bgmOn && _bgmPrevNight !== night) KawaiiBGM.setMood(weather, night);
+  _bgmPrevNight = night;
   // Night-only: aurora — stop if day arrives
   if(auroraOn && !night){ auroraOn = false; refreshAurora(); }
   if(fireworksOn && !night){ fireworksOn = false; refreshFireworks(); }
