@@ -563,7 +563,16 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 // ═══════════════════════════════════════════
 const KawaiiSounds = (function(){
   let ctx, master, _noise;
-  function ac(){ return ctx ||= new (window.AudioContext || window.webkitAudioContext)(); }
+  function ac(){
+    if(!ctx){
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // iOS等で suspended/interrupted に落ちたら自動で復帰を試みる（ベストエフォート）
+      ctx.addEventListener('statechange', () => {
+        if(ctx.state !== 'running'){ try{ const p=ctx.resume(); if(p&&p.catch) p.catch(()=>{}); }catch(_){} }
+      });
+    }
+    return ctx;
+  }
   function getMaster(){
     if(master) return master;
     const a = ac();
@@ -1048,15 +1057,22 @@ const KawaiiSounds = (function(){
       o.connect(og).connect(getMaster()); o.start(t); o.stop(t+0.7);
     },
   };
+  // suspended だけでなく iOS の interrupted も対象に resume を試みる
+  function kick(){
+    const c = ac();
+    if(c.state !== 'running'){ try{ const p=c.resume(); if(p&&p.catch) p.catch(()=>{}); }catch(_){} }
+    return c.state === 'running';
+  }
   return {
     play(name){
       if(!sounds[name]) return;
-      if(ac().state === 'suspended') ac().resume();
+      kick();
       sounds[name]();
     },
     setVolume(v){ getMaster().gain.value = v; },
     ctx(){ return ac(); },
-    resume(){ const c = ac(); if(c.state === 'suspended') c.resume(); },
+    resume(){ return kick(); },
+    ready(){ return ac().state === 'running'; },
   };
 })();
 
@@ -1064,15 +1080,25 @@ let muted = true; // master mute (controls all sound)
 let selectedSound = 'pon'; // placement sound type
 let sfxVolume = 0.85; // 効果音マスター音量（セッションのみ・非永続。既定＝既存マスター gain と一致）
 let bgmOn = false, bgmVol = 0.5; // BGM（SFXミュートとは独立・既定オフ）
+// 音が出ない原因の多くは、ブラウザ/iOSが AudioContext を suspended/interrupted に
+// したまま（タブ切替・画面ロード直後・iOSの音声割り込み等）。resume を試み、
+// それでも鳴らせない時だけ「タップで音が出る」旨を控えめに（6秒間隔）通知。
+let _audioNoticeAt = 0;
+function _audioNotice(){
+  if(KawaiiSounds.resume()) return;            // running になれば通知不要
+  const now = Date.now();
+  if(now - _audioNoticeAt > 6000){ _audioNoticeAt = now; showToast(tr('toast.audioBlocked')); }
+}
 function playPlaceSound(){
   if(muted) return;
   if(selectedSound === 'none') return;
+  _audioNotice();
   KawaiiSounds.play(selectedSound);
 }
 // 動物・人が食べ物を食べたときの効果音（配置音設定とは独立、ミュート尊重）
-function playEatSound(){ if(muted) return; KawaiiSounds.play('munch'); }
+function playEatSound(){ if(muted) return; _audioNotice(); KawaiiSounds.play('munch'); }
 // イベント効果音の汎用ゲート（配置音設定とは独立・ミュート尊重）
-function playSfx(name){ if(muted) return; KawaiiSounds.play(name); }
+function playSfx(name){ if(muted) return; _audioNotice(); KawaiiSounds.play(name); }
 // 真夜中FM入店音 B→G — drop-in (no deps)。呼び出し側で muted を尊重する
 const _a=()=>KawaiiSounds.ctx();   // 単一 AudioContext を共有（resume 経路を一本化）
 let _m,_w,_v;
@@ -1091,15 +1117,16 @@ function _bell(f,t,dur,idx,pk){const a=_a();
  const g=a.createGain();g.gain.setValueAtTime(.0001,t);
  g.gain.exponentialRampToValueAtTime(pk,t+.014);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
  c.connect(g).connect(_bus());m.start(t);c.start(t);m.stop(t+dur+.1);c.stop(t+dur+.1);}
-function playEntranceChime(){const a=_a();if(a.state==='suspended')a.resume();
+function playEntranceChime(){const a=_a();if(a.state!=='running')a.resume();
  const t=a.currentTime+.05, root=493.88;
  _bell(root,t,1.70,40,.5);
  _bell(root*0.7937,t+0.52,1.95,34,.46);}
 // ブラウザは AudioContext を生成時サスペンド／タブ非アクティブ等で自動サスペンドする。
 // ユーザー操作とタブ復帰で単一 context を一括 resume し、音が出なくなるのを防ぐ。
 function resumeAudio(){ try{ KawaiiSounds.resume(); }catch(e){} }
-['pointerdown','touchstart','keydown'].forEach(ev =>
+['pointerdown','touchstart','keydown','click'].forEach(ev =>
   window.addEventListener(ev, resumeAudio, { passive: true }));
+window.addEventListener('pageshow', resumeAudio);   // bfcache 復帰時
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible'){ resumeAudio(); if(bgmOn) KawaiiBGM.resume(); }
   else KawaiiBGM.suspend();
@@ -1362,6 +1389,7 @@ const I18N = {
     'toast.gifHint':'💾 保存後、iOSのショートカット/対応アプリでGIF→Live Photoに変換できます',
     'toast.gifHintAndroid':'💾 GIFを保存しました。ライブ壁紙/動く画像アプリで活用できます',
     'toast.gifHintSaved':'💾 GIFを保存しました',
+    'toast.audioBlocked':'🔈 画面を一度タップすると音が鳴ります',
     gifFrameHint:'📸 この範囲がGIFになります', gifFrameOk:'📸 GIFを作成', gifFrameCancel:'キャンセル',
     weatherRandom:'🎲 ランダム切替',
     weatherRandomHint:'候補から30〜60秒ごとに切替（タップで候補を選択）',
@@ -1451,6 +1479,7 @@ const I18N = {
     'toast.gifHint':'💾 After saving, convert GIF→Live Photo via an iOS Shortcut/app',
     'toast.gifHintAndroid':'💾 GIF saved — use it in a live-wallpaper / motion-photo app',
     'toast.gifHintSaved':'💾 GIF saved',
+    'toast.audioBlocked':'🔈 Tap the screen once to enable sound',
     gifFrameHint:'📸 This area becomes the GIF', gifFrameOk:'📸 Make GIF', gifFrameCancel:'Cancel',
     weatherRandom:'🎲 Random switch',
     weatherRandomHint:'Switches among picks every 30–60s (tap to choose picks)',
@@ -4111,11 +4140,22 @@ function applyZoom(factor){
 document.getElementById('btn-zoom-in') .addEventListener('click',()=>applyZoom(1.25));
 document.getElementById('btn-zoom-out').addEventListener('click',()=>applyZoom(0.8));
 
+// 上部バー(#topbar)と下部パレット(#palette-wrap)に隠れない縦領域。
+// パレット高さは可変（4行化・最小化・MPチャット）なので実測する。
+function uiFreeBand(){
+  const tb=document.getElementById('topbar');
+  const pw=document.getElementById('palette-wrap');
+  const top = tb ? Math.max(0, Math.round(tb.getBoundingClientRect().bottom)) : 50;
+  const bot = (pw && pw.style.display!=='none') ? Math.ceil(pw.getBoundingClientRect().height) : 0;
+  const h = Math.max(120, cv.height - top - bot);
+  return { top, bot, h, cy: top + h/2 };   // cy = 自由領域の縦中心
+}
+
 // マップ全体が画面に収まるスケール（resetView と最小ズームで共有）
 function getFitScale(){
   const {TW,TH} = getTileDims();
   const maxW = cv.width  * 0.88;
-  const maxH = (cv.height - 120) * 0.88;
+  const maxH = uiFreeBand().h * 0.88;       // パレット/上部バーに被らない領域で fit
   // 3D は高い柱（最大 MAX_H、1段=TH*0.5 持ち上げ）が上にはみ出すので、
   // 縦の必要量にピーク分の余白を見込んで fit させる。
   const gridH = drawMode==='3d' ? (GRID + MAX_H*0.5) * TH : GRID * TH;
@@ -4128,15 +4168,16 @@ function getFitScale(){
 function resetView(){
   const {TW,TH} = getTileDims();
   const fitScale = getFitScale();
+  const cy = uiFreeBand().cy;               // 上部バー〜パレットの中間に中心を置く
   let ox, oy;
   if(drawMode==='3d'){
     // OX = screen center (iso origin is center-top of diamond)
     ox = cv.width / 2;
     // ピーク余白の半分だけ下げ、高い柱が上端で切れないようにする
-    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20 + (MAX_H * TH * fitScale * 0.5) / 2;
+    oy = cy - (GRID * TH / 2) * fitScale + 20 + (MAX_H * TH * fitScale * 0.5) / 2;
   } else {
     ox = cv.width  / 2 - (GRID * TW / 2) * fitScale - 30;
-    oy = cv.height / 2 - (GRID * TH / 2) * fitScale + 20;
+    oy = cy - (GRID * TH / 2) * fitScale + 20;
   }
   targetScale = fitScale;
   targetOX = ox;
@@ -5733,6 +5774,9 @@ const CHANGELOG = [
   { v:'0.11.0',
     ja:['🎮 十字キー（8方向）を追加。⚪ で選択中の絵文字をその場所に置けます（タップ/キーボードも対応）'],
     en:['🎮 Added an 8-direction D-pad. Press ⚪ to place the selected emoji on the active cell (tap/keyboard too)'] },
+  { v:'0.10.1',
+    ja:['🗺 マップが下のパレットに隠れて見えづらい問題を修正'],
+    en:['🗺 Fixed the map being hidden behind the bottom palette'] },
   { v:'0.10.0',
     ja:['🔗 共有リンクは「シェア」か「リンクをコピー」を選べるようになりました'],
     en:['🔗 Share link now lets you choose Share or Copy link'] },
