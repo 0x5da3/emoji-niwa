@@ -267,7 +267,7 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 
 <div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
   <div data-i18n="appTitle" style="font-size:15px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:2px">🌿 絵文字庭</div>
-  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.10.0</div>
+  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.10.1</div>
   <div style="border-top:1px solid rgba(120,210,130,.22);margin:0 -4px 12px"></div>
   <div data-i18n="settingsTitle" style="font-size:12px;font-weight:600;color:rgba(180,220,180,.6);text-align:center;margin-bottom:10px">⚙️ 設定</div>
   <div style="display:flex;flex-direction:column;gap:6px">
@@ -1238,7 +1238,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.10.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.10.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -5663,6 +5663,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.10.1',
+    ja:['🗺 マップが下のパレットに隠れて見えづらい問題を修正'],
+    en:['🗺 Fixed the map being hidden behind the bottom palette'] },
   { v:'0.10.0',
     ja:['🔗 共有リンクは「シェア」か「リンクをコピー」を選べるようになりました'],
     en:['🔗 Share link now lets you choose Share or Copy link'] },
