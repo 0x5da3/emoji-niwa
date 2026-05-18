@@ -28,6 +28,7 @@ Generate terrain, arrange emoji, change the weather and time of day, and watch f
 - **Multiplayer (optional)** — “👥” issues an invite link for real-time co-editing with friends. **Issuing requires a GitHub-login member**; anyone with the invite link can join. While in a room the “👥” button shows live occupancy (e.g. 2/8), a chat box (3 lines above the palette, collapsible/expandable) lets you talk, joins are announced in chat, new joiners see the recent chat history (last ~100 messages, replayed on join), and your offline garden / autosave is never touched. The room owner can set how long an empty room is kept (1-30 days, default 7). Needs the optional backend (Rust/Actix, see `server/`). If unconfigured, offline play and `🔗` share links work as before
 - **Helpers** — Zoom, minimap, fullscreen, undo, new map (5×5–50×50), and an app version + plain-language “what’s new” list in the ⚙️ settings menu
 - **In-app help** — a "📖" button opens a How-to-Play panel: the new-player flow plus a quick reference for every control and button (JA/EN, follows the language toggle)
+- **D-pad cursor** — an 8-direction arrow pad moves an active-cell cursor; the center ⚪ places the selected emoji there (also tap-a-cell, keyboard arrows/WASD, press-and-hold; toggle in ⚙️ settings)
 
 ## 🕹 Controls
 
