@@ -197,10 +197,16 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 #btn-save.saved::after{content:"✅";position:absolute;top:-7px;right:-7px;font-size:11px;line-height:1;pointer-events:none}
 .mapbtn{width:36px;height:36px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s}
 .mapbtn:active{background:rgba(93,186,106,.3)}
-#dpad{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:27;display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(3,40px);gap:18px;padding:6px;border-radius:16px}
-.dpadbtn{width:40px;height:40px;border:1px solid var(--border);background:var(--panel);border-radius:10px;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#dpad{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:27;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,32px);gap:8px;padding:4px;border-radius:14px;opacity:.72;transition:opacity .15s}
+#dpad:hover{opacity:1}
+.dpadbtn{width:32px;height:32px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .dpadbtn:active{background:rgba(93,186,106,.3)}
-.dpad-mid{background:rgba(93,186,106,.22);border-color:rgba(168,224,99,.5);font-size:20px}
+.dpad-mid{background:rgba(93,186,106,.22);border-color:rgba(168,224,99,.5);font-size:16px}
+.dpad-close{position:absolute;top:-9px;right:-9px;width:22px;height:22px;border:1px solid var(--border);background:var(--panel);border-radius:50%;color:var(--text);font-size:12px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s;z-index:1}
+.dpad-close:hover{background:rgba(255,255,255,.12)}
+#dpad-show{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:27;width:36px;height:36px;border:1px solid var(--border);background:var(--panel);border-radius:10px;color:var(--text);font-size:18px;cursor:pointer;display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:opacity .12s,background .12s;opacity:.78}
+#dpad-show:hover{opacity:1}
+body.fullscreen #dpad-show{display:none !important}
 .tbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 </style>
 
@@ -558,7 +564,9 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
   <button class="dpadbtn" id="dp-dl" data-i18n-title="dpad.dl" title="左下へ">↙</button>
   <button class="dpadbtn" id="dp-d"  data-i18n-title="dpad.d"  title="下へ">↓</button>
   <button class="dpadbtn" id="dp-dr" data-i18n-title="dpad.dr" title="右下へ">↘</button>
+  <button class="dpad-close" id="dpad-close" type="button" data-i18n-title="dpad.hide" title="十字キーを隠す">×</button>
 </div>
+<button id="dpad-show" type="button" data-i18n-title="dpad.show" title="十字キーを表示">🎮</button>
 
 <script>
 // ═══════════════════════════════════════════
@@ -1404,6 +1412,7 @@ const I18N = {
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
     appTitle:'🌿 絵文字庭', settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
     'dpad.title':'十字キー（カーソル移動）','dpad.toggle':'🎮 十字キーを表示',
+    'dpad.hide':'十字キーを隠す','dpad.show':'十字キーを表示',
     'dpad.ul':'左上へ','dpad.u':'上へ','dpad.ur':'右上へ','dpad.l':'左へ','dpad.r':'右へ',
     'dpad.dl':'左下へ','dpad.d':'下へ','dpad.dr':'右下へ','dpad.place':'ここに置く（選択中の絵文字）',
     ttHelp:'遊び方',
@@ -1494,6 +1503,7 @@ const I18N = {
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
     appTitle:'🌿 emoji-niwa', settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
     'dpad.title':'D-pad (move cursor)','dpad.toggle':'🎮 Show D-pad',
+    'dpad.hide':'Hide D-pad','dpad.show':'Show D-pad',
     'dpad.ul':'Move up-left','dpad.u':'Move up','dpad.ur':'Move up-right','dpad.l':'Move left','dpad.r':'Move right',
     'dpad.dl':'Move down-left','dpad.d':'Move down','dpad.dr':'Move down-right','dpad.place':'Place here (selected emoji)',
     ttHelp:'How to play',
@@ -4248,7 +4258,9 @@ function dpadPlace(){ lastKey=null; act(activeCell.c,activeCell.r); }   // mode�
 function refreshDpad(){
   clampActive();
   const el=document.getElementById('dpad');
+  const sh=document.getElementById('dpad-show');
   if(el) el.style.display = dpadVisible ? '' : 'none';
+  if(sh) sh.style.display = dpadVisible ? 'none' : 'flex';
   const t=document.getElementById('dpad-toggle');
   if(t) t.classList.toggle('is-on', dpadVisible);
 }
@@ -4285,6 +4297,17 @@ document.getElementById('dpad-toggle')?.addEventListener('click',e=>{
   e.stopPropagation();
   dpadVisible=!dpadVisible;
   refreshDpad();
+  if(typeof saveState==='function') saveState();
+});
+// 右側エリアの ×（隠す）／🎮（再表示）— 設定パネルを開かずに即トグル
+document.getElementById('dpad-close')?.addEventListener('click',e=>{
+  e.stopPropagation();
+  dpadVisible=false; refreshDpad();
+  if(typeof saveState==='function') saveState();
+});
+document.getElementById('dpad-show')?.addEventListener('click',e=>{
+  e.stopPropagation();
+  dpadVisible=true; refreshDpad();
   if(typeof saveState==='function') saveState();
 });
 refreshDpad();
