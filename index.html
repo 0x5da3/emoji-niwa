@@ -319,7 +319,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 
 <div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
   <div data-i18n="appTitle" style="font-size:15px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:2px">🌿 絵文字庭</div>
-  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.12.2</div>
+  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.12.4</div>
   <div style="border-top:1px solid rgba(120,210,130,.22);margin:0 -4px 12px"></div>
   <div data-i18n="settingsTitle" style="font-size:12px;font-weight:600;color:rgba(180,220,180,.6);text-align:center;margin-bottom:10px">⚙️ 設定</div>
   <div style="display:flex;flex-direction:column;gap:6px">
@@ -1302,7 +1302,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.12.3'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.12.4'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -4172,6 +4172,7 @@ document.getElementById('btn-3d').addEventListener('click',()=>{
   if(drawMode==='3d') rotation = 0;
   refreshDimToggle();
   if(typeof refreshHeightsBtn === 'function') refreshHeightsBtn();
+  if(typeof refreshDpad === 'function') refreshDpad();   // 向き変化で disabled 表示を即更新
   resetView();
 });
 refreshDimToggle();
@@ -4301,6 +4302,18 @@ function moveActive(dx,dy){
   return true;
 }
 function dpadPlace(){ lastKey=null; act(activeCell.c,activeCell.r); }   // mode別配置/塗り/消去（連打可）
+// D-pad の disabled 表示を「実際の移動可否」へ同期（毎フレーム呼ぶので
+// 2D/3D切替・回転・グリッド変更などで状態が変わっても表示が陳腐化しない）。
+function syncDpadDisabled(){
+  if(!dpadVisible) return;
+  for(const id in DPAD_DIRS){
+    const [dx,dy] = DPAD_DIRS[id];
+    const b = document.getElementById(id);
+    if(!b) continue;
+    const d = !dpadCanMove(dx,dy);
+    if(b.disabled !== d) b.disabled = d;
+  }
+}
 function refreshDpad(){
   clampActive();
   const el=document.getElementById('dpad');
@@ -4309,12 +4322,7 @@ function refreshDpad(){
   if(sh) sh.classList.toggle('is-on', dpadVisible);
   const t=document.getElementById('dpad-toggle');
   if(t) t.classList.toggle('is-on', dpadVisible);
-  // 進めない方向のボタンを disable にして「行き止まり」を視覚化（移動判定と完全一致）
-  for(const id in DPAD_DIRS){
-    const [dx,dy] = DPAD_DIRS[id];
-    const b = document.getElementById(id);
-    if(b) b.disabled = !dpadCanMove(dx,dy);
-  }
+  syncDpadDisabled();   // 進めない方向のボタンを disable（移動判定と完全一致）
 }
 (function wireDpad(){
   const stopHold=()=>{ if(dpadRepeat){ clearTimeout(dpadRepeat.t); clearInterval(dpadRepeat.i); dpadRepeat=null; } };
@@ -5865,6 +5873,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.12.4',
+    ja:['🎮 十字キーの「無効表示なのに動ける」不一致を修正（向き切替後も表示が常に最新）'],
+    en:['🎮 Fixed D-pad showing a direction disabled while it could still move (state now always in sync)'] },
   { v:'0.12.3',
     ja:['🎮 十字キーの左右の間隔を詰めてコンパクトにしました'],
     en:['🎮 Tightened the D-pad’s left–right spacing for a more compact layout'] },
@@ -6357,6 +6368,7 @@ function loop(now){
   scale += (targetScale - scale) * ease;
   OX    += (targetOX - OX)       * ease;
   OY    += (targetOY - OY)       * ease;
+  if(typeof syncDpadDisabled==='function') syncDpadDisabled();   // disabled表示を常に実移動可否へ同期
 
   if(!dayPaused) timeOfDay=(timeOfDay+DAY_SPEED*60*dt)%1;
 
