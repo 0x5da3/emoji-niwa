@@ -221,12 +221,13 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 .dpadbtn:active{background:rgba(93,186,106,.3)}
 .dpadbtn:disabled{opacity:.28;cursor:not-allowed;pointer-events:none}
 .dpad-mid{background:rgba(93,186,106,.22);border-color:rgba(168,224,99,.5);font-size:16px}
+#dp-ul{grid-area:1/1}#dp-ur{grid-area:1/3}#dp-c{grid-area:2/2}#dp-dl{grid-area:3/1}#dp-dr{grid-area:3/3}
 .mapbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 .tbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 
 /* ── スマホ横向き：縦 500px 以下の landscape にのみ適用（iPad 横は対象外） ─────────────
    - 絵文字パレットを 2 行表示にして箱庭の視認エリアを確保
-   - 十字キーを画面左下に逃がして右側のマップボタン列と重ならない位置に
+   - 斜めキーを画面左下に逃がして右側のマップボタン列と重ならない位置に
    - 上部バー・モードバー・コーナーボタンを若干コンパクトに */
 @media (orientation:landscape) and (max-height:500px){
   /* パレット：3〜4行（高さ 183px）→ 2行（42*2+gap 5 = 89px） */
@@ -234,7 +235,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
   #palette-wrap{padding:4px 8px 6px}
   /* チャット枠を出している間は palette より上で表示量を控えめに */
   #mp-chat.exp #mpc-log{height:min(28vh,160px)}
-  /* 十字キー：右側 map-btns と被らないよう左下隅へ（palette と minimap の間） */
+  /* 斜めキー：右側 map-btns と被らないよう左下隅へ（palette と minimap の間） */
   #dpad{top:auto;bottom:110px;right:auto;left:10px;transform:none}
   /* minimap デフォルト位置はそのままだが、palette が縮んだぶん持ち上げる */
   #minimap{bottom:calc(110px + var(--mpch,0px))}
@@ -341,7 +342,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
     </div>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
-    <button class="tbtn" id="dpad-toggle" data-i18n="dpad.toggle" style="width:100%">🎮 十字キーを表示</button>
+    <button class="tbtn" id="dpad-toggle" data-i18n="dpad.toggle" style="width:100%">🎮 斜めキーを表示</button>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="changelogLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:4px">📝 更新履歴</div>
@@ -580,7 +581,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
   <button class="mapbtn" id="btn-reset-view">⊡</button>
   <button class="mapbtn" id="btn-fullscreen">⛶</button>
   <button class="mapbtn" id="btn-minimap">🗺</button>
-  <button class="mapbtn" id="dpad-show" data-i18n-title="dpad.title" title="十字キー（カーソル移動）">🎮</button>
+  <button class="mapbtn" id="dpad-show" data-i18n-title="dpad.title" title="斜めキー（カーソル移動）">🎮</button>
   <button class="mapbtn dim-toggle" id="btn-3d" data-i18n-title="tt3d" title="2D/3D 切り替え">
     <span class="dim-label dim-2d">2D</span>
     <span class="dim-track"><span class="dim-thumb"></span></span>
@@ -592,15 +593,11 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
   </button>
 </div>
 
-<div id="dpad" role="group" data-i18n-title="dpad.title" title="十字キー（カーソル移動）">
+<div id="dpad" role="group" data-i18n-title="dpad.title" title="斜めキー（カーソル移動）">
   <button class="dpadbtn" id="dp-ul" data-i18n-title="dpad.ul" title="左上へ">↖</button>
-  <button class="dpadbtn" id="dp-u"  data-i18n-title="dpad.u"  title="上へ">↑</button>
   <button class="dpadbtn" id="dp-ur" data-i18n-title="dpad.ur" title="右上へ">↗</button>
-  <button class="dpadbtn" id="dp-l"  data-i18n-title="dpad.l"  title="左へ">←</button>
   <button class="dpadbtn dpad-mid" id="dp-c" data-i18n-title="dpad.place" title="ここに置く">⚪</button>
-  <button class="dpadbtn" id="dp-r"  data-i18n-title="dpad.r"  title="右へ">→</button>
   <button class="dpadbtn" id="dp-dl" data-i18n-title="dpad.dl" title="左下へ">↙</button>
-  <button class="dpadbtn" id="dp-d"  data-i18n-title="dpad.d"  title="下へ">↓</button>
   <button class="dpadbtn" id="dp-dr" data-i18n-title="dpad.dr" title="右下へ">↘</button>
 </div>
 
@@ -1305,7 +1302,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.12.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.12.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -1447,9 +1444,9 @@ const I18N = {
     'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
     appTitle:'🌿 絵文字庭', settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
-    'dpad.title':'十字キー（カーソル移動）','dpad.toggle':'🎮 十字キーを表示',
-    'dpad.ul':'左上へ','dpad.u':'上へ','dpad.ur':'右上へ','dpad.l':'左へ','dpad.r':'右へ',
-    'dpad.dl':'左下へ','dpad.d':'下へ','dpad.dr':'右下へ','dpad.place':'ここに置く（選択中の絵文字）',
+    'dpad.title':'斜めキー（カーソル移動）','dpad.toggle':'🎮 斜めキーを表示',
+    'dpad.ul':'左上へ','dpad.ur':'右上へ',
+    'dpad.dl':'左下へ','dpad.dr':'右下へ','dpad.place':'ここに置く（選択中の絵文字）',
     ttHelp:'遊び方',
     helpTitle:'📖 遊び方',
     helpStartLabel:'🌱 はじめに',
@@ -1537,9 +1534,9 @@ const I18N = {
     'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
     appTitle:'🌿 emoji-niwa', settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
-    'dpad.title':'D-pad (move cursor)','dpad.toggle':'🎮 Show D-pad',
-    'dpad.ul':'Move up-left','dpad.u':'Move up','dpad.ur':'Move up-right','dpad.l':'Move left','dpad.r':'Move right',
-    'dpad.dl':'Move down-left','dpad.d':'Move down','dpad.dr':'Move down-right','dpad.place':'Place here (selected emoji)',
+    'dpad.title':'Diagonal pad (move cursor)','dpad.toggle':'🎮 Show diagonal pad',
+    'dpad.ul':'Move up-left','dpad.ur':'Move up-right',
+    'dpad.dl':'Move down-left','dpad.dr':'Move down-right','dpad.place':'Place here (selected emoji)',
     ttHelp:'How to play',
     helpTitle:'📖 How to Play',
     helpStartLabel:'🌱 Getting started',
@@ -4277,7 +4274,7 @@ function keepActiveVisible(){
 }
 // 矢印方向はスクリーン空間で1タイル進めて screenToIso で戻す（回転/2D3D/ズーム不問）
 // 戻り値：実際にアクティブマスが動いたか（境界で動けなかった場合 false → 長押しリピートも自動停止する）
-const DPAD_DIRS={'dp-ul':[-1,-1],'dp-u':[0,-1],'dp-ur':[1,-1],'dp-l':[-1,0],'dp-r':[1,0],'dp-dl':[-1,1],'dp-d':[0,1],'dp-dr':[1,1]};
+const DPAD_DIRS={'dp-ul':[-1,-1],'dp-ur':[1,-1],'dp-dl':[-1,1],'dp-dr':[1,1]};
 function moveActive(dx,dy){
   const oc=activeCell.c, or=activeCell.r;
   const {TW,TH}=getTileDims();
@@ -4342,14 +4339,16 @@ function refreshDpad(){
   }
   window.addEventListener('blur',stopHold);
 })();
-// キーボード（PC）：矢印/WASD移動、Space/Enter配置。入力中・ポップアップ中・修飾キー時は無効
+// キーボード（PC）：q/e/z/c または テンキー 7/9/1/3 で斜め移動、Space/Enter で配置。入力中・ポップアップ中・修飾キー時は無効
 window.addEventListener('keydown',e=>{
   if(!dpadVisible || e.ctrlKey || e.metaKey || e.altKey) return;
   const ae=document.activeElement;
   if(ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName)) return;
   if(typeof ALL_POPUPS!=='undefined' && ALL_POPUPS.some(id=>{const p=document.getElementById(id);return p&&p.style.display!=='none';})) return;
-  const K={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],
-           w:[0,-1],s:[0,1],a:[-1,0],d:[1,0],W:[0,-1],S:[0,1],A:[-1,0],D:[1,0]};
+  // 斜め4方向のみ（アイソメ表示で grid に揃う向き）
+  const K={'7':[-1,-1],'9':[1,-1],'1':[-1,1],'3':[1,1],
+           q:[-1,-1],e:[1,-1],z:[-1,1],c:[1,1],
+           Q:[-1,-1],E:[1,-1],Z:[-1,1],C:[1,1]};
   if(K[e.key]){ e.preventDefault(); moveActive(K[e.key][0],K[e.key][1]); return; }
   if(e.key===' '||e.key==='Enter'){ e.preventDefault(); dpadPlace(); }
 });
@@ -4359,7 +4358,7 @@ document.getElementById('dpad-toggle')?.addEventListener('click',e=>{
   refreshDpad();
   if(typeof saveState==='function') saveState();
 });
-// 右側マップボタン列の 🎮：押すたびに十字キーの表示／非表示をトグル（is-on でオン状態を表す）
+// 右側マップボタン列の 🎮：押すたびに斜めキーの表示／非表示をトグル（is-on でオン状態を表す）
 document.getElementById('dpad-show')?.addEventListener('click',e=>{
   e.stopPropagation();
   dpadVisible=!dpadVisible; refreshDpad();
@@ -5860,6 +5859,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.12.1',
+    ja:['🎮 D-pad の上下左右（↑↓←→）を削除して斜め4方向（↖↗↙↘）に整理しました。3Dアイソメ表示では斜めだけが grid 軸と一致するためです（PCキーは q/e/z/c またはテンキー 7/9/1/3）'],
+    en:['🎮 Removed the cardinal arrows (↑↓←→) from the D-pad, leaving only the four diagonals (↖↗↙↘). In 3D isometric view, only the diagonals align with the grid axes (keyboard moved to q/e/z/c or numpad 7/9/1/3)'] },
   { v:'0.12.0',
     ja:['↕️ 左の縦ボタン列をワンタップで折りたためるようになりました'],
     en:['↕️ The left button column can now be collapsed with one tap'] },
