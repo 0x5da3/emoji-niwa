@@ -419,6 +419,25 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
   </div>
 </div>
 
+<!-- SAVE POPUP -->
+
+<div id="save-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:280px;max-width:92vw;max-height:80vh;overflow-y:auto">
+  <div data-i18n="saveTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">💾 保存</div>
+  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+    <button class="tbtn" id="btn-save-overwrite" data-i18n="saveOverwrite">💾 上書き保存</button>
+    <button class="tbtn" id="btn-save-named-open" data-i18n="saveNamed">🏷️ 名前をつけて保存</button>
+    <div id="save-name-area" style="display:none;flex-direction:column;gap:5px;margin-top:2px">
+      <input id="save-name-input" type="text" maxlength="30" data-i18n-placeholder="saveNamePh" style="background:rgba(255,255,255,.07);border:1px solid rgba(120,210,130,.3);border-radius:8px;color:#e8f5e9;padding:7px 10px;font-size:12px;outline:none;width:100%;box-sizing:border-box">
+      <div style="display:flex;gap:6px">
+        <button class="tbtn" id="btn-save-name-cancel" data-i18n="cancel" style="flex:1">キャンセル</button>
+        <button class="tbtn" id="btn-save-name-ok" data-i18n="saveDo" style="flex:2;background:rgba(93,186,106,.45);border-color:rgba(168,224,99,.6);color:#fff;font-weight:700">💾 保存する</button>
+      </div>
+    </div>
+  </div>
+  <div data-i18n="savedGardens" style="font-size:11px;color:rgba(180,220,180,.5);margin-bottom:6px">📂 保存した庭</div>
+  <div id="save-slots-list"></div>
+</div>
+
 <!-- GIF CAPTURE-FRAME OVERLAY (📸 で撮影範囲を提示→OKで実行) -->
 
 <div id="gif-frame-overlay">
@@ -1520,6 +1539,14 @@ const I18N = {
     'toast.storeOnce':'🏪 は1つだけ置けます',
     'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
     'toast.langSet':'🌐 言語を日本語にしました',
+    saveTitle:'💾 保存', saveOverwrite:'💾 上書き保存', saveNamed:'🏷️ 名前をつけて保存',
+    saveNamePh:'庭の名前…', saveDo:'💾 保存する',
+    savedGardens:'📂 保存した庭', slotsEmpty:'（保存なし）',
+    slotLoad:'開く', slotDelete:'削除', slotDeleteConfirm:'「{name}」を削除しますか？',
+    'toast.slotSaved':'💾 「{name}」に保存しました',
+    'toast.slotLoaded':'📂 「{name}」を開きました',
+    'toast.slotsFull':'⚠️ 保存スロットが満杯です（最大{max}件）',
+    'toast.slotsError':'⚠️ 保存に失敗しました（容量不足かも）',
   },
   en: {
     weatherBtn:'☀️ Weather', undo:'↩ Undo', gen:'🎲 Generate', effects:'✨ Effects',
@@ -1611,6 +1638,14 @@ const I18N = {
     'toast.storeOnce':'Only one 🏪 can be placed',
     'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
     'toast.langSet':'🌐 Language set to English',
+    saveTitle:'💾 Save', saveOverwrite:'💾 Overwrite', saveNamed:'🏷️ Save as…',
+    saveNamePh:'Garden name…', saveDo:'💾 Save',
+    savedGardens:'📂 Saved gardens', slotsEmpty:'(no saves)',
+    slotLoad:'Open', slotDelete:'Delete', slotDeleteConfirm:'Delete "{name}"?',
+    'toast.slotSaved':'💾 Saved as "{name}"',
+    'toast.slotLoaded':'📂 Opened "{name}"',
+    'toast.slotsFull':'⚠️ Save slots full (max {max})',
+    'toast.slotsError':'⚠️ Save failed (storage may be full)',
   },
 };
 function tr(key, vars){
@@ -1623,6 +1658,7 @@ function tr(key, vars){
 function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = tr(el.dataset.i18nTitle); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = tr(el.dataset.i18nPlaceholder); });
   document.documentElement.lang = lang;
   // Dynamic / JS-driven text that the generic pass above can't cover
   if(typeof refreshWeatherBtn === 'function') refreshWeatherBtn();
@@ -4711,7 +4747,7 @@ refreshBgmToggle();
 const menuPopup = document.getElementById('menu-popup');
 
 // Exclusive popup helper
-const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','help-popup','share-popup'];
+const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','help-popup','share-popup','save-popup'];
 function openPopup(id){
   for(const p of ALL_POPUPS) document.getElementById(p).style.display = (p === id ? 'block' : 'none');
 }
@@ -6173,6 +6209,150 @@ function clearSave(){
   try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
 }
 
+// NAMED SAVE SLOTS
+// ═══════════════════════════════════════════
+const SLOT_KEY = 'emoji-niwa-slots';
+const SLOT_MAX = 10;
+
+function getSavedSlots(){
+  try{ return JSON.parse(localStorage.getItem(SLOT_KEY)||'[]'); }catch(_){ return []; }
+}
+function setSavedSlots(slots){
+  try{ localStorage.setItem(SLOT_KEY, JSON.stringify(slots)); return true; }catch(_){ return false; }
+}
+function buildSlotData(name){
+  return {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name,
+    ts: Date.now(),
+    data: {
+      v: SAVE_VERSION,
+      grid: GRID,
+      terrain: {...terrain}, items: {...items}, heights: {...heights},
+      animals: {...animals}, animalId,
+      history: history.length > HISTORY_SAVE_CAP ? history.slice(-HISTORY_SAVE_CAP) : [...history],
+      recent: [...CATEGORIES['📌 履歴']],
+      selCat, selEmoji, selTerrain, mode,
+      timeOfDay, dayPaused, weather,
+      drawMode, showHeights, heightsTouched, dpadVisible,
+      muted, selectedSound, bgmOn, bgmVol,
+      weatherRandomOn,
+      weatherRandomPool: [...weatherRandomPool],
+      fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
+      autosaveMs, fpsCap, lang, lastStoreSize,
+    }
+  };
+}
+function saveNamedSlot(name){
+  const slots = getSavedSlots();
+  if(slots.length >= SLOT_MAX){
+    showToast(tr('toast.slotsFull', {max:SLOT_MAX}));
+    return false;
+  }
+  const slot = buildSlotData(name.trim());
+  slots.unshift(slot);
+  if(!setSavedSlots(slots)){ showToast(tr('toast.slotsError')); return false; }
+  showToast(tr('toast.slotSaved', {name: slot.name}));
+  return true;
+}
+function loadNamedSlot(id){
+  const slots = getSavedSlots();
+  const slot = slots.find(s => s.id === id);
+  if(!slot) return;
+  if(applyState(slot.data)){
+    saveState();
+    restartAutosave();
+    closeAllPopups();
+    showToast(tr('toast.slotLoaded', {name: slot.name}));
+  }
+}
+function deleteNamedSlot(id){
+  setSavedSlots(getSavedSlots().filter(s => s.id !== id));
+  renderSaveSlots();
+}
+function renderSaveSlots(){
+  const list = document.getElementById('save-slots-list');
+  if(!list) return;
+  const slots = getSavedSlots();
+  list.textContent = '';
+  if(slots.length === 0){
+    const empty = document.createElement('div');
+    empty.style.cssText = 'font-size:11px;color:rgba(180,220,180,.4);text-align:center;padding:8px 0';
+    empty.textContent = tr('slotsEmpty');
+    list.appendChild(empty);
+    return;
+  }
+  const fmtOpts = {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'};
+  const locale = lang === 'en' ? 'en-US' : 'ja-JP';
+  for(const slot of slots){
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(120,210,130,.1)';
+    const info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+    const nameEl = document.createElement('div');
+    nameEl.style.cssText = 'font-size:12px;color:#e8f5e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+    nameEl.textContent = slot.name;
+    const tsEl = document.createElement('div');
+    tsEl.style.cssText = 'font-size:10px;color:rgba(180,220,180,.5);margin-top:1px';
+    tsEl.textContent = new Date(slot.ts).toLocaleString(locale, fmtOpts);
+    info.appendChild(nameEl); info.appendChild(tsEl);
+    const btnLoad = document.createElement('button');
+    btnLoad.className = 'tbtn';
+    btnLoad.style.cssText = 'padding:4px 9px;font-size:11px;flex-shrink:0';
+    btnLoad.textContent = tr('slotLoad');
+    btnLoad.onclick = () => loadNamedSlot(slot.id);
+    const btnDel = document.createElement('button');
+    btnDel.className = 'tbtn';
+    btnDel.style.cssText = 'padding:4px 7px;font-size:11px;flex-shrink:0;opacity:.55';
+    btnDel.title = tr('slotDelete');
+    btnDel.textContent = '🗑';
+    btnDel.onclick = () => {
+      if(confirm(tr('slotDeleteConfirm', {name: slot.name}))) deleteNamedSlot(slot.id);
+    };
+    row.appendChild(info); row.appendChild(btnLoad); row.appendChild(btnDel);
+    list.appendChild(row);
+  }
+}
+function openSavePopup(){
+  openPopup('save-popup');
+  document.getElementById('save-name-area').style.display = 'none';
+  document.getElementById('save-name-input').value = '';
+  renderSaveSlots();
+}
+
+// save-popup イベント配線
+document.getElementById('btn-save-overwrite').addEventListener('click', e => {
+  e.stopPropagation();
+  saveState(); flashSaved(); showToast(tr('toast.saved'));
+  closeAllPopups();
+});
+document.getElementById('btn-save-named-open').addEventListener('click', e => {
+  e.stopPropagation();
+  const area = document.getElementById('save-name-area');
+  area.style.display = 'flex';
+  document.getElementById('save-name-input').focus();
+});
+document.getElementById('btn-save-name-cancel').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('save-name-area').style.display = 'none';
+  document.getElementById('save-name-input').value = '';
+});
+document.getElementById('btn-save-name-ok').addEventListener('click', e => {
+  e.stopPropagation();
+  const input = document.getElementById('save-name-input');
+  const name = input.value.trim();
+  if(!name) { input.focus(); return; }
+  if(saveNamedSlot(name)){
+    document.getElementById('save-name-area').style.display = 'none';
+    input.value = '';
+    renderSaveSlots();
+  }
+});
+document.getElementById('save-name-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('btn-save-name-ok').click(); }
+  if(e.key === 'Escape'){ document.getElementById('btn-save-name-cancel').click(); }
+});
+
 function loadState(){
   let data;
   try{
@@ -6372,9 +6552,9 @@ window.addEventListener('pagehide', saveState);
 document.addEventListener('visibilitychange', () => { if(document.hidden) saveState(); });
 
 // Manual save button (💾, next to ⚙️ settings)
-document.getElementById('btn-save').addEventListener('click', () => {
-  saveState();
-  showToast(tr('toast.saved'));
+document.getElementById('btn-save').addEventListener('click', e => {
+  e.stopPropagation();
+  openSavePopup();
 });
 
 // Language switch (settings menu)
