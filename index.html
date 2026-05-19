@@ -198,8 +198,10 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 #gif-frame-overlay{display:none;position:fixed;inset:0;z-index:60;pointer-events:none}
 #gif-frame-sq{position:absolute;border:2px solid rgba(168,224,99,.95);box-shadow:0 0 0 9999px rgba(0,0,0,.55);border-radius:6px;pointer-events:none}
 #gif-frame-cap{position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:61;font-size:12px;color:#a8e063;background:rgba(8,20,10,.92);border:1px solid rgba(120,210,130,.3);border-radius:10px;padding:6px 12px;white-space:nowrap}
-#gif-frame-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:61;display:flex;gap:10px;align-items:center;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(14px);pointer-events:auto}
+#gif-frame-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:61;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(14px);pointer-events:auto;max-width:94vw}
 #gif-frame-bar .tbtn{padding:8px 16px}
+#gif-frame-res{display:inline-flex;gap:4px;padding:3px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.04)}
+#gif-frame-res .gif-res-opt{padding:5px 10px;font-size:10px;line-height:1.2}
 #btn-gif-ok{background:rgba(93,186,106,.3);border-color:rgba(168,224,99,.6)}
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 #map-btns{position:fixed;right:10px;top:60px;z-index:27;display:grid;grid-template-columns:repeat(2,36px);gap:6px;justify-items:center}
@@ -335,10 +337,6 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
     <div id="fps-opts" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px"></div>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
-    <div data-i18n="gifResLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">📸 GIF 解像度</div>
-    <div id="gif-res-opts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px"></div>
-  </div>
-  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="langLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🌐 言語 / Language</div>
     <div id="lang-opts" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px">
       <button class="tbtn lang-opt" data-lang="ja">🇯🇵 日本語</button>
@@ -444,6 +442,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
   <div id="gif-frame-sq"></div>
   <div id="gif-frame-cap" data-i18n="gifFrameHint">📸 この範囲がGIFになります</div>
   <div id="gif-frame-bar">
+    <div id="gif-frame-res" role="group" aria-label="📸 GIF 解像度"></div>
     <button class="tbtn" id="btn-gif-cancel" data-i18n="gifFrameCancel">キャンセル</button>
     <button class="tbtn" id="btn-gif-ok" data-i18n="gifFrameOk">📸 GIFを作成</button>
   </div>
@@ -1325,7 +1324,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.13.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.14.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -1480,7 +1479,7 @@ const I18N = {
     helpTopBody:'☀️ 天気：天気を選ぶ／ランダム切替\n時刻バー：時間帯を変える・止める\n🎲 生成：地形プリセット・単色塗り・ランダム散布\n✨ 演出：花火・オーロラ・シャボン玉・朝霧\n✏️ 配置 / 🎨 地形 / 🧹 消去：操作モード切替',
     helpMapLabel:'🗺 マップとメニュー',
     helpMapBody:'＋ / －：ズーム\n⊡：視点をリセット\n🗺：ミニマップ表示\n⛶：全画面表示\n2D / 3D：表示モード切替\n#️⃣：高さの数値を表示\n⚙️ 設定：言語・新規マップ・全リセット\n💾 保存：手動セーブ\n🔇 サウンド：効果音・BGM\n📸 GIF書き出し\n🔗 共有リンク\n👥 マルチプレイ',
-    autosaveInterval:'💾 オートセーブ間隔', fpsLabel:'🎞️ フレームレート', gifResLabel:'📸 GIF 解像度', langLabel:'🌐 言語 / Language',
+    autosaveInterval:'💾 オートセーブ間隔', fpsLabel:'🎞️ フレームレート', langLabel:'🌐 言語 / Language',
     changelogLabel:'📝 更新履歴',
     placementSound:'配置時の効果音',
     's.pon':'🫧 ポンッ','s.koto':'🪵 コトッ','s.poyon':'🟢 ぽよん','s.fuwa':'☁️ ふわっ',
@@ -1579,7 +1578,7 @@ const I18N = {
     helpTopBody:'☀️ Weather: pick weather / random rotation\nTime bar: change or pause time of day\n🎲 Generate: terrain presets, solid fill, random scatter\n✨ Effects: fireworks, aurora, bubbles, morning mist\n✏️ Place / 🎨 Terrain / 🧹 Erase: switch tool mode',
     helpMapLabel:'🗺 Map & menu buttons',
     helpMapBody:'＋ / －: zoom\n⊡: reset view\n🗺: minimap\n⛶: fullscreen\n2D / 3D: view mode\n#️⃣: show height numbers\n⚙️ Settings: language, new map, reset all\n💾 Save: manual save\n🔇 Sound: SFX & BGM\n📸 Export GIF\n🔗 Share link\n👥 Multiplayer',
-    autosaveInterval:'💾 Autosave interval', fpsLabel:'🎞️ Frame rate', gifResLabel:'📸 GIF resolution', langLabel:'🌐 言語 / Language',
+    autosaveInterval:'💾 Autosave interval', fpsLabel:'🎞️ Frame rate', langLabel:'🌐 言語 / Language',
     changelogLabel:'📝 What’s new',
     placementSound:'Placement sound',
     's.pon':'🫧 Pop','s.koto':'🪵 Knock','s.poyon':'🟢 Boing','s.fuwa':'☁️ Floaty',
@@ -4811,7 +4810,7 @@ document.getElementById('share-copy').addEventListener('click', async e=>{
 //   Live Photo 化は端末側の Shortcut/アプリで（埋め込み不可・文言案内のみ）。
 // ═══════════════════════════════════════════
 const GIF_SECONDS = 3, GIF_FPS = 12;
-let gifSize = 320;   // GIF 出力の正方形ピクセル（⚙️で 320/720/1080 選択・セーブに保存。既定320＝安全）
+let gifSize = 720;   // GIF 出力の正方形ピクセル（📸 撮影フレーム上で 320/720/1080 を選択・セーブに保存。既定720＝高解像度）
 let gifBusy = false, gifFraming = false;
 
 // 全フレームを median-cut で ≤256 色に量子化
@@ -5920,6 +5919,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.14.0',
+    ja:['📸 GIF 解像度の選択を ⚙️ 設定から「📸 撮影フレーム上」に移動。撮影前にその場で 標準320／高720／最大1080 を切り替えられます（既定は高720）'],
+    en:['📸 Moved the GIF resolution picker out of ⚙️ settings and into the 📸 capture frame bar — pick Std 320 / High 720 / Max 1080 right before recording (default High 720)'] },
   { v:'0.13.0',
     ja:['📸 GIF の解像度を ⚙️ 設定で選べるように（標準320／高720／最大1080）。Live Photo 化をより高解像度で'],
     en:['📸 Choose GIF resolution in ⚙️ settings (Std 320 / High 720 / Max 1080) for sharper Live Photos'] },
@@ -6021,7 +6023,7 @@ function refreshFpsUI(){
   });
 }
 function refreshGifResUI(){
-  document.querySelectorAll('#gif-res-opts .gif-res-opt').forEach(b => {
+  document.querySelectorAll('#gif-frame-res .gif-res-opt').forEach(b => {
     b.classList.toggle('active', Number(b.dataset.v) === gifSize);
   });
 }
@@ -6495,6 +6497,7 @@ FPS_PRESETS.forEach(v => {
 });
 refreshFpsUI();
 
+// 📸 GIF 撮影フレーム上の解像度切替（旧 ⚙️ 設定内から移設）
 GIF_RES_PRESETS.forEach(v => {
   const b = document.createElement('button');
   b.className = 'tbtn gif-res-opt';
@@ -6504,10 +6507,10 @@ GIF_RES_PRESETS.forEach(v => {
   b.addEventListener('click', e => {
     e.stopPropagation();
     gifSize = v;
-    refreshGifResUI();   // 選択を色づけ（トーストなし＝fpsと同方針）
+    refreshGifResUI();
     saveState();
   });
-  document.getElementById('gif-res-opts').appendChild(b);
+  document.getElementById('gif-frame-res').appendChild(b);
 });
 refreshGifResUI();
 
