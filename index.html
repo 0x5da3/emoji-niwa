@@ -215,7 +215,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 #btn-save.saved::after{content:"✅";position:absolute;top:-7px;right:-7px;font-size:11px;line-height:1;pointer-events:none}
 .mapbtn{width:36px;height:36px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .mapbtn:active{background:rgba(93,186,106,.3)}
-#dpad{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:27;display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,32px);gap:8px;padding:4px;border-radius:14px;opacity:.72;transition:opacity .15s;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#dpad{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:27;display:grid;grid-template-columns:32px 14px 32px;grid-template-rows:repeat(3,32px);gap:8px 4px;justify-items:center;padding:4px;border-radius:14px;opacity:.72;transition:opacity .15s;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #dpad:hover{opacity:1}
 .dpadbtn{width:32px;height:32px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:background .12s,opacity .12s;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .dpadbtn:active{background:rgba(93,186,106,.3)}
@@ -1302,7 +1302,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.12.2'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.12.3'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -5865,6 +5865,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.12.3',
+    ja:['🎮 十字キーの左右の間隔を詰めてコンパクトにしました'],
+    en:['🎮 Tightened the D-pad’s left–right spacing for a more compact layout'] },
   { v:'0.12.2',
     ja:['🎮 十字キーが端に達したとき不自然に折り返さず、進めない方向は止まる（無効表示）ように改善'],
     en:['🎮 D-pad no longer folds awkwardly at the map edge — blocked directions just stop (dimmed)'] },
