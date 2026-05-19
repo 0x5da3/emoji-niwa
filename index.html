@@ -4795,7 +4795,7 @@ document.getElementById('share-do').addEventListener('click', async e=>{
     let url;
     try{ url = await buildShareUrl(); }
     catch(_){ showToast(tr('toast.shareError')); return; }
-    try{ await navigator.share({title:'emoji-niwa', url}); }
+    try{ await navigator.share({title:'emoji-niwa', text:GIF_HASHTAGS+' '+url, url}); }
     catch(_){ /* キャンセル等は無視（保存系ではないのでトーストなし） */ }
   } else {
     await copyShareUrl();   // シェア非対応端末はコピーにフォールバック
