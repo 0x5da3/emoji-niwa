@@ -223,6 +223,28 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 .dpad-mid{background:rgba(93,186,106,.22);border-color:rgba(168,224,99,.5);font-size:16px}
 .mapbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 .tbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
+
+/* ── スマホ横向き：縦 500px 以下の landscape にのみ適用（iPad 横は対象外） ─────────────
+   - 絵文字パレットを 2 行表示にして箱庭の視認エリアを確保
+   - 十字キーを画面左下に逃がして右側のマップボタン列と重ならない位置に
+   - 上部バー・モードバー・コーナーボタンを若干コンパクトに */
+@media (orientation:landscape) and (max-height:500px){
+  /* パレット：3〜4行（高さ 183px）→ 2行（42*2+gap 5 = 89px） */
+  #palette{height:89px;grid-auto-rows:42px}
+  #palette-wrap{padding:4px 8px 6px}
+  /* チャット枠を出している間は palette より上で表示量を控えめに */
+  #mp-chat.exp #mpc-log{height:min(28vh,160px)}
+  /* 十字キー：右側 map-btns と被らないよう左下隅へ（palette と minimap の間） */
+  #dpad{top:auto;bottom:110px;right:auto;left:10px;transform:none}
+  /* minimap デフォルト位置はそのままだが、palette が縮んだぶん持ち上げる */
+  #minimap{bottom:calc(110px + var(--mpch,0px))}
+  /* マップボタン列：横向きでは縦に詰めて 2D/3D・#️⃣ を省スペース化 */
+  #map-btns{top:54px;gap:4px}
+  #map-btns #btn-3d,#map-btns #btn-heights{height:26px;margin-top:0}
+  /* トップバー：高さを控えめに（50→42） */
+  #topbar{height:42px}
+  #modebar{top:46px}
+}
 </style>
 
 </head>
