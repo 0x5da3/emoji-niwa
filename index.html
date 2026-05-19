@@ -1323,7 +1323,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.14.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.14.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -1435,7 +1435,7 @@ let animT     = 0;
 let hoverCell = null;
 let activeCell = { c:(GRID/2)|0, r:(GRID/2)|0 };   // 矢印D-padで動かすアクティブマス（初期=中央）
 let dpadVisible = true;          // D-pad表示（設定で切替・セーブに保存）
-// 名前付き保存のスロット名（最近セーブ／ロードしたもの）。GIF 透かしの「庭名」として焼き込む。
+// 名前付き保存のスロット名（最近セーブ／ロードしたもの）。
 // 「全リセット」「新規マップ」では空に戻す。saveState/applyState で永続化。
 let currentGardenName = '';
 let dpadRepeat = null;           // 長押し連続移動タイマー
@@ -4918,36 +4918,8 @@ function gifTopOffset(){
   const tb=document.getElementById('topbar');
   return tb ? Math.max(0, Math.round(tb.getBoundingClientRect().bottom)) : 0;
 }
-// GIF フレーム下部に「庭名・ハッシュタグ・URL」を焼き込む（共有時の出所をわかりやすく）。
-// テキストの行高さは解像度 (gifSize) 比例。庭名は名前付き保存していなければ省略。
+// ハッシュタグ（共有テキストで使用）
 const GIF_HASHTAGS = '#絵文字庭 #emojiNiwa';
-const GIF_URL      = 'https://0x5da3.github.io/emoji-niwa/';
-function _gifDrawWatermark(g, w, h){
-  const lines = [];
-  const name = (typeof currentGardenName === 'string') ? currentGardenName.trim() : '';
-  if(name) lines.push('🌿 ' + name);
-  lines.push(GIF_HASHTAGS);
-  lines.push(GIF_URL);
-  const fs = Math.max(11, Math.round(w * 0.028));
-  const lh = Math.round(fs * 1.25);
-  const padX = Math.round(w * 0.022);
-  const padY = Math.max(4, Math.round(fs * 0.45));
-  const totalH = lh * lines.length + padY * 2;
-  g.save();
-  g.fillStyle = 'rgba(0,0,0,.45)';
-  g.fillRect(0, h - totalH, w, totalH);
-  g.font = `${fs}px -apple-system, "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif`;
-  g.textBaseline = 'middle';
-  g.textAlign = 'left';
-  // 影付きで小さい解像度でも読める
-  g.fillStyle = 'rgba(0,0,0,.55)';
-  let y = h - totalH + padY + lh/2;
-  for(const ln of lines){ g.fillText(ln, padX+1, y+1); y += lh; }
-  g.fillStyle = '#fff';
-  y = h - totalH + padY + lh/2;
-  for(const ln of lines){ g.fillText(ln, padX, y); y += lh; }
-  g.restore();
-}
 function _gifCapture(){
   const W0=cv.width, H0=cv.height, top=gifTopOffset();
   const side=Math.min(W0, H0-top), sx=(W0-side)/2, sy=top;   // 上端=トップバー下
@@ -4959,7 +4931,6 @@ function _gifCapture(){
     updateAnimals(dt); animT+=dt;          // timeOfDay/天気は据え置き
     render();
     gx.drawImage(cv, sx, sy, side, side, 0, 0, gifSize, gifSize);  // 中央正方形→選択解像度へ
-    _gifDrawWatermark(gx, gifSize, gifSize);                       // 庭名・ハッシュタグ・URL を焼き込み
     frames.push(gx.getImageData(0,0,gifSize,gifSize).data);
   }
   animT=sT; timeOfDay=sDay; animalId=sAid;
@@ -4999,19 +4970,14 @@ async function runGifExport(){
     const frames=_gifCapture();
     await new Promise(r=>setTimeout(r,0));
     const blob=_gifEncode(frames, gifSize, Math.round(100/GIF_FPS));
-    const file=new File([blob], 'emoji-niwa-'+Date.now()+'.gif', {type:'image/gif'});
-    let saved=false;
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file], title:'emoji-niwa'}); saved=true; }
-      catch(_){ saved=false; }   // キャンセル等＝保存されていない
-    } else {
-      const u=URL.createObjectURL(blob);
-      const a=document.createElement('a'); a.href=u; a.download=file.name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(u),4000);
-      saved=true;
-    }
-    if(saved) showToast(tr(_gifHintKey()));   // 保存した時だけヒントを出す
+    const fname='emoji-niwa-'+Date.now()+'.gif';
+    // シェアシート経由だと受け側で再エンコードされ静止画になることがあるため、
+    // 常にダウンロードで .gif のまま保存する（ユーザーが Files/写真から共有可能）
+    const u=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=u; a.download=fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),4000);
+    showToast(tr(_gifHintKey()));
   }catch(err){ showToast(tr('toast.gifError')); }
   finally{ gifBusy=false; }
 }
@@ -5946,6 +5912,11 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.14.1',
+    ja:['📸 GIF 内の透かしテキスト（庭名・ハッシュタグ・URL）を削除しました',
+        '📸 GIF はシェアシートではなく常にダウンロード保存に変更（受け側で静止画に変換されるのを回避）'],
+    en:['📸 Removed the in-GIF watermark (garden name / hashtags / URL)',
+        '📸 GIF export now always downloads instead of opening the share sheet (prevents the receiver re-encoding it to a still image)'] },
   { v:'0.14.0',
     ja:['📸 GIF 解像度の選択を ⚙️ 設定から「📸 撮影フレーム上」に移動。撮影前にその場で 標準320／高720／最大1080 を切り替えられます（既定は高720）'],
     en:['📸 Moved the GIF resolution picker out of ⚙️ settings and into the 📸 capture frame bar — pick Std 320 / High 720 / Max 1080 right before recording (default High 720)'] },
@@ -6282,7 +6253,7 @@ function saveNamedSlot(name){
   const slot = buildSlotData(name.trim());
   slots.unshift(slot);
   if(!setSavedSlots(slots)){ showToast(tr('toast.slotsError')); return false; }
-  currentGardenName = slot.name;          // GIF 透かしに使う「庭名」を更新
+  currentGardenName = slot.name;
   if(typeof saveState === 'function') saveState();
   showToast(tr('toast.slotSaved', {name: slot.name}));
   return true;
