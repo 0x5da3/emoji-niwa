@@ -90,8 +90,8 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 #ae-off.active{background:rgba(204,72,72,.55);border-color:rgba(232,128,128,.85);box-shadow:0 0 0 1px rgba(232,128,128,.35)}
 .sound-opt{padding:6px 4px;font-size:10px;line-height:1.2}
 .sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
-.autosave-opt{padding:6px 2px;font-size:10px;line-height:1.2}
-.autosave-opt.active,.fps-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.autosave-opt,.gif-res-opt{padding:6px 2px;font-size:10px;line-height:1.2}
+.autosave-opt.active,.fps-opt.active,.gif-res-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .lang-opt{padding:7px 4px;font-size:11px}
 .lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
@@ -333,6 +333,10 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="fpsLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🎞️ フレームレート</div>
     <div id="fps-opts" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px"></div>
+  </div>
+  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
+    <div data-i18n="gifResLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">📸 GIF 解像度</div>
+    <div id="gif-res-opts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px"></div>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="langLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:6px">🌐 言語 / Language</div>
@@ -1302,7 +1306,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.12.4'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.13.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -1457,7 +1461,7 @@ const I18N = {
     helpTopBody:'☀️ 天気：天気を選ぶ／ランダム切替\n時刻バー：時間帯を変える・止める\n🎲 生成：地形プリセット・単色塗り・ランダム散布\n✨ 演出：花火・オーロラ・シャボン玉・朝霧\n✏️ 配置 / 🎨 地形 / 🧹 消去：操作モード切替',
     helpMapLabel:'🗺 マップとメニュー',
     helpMapBody:'＋ / －：ズーム\n⊡：視点をリセット\n🗺：ミニマップ表示\n⛶：全画面表示\n2D / 3D：表示モード切替\n#️⃣：高さの数値を表示\n⚙️ 設定：言語・新規マップ・全リセット\n💾 保存：手動セーブ\n🔇 サウンド：効果音・BGM\n📸 GIF書き出し\n🔗 共有リンク\n👥 マルチプレイ',
-    autosaveInterval:'💾 オートセーブ間隔', fpsLabel:'🎞️ フレームレート', langLabel:'🌐 言語 / Language',
+    autosaveInterval:'💾 オートセーブ間隔', fpsLabel:'🎞️ フレームレート', gifResLabel:'📸 GIF 解像度', langLabel:'🌐 言語 / Language',
     changelogLabel:'📝 更新履歴',
     placementSound:'配置時の効果音',
     's.pon':'🫧 ポンッ','s.koto':'🪵 コトッ','s.poyon':'🟢 ぽよん','s.fuwa':'☁️ ふわっ',
@@ -1498,6 +1502,7 @@ const I18N = {
     'tt:grass':'草','tt:sand':'砂','tt:water':'水','tt:snow':'雪','tt:dark':'岩','tt:custom':'色',
     'as:0':'オフ','as:30000':'30秒','as:60000':'1分','as:180000':'3分','as:300000':'5分',
     'fps:30':'30','fps:60':'60',
+    'gres:320':'標準 (320)','gres:720':'高 (720)','gres:1080':'最大 (1080)',
     'toast.clearAll':'🗑 全リセットしました', 'toast.newMap':'🆕 {n}×{n} マップを作成しました',
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
     'toast.genMapDecor':'🗺 {name}を生成（🌳 自動配置 {n}個）', 'toast.genRandomDecor':'🎲 ランダムマップ生成（🌳 自動配置 {n}個）',
@@ -1547,7 +1552,7 @@ const I18N = {
     helpTopBody:'☀️ Weather: pick weather / random rotation\nTime bar: change or pause time of day\n🎲 Generate: terrain presets, solid fill, random scatter\n✨ Effects: fireworks, aurora, bubbles, morning mist\n✏️ Place / 🎨 Terrain / 🧹 Erase: switch tool mode',
     helpMapLabel:'🗺 Map & menu buttons',
     helpMapBody:'＋ / －: zoom\n⊡: reset view\n🗺: minimap\n⛶: fullscreen\n2D / 3D: view mode\n#️⃣: show height numbers\n⚙️ Settings: language, new map, reset all\n💾 Save: manual save\n🔇 Sound: SFX & BGM\n📸 Export GIF\n🔗 Share link\n👥 Multiplayer',
-    autosaveInterval:'💾 Autosave interval', fpsLabel:'🎞️ Frame rate', langLabel:'🌐 言語 / Language',
+    autosaveInterval:'💾 Autosave interval', fpsLabel:'🎞️ Frame rate', gifResLabel:'📸 GIF resolution', langLabel:'🌐 言語 / Language',
     changelogLabel:'📝 What’s new',
     placementSound:'Placement sound',
     's.pon':'🫧 Pop','s.koto':'🪵 Knock','s.poyon':'🟢 Boing','s.fuwa':'☁️ Floaty',
@@ -1588,6 +1593,7 @@ const I18N = {
     'tt:grass':'Grass','tt:sand':'Sand','tt:water':'Water','tt:snow':'Snow','tt:dark':'Rock','tt:custom':'Color',
     'as:0':'Off','as:30000':'30s','as:60000':'1m','as:180000':'3m','as:300000':'5m',
     'fps:30':'30','fps:60':'60',
+    'gres:320':'Std (320)','gres:720':'High (720)','gres:1080':'Max (1080)',
     'toast.clearAll':'🗑 Reset everything', 'toast.newMap':'🆕 Created a {n}×{n} map',
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
     'toast.genMapDecor':'🗺 Generated {name} (🌳 auto-placed {n})', 'toast.genRandomDecor':'🎲 Random map (🌳 auto-placed {n})',
@@ -4768,7 +4774,8 @@ document.getElementById('share-copy').addEventListener('click', async e=>{
 //   UI は cv 非描画ゆえ含まれない。保存後ヒントは端末別（iOS/Android/その他）。
 //   Live Photo 化は端末側の Shortcut/アプリで（埋め込み不可・文言案内のみ）。
 // ═══════════════════════════════════════════
-const GIF_SECONDS = 3, GIF_FPS = 12, GIF_SIZE = 320;
+const GIF_SECONDS = 3, GIF_FPS = 12;
+let gifSize = 320;   // GIF 出力の正方形ピクセル（⚙️で 320/720/1080 選択・セーブに保存。既定320＝安全）
 let gifBusy = false, gifFraming = false;
 
 // 全フレームを median-cut で ≤256 色に量子化
@@ -4843,28 +4850,32 @@ function _gifEncode(frames, size, delayCs){
     for(let i=0;i<256;i++){ const p=pal[i],dr=p[0]-r,dg=p[1]-g,db=p[2]-b,d=dr*dr+dg*dg+db*db; if(d<bd){bd=d;bi=i;} }
     cache[key]=bi; return bi;
   };
-  const b=[]; const w16=v=>b.push(v&255,(v>>8)&255);
-  for(const c of 'GIF89a') b.push(c.charCodeAt(0));
-  w16(size); w16(size); b.push(0xF7,0,0);
-  for(let i=0;i<256;i++){ const p=pal[i]; b.push(p[0],p[1],p[2]); }
-  b.push(0x21,0xFF,0x0B);
-  for(const c of 'NETSCAPE2.0') b.push(c.charCodeAt(0));
-  b.push(0x03,0x01,0,0,0x00);
+  // 出力は通常配列ではなく可変長 Uint8Array（高解像度でも JS 配列肥大でクラッシュしない）
+  let out=new Uint8Array(1<<16), L=0;
+  const need=k=>{ if(L+k<=out.length) return; let n=out.length; while(n<L+k) n*=2; const t=new Uint8Array(n); t.set(out); out=t; };
+  const u8=v=>{ need(1); out[L++]=v&255; };
+  const w16=v=>{ need(2); out[L++]=v&255; out[L++]=(v>>8)&255; };
+  const str=s=>{ need(s.length); for(let i=0;i<s.length;i++) out[L++]=s.charCodeAt(i); };
+  str('GIF89a'); w16(size); w16(size); u8(0xF7); u8(0); u8(0);
+  for(let i=0;i<256;i++){ const p=pal[i]; u8(p[0]); u8(p[1]); u8(p[2]); }
+  u8(0x21); u8(0xFF); u8(0x0B); str('NETSCAPE2.0'); u8(0x03); u8(0x01); u8(0); u8(0); u8(0x00);
   const px=size*size;
-  for(const f of frames){
-    b.push(0x21,0xF9,0x04,0x00, delayCs&255,(delayCs>>8)&255, 0x00,0x00);
-    b.push(0x2C); w16(0); w16(0); w16(size); w16(size); b.push(0x00, 0x08);
+  for(let fi=0; fi<frames.length; fi++){
+    const f=frames[fi];
+    u8(0x21); u8(0xF9); u8(0x04); u8(0x00); u8(delayCs&255); u8((delayCs>>8)&255); u8(0x00); u8(0x00);
+    u8(0x2C); w16(0); w16(0); w16(size); w16(size); u8(0x00); u8(0x08);
     const idx=new Uint8Array(px);
     for(let p=0,q=0;p<px;p++,q+=4) idx[p]=near(f[q],f[q+1],f[q+2]);
+    frames[fi]=null;                       // 使い終えたフレームを解放（高解像度のピークメモリ抑制）
     const lz=_gifLZW(idx);
     for(let i=0;i<lz.length;i+=255){
-      const m=Math.min(255,lz.length-i); b.push(m);
-      for(let j=0;j<m;j++) b.push(lz[i+j]);
+      const m=Math.min(255,lz.length-i); u8(m);
+      need(m); for(let j=0;j<m;j++) out[L++]=lz[i+j];
     }
-    b.push(0x00);
+    u8(0x00);
   }
-  b.push(0x3B);
-  return new Blob([new Uint8Array(b)],{type:'image/gif'});
+  u8(0x3B);
+  return new Blob([out.subarray(0,L)],{type:'image/gif'});
 }
 
 // 「今の見たまま」を正方形に。キャンバスのサイズ・スケール・カメラは一切
@@ -4881,14 +4892,14 @@ function _gifCapture(){
   const W0=cv.width, H0=cv.height, top=gifTopOffset();
   const side=Math.min(W0, H0-top), sx=(W0-side)/2, sy=top;   // 上端=トップバー下
   const sT=animT, sDay=timeOfDay, sAn=JSON.stringify(animals), sAid=animalId;
-  const g=document.createElement('canvas'); g.width=g.height=GIF_SIZE;
+  const g=document.createElement('canvas'); g.width=g.height=gifSize;
   const gx=g.getContext('2d', { willReadFrequently:true });
   const n=Math.round(GIF_SECONDS*GIF_FPS), dt=1/GIF_FPS, frames=[];
   for(let i=0;i<n;i++){
     updateAnimals(dt); animT+=dt;          // timeOfDay/天気は据え置き
     render();
-    gx.drawImage(cv, sx, sy, side, side, 0, 0, GIF_SIZE, GIF_SIZE);  // 中央正方形→等倍縮小
-    frames.push(gx.getImageData(0,0,GIF_SIZE,GIF_SIZE).data);
+    gx.drawImage(cv, sx, sy, side, side, 0, 0, gifSize, gifSize);  // 中央正方形→選択解像度へ
+    frames.push(gx.getImageData(0,0,gifSize,gifSize).data);
   }
   animT=sT; timeOfDay=sDay; animalId=sAid;
   for(const k in animals) delete animals[k];
@@ -4926,7 +4937,7 @@ async function runGifExport(){
     await new Promise(r=>setTimeout(r,50));      // トースト描画を待つ
     const frames=_gifCapture();
     await new Promise(r=>setTimeout(r,0));
-    const blob=_gifEncode(frames, GIF_SIZE, Math.round(100/GIF_FPS));
+    const blob=_gifEncode(frames, gifSize, Math.round(100/GIF_FPS));
     const file=new File([blob], 'emoji-niwa-'+Date.now()+'.gif', {type:'image/gif'});
     let saved=false;
     if(navigator.canShare && navigator.canShare({files:[file]})){
@@ -5873,6 +5884,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.13.0',
+    ja:['📸 GIF の解像度を ⚙️ 設定で選べるように（標準320／高720／最大1080）。Live Photo 化をより高解像度で'],
+    en:['📸 Choose GIF resolution in ⚙️ settings (Std 320 / High 720 / Max 1080) for sharper Live Photos'] },
   { v:'0.12.4',
     ja:['🎮 十字キーの「無効表示なのに動ける」不一致を修正（向き切替後も表示が常に最新）'],
     en:['🎮 Fixed D-pad showing a direction disabled while it could still move (state now always in sync)'] },
@@ -5939,6 +5953,7 @@ const AUTOSAVE_PRESETS = [
   {ms:300000, label:'5分'},
 ];
 const FPS_PRESETS = [30, 60]; // 描画FPS上限候補（30=省電力）
+const GIF_RES_PRESETS = [320, 720, 1080]; // 📸 GIF 正方形px（標準/高/最大）
 let fpsCap = 30; // 既定30。dt連続なので演算は不変、描画頻度のみ
 let autosaveMs = 60000;
 let autosaveTimerId = null;
@@ -5967,6 +5982,11 @@ function refreshAutosaveUI(){
 function refreshFpsUI(){
   document.querySelectorAll('#fps-opts .fps-opt').forEach(b => {
     b.classList.toggle('active', Number(b.dataset.v) === fpsCap);
+  });
+}
+function refreshGifResUI(){
+  document.querySelectorAll('#gif-res-opts .gif-res-opt').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.v) === gifSize);
   });
 }
 
@@ -6140,6 +6160,7 @@ function saveState(){
       fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
       autosaveMs,
       fpsCap,
+      gifSize,
       lang,
       lastStoreSize,
     };
@@ -6222,6 +6243,7 @@ function applyState(data){
       autosaveMs = data.autosaveMs;
     }
     if(FPS_PRESETS.includes(data.fpsCap)) fpsCap = data.fpsCap;
+    if(GIF_RES_PRESETS.includes(data.gifSize)) gifSize = data.gifSize;
 
     if(data.lang === 'en' || data.lang === 'ja') lang = data.lang;
     if(data.lastStoreSize === 3 || data.lastStoreSize === 1) lastStoreSize = data.lastStoreSize;
@@ -6292,6 +6314,22 @@ FPS_PRESETS.forEach(v => {
   document.getElementById('fps-opts').appendChild(b);
 });
 refreshFpsUI();
+
+GIF_RES_PRESETS.forEach(v => {
+  const b = document.createElement('button');
+  b.className = 'tbtn gif-res-opt';
+  b.dataset.v = v;
+  b.dataset.i18n = 'gres:'+v;
+  b.textContent = tr('gres:'+v);
+  b.addEventListener('click', e => {
+    e.stopPropagation();
+    gifSize = v;
+    refreshGifResUI();   // 選択を色づけ（トーストなし＝fpsと同方針）
+    saveState();
+  });
+  document.getElementById('gif-res-opts').appendChild(b);
+});
+refreshGifResUI();
 
 // 起動分岐: #auth=（ログイン受領）→ #r=（マルチプレイルーム）→ #w=（共有リンク閲覧）→ 通常ロード
 (async () => {
