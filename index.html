@@ -319,7 +319,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 
 <div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
   <div data-i18n="appTitle" style="font-size:15px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:2px">🌿 絵文字庭</div>
-  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.11.0</div>
+  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.12.2</div>
   <div style="border-top:1px solid rgba(120,210,130,.22);margin:0 -4px 12px"></div>
   <div data-i18n="settingsTitle" style="font-size:12px;font-weight:600;color:rgba(180,220,180,.6);text-align:center;margin-bottom:10px">⚙️ 設定</div>
   <div style="display:flex;flex-direction:column;gap:6px">
@@ -1302,7 +1302,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.12.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.12.2'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -4094,7 +4094,7 @@ cv.addEventListener('mousedown',e=>{
   if(trySunTap(e.clientX, e.clientY)) return;
   placing=true; lastKey=null;
   const {c,r}=screenToIso(e.clientX,e.clientY);
-  if(c>=0&&c<GRID&&r>=0&&r<GRID) activeCell={c,r};   // タップしたマスをアクティブ化
+  if(c>=0&&c<GRID&&r>=0&&r<GRID){ activeCell={c,r}; refreshDpad(); }   // タップしたマスをアクティブ化＋端表示更新
   act(c,r);
 });
 cv.addEventListener('mousemove',e=>{
@@ -4153,7 +4153,7 @@ cv.addEventListener('touchend',e=>{
       return;
     }
     const {c,r}=screenToIso(touchDownPos.x, touchDownPos.y);
-    if(c>=0&&c<GRID&&r>=0&&r<GRID) activeCell={c,r};   // タップしたマスをアクティブ化
+    if(c>=0&&c<GRID&&r>=0&&r<GRID){ activeCell={c,r}; refreshDpad(); }   // タップしたマスをアクティブ化＋端表示更新
     lastKey=null;
     act(c,r);
   }
@@ -4275,8 +4275,9 @@ function keepActiveVisible(){
 // 矢印方向はスクリーン空間で1タイル進めて screenToIso で戻す（回転/2D3D/ズーム不問）
 // 戻り値：実際にアクティブマスが動いたか（境界で動けなかった場合 false → 長押しリピートも自動停止する）
 const DPAD_DIRS={'dp-ul':[-1,-1],'dp-ur':[1,-1],'dp-dl':[-1,1],'dp-dr':[1,1]};
-function moveActive(dx,dy){
-  const oc=activeCell.c, or=activeCell.r;
+// 矢印の「画面上の向き」に対応するグリッド目標マス（クランプ無し）。
+// moveActive と refreshDpad で共有し、移動可否と無効表示を完全一致させる。
+function dpadTarget(dx,dy){
   const {TW,TH}=getTileDims();
   const stepX=TW*scale*(drawMode==='3d'?0.5:1);
   const stepY=TH*scale*(drawMode==='3d'?0.5:1);
@@ -4284,12 +4285,20 @@ function moveActive(dx,dy){
   const biasX=(drawMode==='3d')?0:0.5*TW*scale;   // タイル中心を狙い floor の取りこぼし防止
   const biasY=0.5*TH*scale;
   const n=screenToIso(cur.x+dx*stepX+biasX, cur.y+dy*stepY+biasY);
-  activeCell.c=Math.max(0,Math.min(GRID-1,n.c));
-  activeCell.r=Math.max(0,Math.min(GRID-1,n.r));
+  return { c:n.c, r:n.r };
+}
+function dpadCanMove(dx,dy){
+  const t=dpadTarget(dx,dy);
+  return t.c>=0 && t.c<GRID && t.r>=0 && t.r<GRID && (t.c!==activeCell.c || t.r!==activeCell.r);
+}
+function moveActive(dx,dy){
+  // 端では半端な折り返し／辺沿いスライドをせず、行ける時だけ1マス動く（all-or-nothing）
+  if(!dpadCanMove(dx,dy)) return false;
+  const t=dpadTarget(dx,dy);
+  activeCell.c=t.c; activeCell.r=t.r;
   keepActiveVisible();
-  const moved = (activeCell.c!==oc) || (activeCell.r!==or);
-  if(moved) refreshDpad();   // 境界に達した方向のボタンを暗くする（disabled）
-  return moved;
+  refreshDpad();   // 端に達した方向のボタンを暗くする（disabled）
+  return true;
 }
 function dpadPlace(){ lastKey=null; act(activeCell.c,activeCell.r); }   // mode別配置/塗り/消去（連打可）
 function refreshDpad(){
@@ -4300,14 +4309,11 @@ function refreshDpad(){
   if(sh) sh.classList.toggle('is-on', dpadVisible);
   const t=document.getElementById('dpad-toggle');
   if(t) t.classList.toggle('is-on', dpadVisible);
-  // 進めない方向（境界外）のボタンを disable にして「行き止まり」を視覚化
-  const c = activeCell.c, r = activeCell.r;
+  // 進めない方向のボタンを disable にして「行き止まり」を視覚化（移動判定と完全一致）
   for(const id in DPAD_DIRS){
     const [dx,dy] = DPAD_DIRS[id];
     const b = document.getElementById(id);
-    if(!b) continue;
-    const nc = c+dx, nr = r+dy;
-    b.disabled = (nc<0 || nc>=GRID || nr<0 || nr>=GRID);
+    if(b) b.disabled = !dpadCanMove(dx,dy);
   }
 }
 (function wireDpad(){
@@ -5859,6 +5865,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.12.2',
+    ja:['🎮 十字キーが端に達したとき不自然に折り返さず、進めない方向は止まる（無効表示）ように改善'],
+    en:['🎮 D-pad no longer folds awkwardly at the map edge — blocked directions just stop (dimmed)'] },
   { v:'0.12.1',
     ja:['🎮 D-pad の上下左右（↑↓←→）を削除して斜め4方向（↖↗↙↘）に整理しました。3Dアイソメ表示では斜めだけが grid 軸と一致するためです（PCキーは q/e/z/c またはテンキー 7/9/1/3）'],
     en:['🎮 Removed the cardinal arrows (↑↓←→) from the D-pad, leaving only the four diagonals (↖↗↙↘). In 3D isometric view, only the diagonals align with the grid axes (keyboard moved to q/e/z/c or numpad 7/9/1/3)'] },
