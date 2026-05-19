@@ -233,25 +233,38 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
    - 斜めキーをパレット上かつ map-btns の左に配置（左メニューと重ならない）
    - 上部バー・モードバー・コーナーボタンを若干コンパクトに */
 @media (orientation:landscape) and (max-height:500px){
-  /* パレット：3〜4行（高さ 183px）→ 2行（42*2+gap 5 = 89px） */
-  #palette{height:89px;grid-auto-rows:42px}
-  /* パレット：右半分のみ（left:50%）+ map-btns 幅ぶん右 padding */
-  #palette-wrap{left:50%;padding:4px 100px 6px 8px}
+  /* ── 上部 ───────────────────────────────────── */
+  #topbar{height:38px;padding:0 6px;gap:3px}
+  #topbar .tbtn{padding:3px 8px;font-size:10px}
+  #modebar{top:42px}
+  #modebar .tbtn{padding:4px 10px;font-size:10px}
+
+  /* ── 左コラム：8 ボタンを 2 列グリッドに ─────── */
+  #corner-btns{top:46px;left:6px;display:grid;grid-template-columns:repeat(2,32px);gap:4px;flex-direction:initial}
+  #corner-btns .tbtn{width:32px;height:30px;padding:0;font-size:13px;line-height:1;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  #corner-btns #btn-cornermin{grid-column:1/-1;width:auto;height:18px;padding:0;font-size:13px}
+
+  /* ── 右コラム：map-btns も同じ寸法で統一 ─────── */
+  #map-btns{top:46px;right:6px;grid-template-columns:repeat(2,32px);gap:4px}
+  #map-btns .mapbtn{width:32px;height:30px;font-size:13px;border-radius:8px}
+  #map-btns #btn-3d,#map-btns #btn-heights{height:22px;min-width:68px;margin-top:0}
+
+  /* ── パレット：右半分・2 行・コンパクトに ────── */
+  #palette{height:84px;grid-auto-rows:40px;gap:4px}
+  #palette-wrap{left:50%;padding:3px 80px 6px 6px}
+  #cattabs{padding:0 0 4px}
+  #cattabs .cattab{padding:2px 8px;font-size:10px}
   /* チャット枠を出している間は palette より上で表示量を控えめに */
   #mp-chat.exp #mpc-log{height:min(28vh,160px)}
-  /* 斜めキー：パレット高（≈127px）の上に乗せ、サイズも控えめに */
-  #dpad{top:auto;bottom:135px;left:auto;right:96px;transform:none;
-        grid-template-columns:26px 10px 26px;grid-template-rows:repeat(3,26px);gap:4px 3px;padding:3px}
-  #dpad .dpadbtn{width:26px;height:26px;font-size:12px}
-  #dpad .dpad-mid{font-size:13px}
-  /* minimap デフォルト位置はそのままだが、palette が縮んだぶん持ち上げる */
-  #minimap{bottom:calc(110px + var(--mpch,0px))}
-  /* マップボタン列：横向きでは縦に詰めて 2D/3D・#️⃣ を省スペース化 */
-  #map-btns{top:54px;gap:4px}
-  #map-btns #btn-3d,#map-btns #btn-heights{height:26px;margin-top:0}
-  /* トップバー：高さを控えめに（50→42） */
-  #topbar{height:42px}
-  #modebar{top:46px}
+
+  /* ── 斜めキー：パレット上 / 右コラム左に ───── */
+  #dpad{top:auto;bottom:122px;left:auto;right:78px;transform:none;
+        grid-template-columns:24px 8px 24px;grid-template-rows:repeat(3,24px);gap:4px 3px;padding:2px;opacity:.78}
+  #dpad .dpadbtn{width:24px;height:24px;font-size:11px;border-radius:6px}
+  #dpad .dpad-mid{font-size:12px}
+
+  /* ── ミニマップ：パレット縮小に合わせ持ち上げ ─ */
+  #minimap{bottom:calc(100px + var(--mpch,0px))}
 }
 </style>
 
@@ -1326,7 +1339,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.14.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.14.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
