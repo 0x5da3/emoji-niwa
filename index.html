@@ -228,17 +228,19 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 .tbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 
 /* ── スマホ横向き：縦 500px 以下の landscape にのみ適用（iPad 横は対象外） ─────────────
-   - 絵文字パレットを 2 行表示にして箱庭の視認エリアを確保
-   - 斜めキーを画面左下に逃がして右側のマップボタン列と重ならない位置に
+   - 左半分＝キャンバス、右半分＝操作UI（パレット・斜めキー・マップボタン列）
+   - パレットを画面右半分に限定し、右端のマップボタン列と被らないよう padding-right
+   - 斜めキーをパレット上かつ map-btns の左に配置（左メニューと重ならない）
    - 上部バー・モードバー・コーナーボタンを若干コンパクトに */
 @media (orientation:landscape) and (max-height:500px){
   /* パレット：3〜4行（高さ 183px）→ 2行（42*2+gap 5 = 89px） */
   #palette{height:89px;grid-auto-rows:42px}
-  #palette-wrap{padding:4px 8px 6px}
+  /* パレット：右半分のみ（left:50%）+ map-btns 幅ぶん右 padding */
+  #palette-wrap{left:50%;padding:4px 100px 6px 8px}
   /* チャット枠を出している間は palette より上で表示量を控えめに */
   #mp-chat.exp #mpc-log{height:min(28vh,160px)}
-  /* 斜めキー：右側 map-btns と被らないよう左下隅へ（palette と minimap の間） */
-  #dpad{top:auto;bottom:110px;right:auto;left:10px;transform:none}
+  /* 斜めキー：右半分の中ほど（map-btns の左・パレット上）に配置 */
+  #dpad{top:auto;bottom:110px;left:auto;right:100px;transform:none}
   /* minimap デフォルト位置はそのままだが、palette が縮んだぶん持ち上げる */
   #minimap{bottom:calc(110px + var(--mpch,0px))}
   /* マップボタン列：横向きでは縦に詰めて 2D/3D・#️⃣ を省スペース化 */
@@ -342,9 +344,6 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
       <button class="tbtn lang-opt" data-lang="ja">🇯🇵 日本語</button>
       <button class="tbtn lang-opt" data-lang="en">🇺🇸 English</button>
     </div>
-  </div>
-  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
-    <button class="tbtn" id="dpad-toggle" data-i18n="dpad.toggle" style="width:100%">🎮 斜めキーを表示</button>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="changelogLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:4px">📝 更新履歴</div>
@@ -1469,7 +1468,7 @@ const I18N = {
     'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
     appTitle:'🌿 絵文字庭', settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
-    'dpad.title':'斜めキー（カーソル移動）','dpad.toggle':'🎮 斜めキーを表示',
+    'dpad.title':'斜めキー（カーソル移動）',
     'dpad.ul':'左上へ','dpad.ur':'右上へ',
     'dpad.dl':'左下へ','dpad.dr':'右下へ','dpad.place':'ここに置く（選択中の絵文字）',
     ttHelp:'遊び方',
@@ -1568,7 +1567,7 @@ const I18N = {
     'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
     appTitle:'🌿 emoji-niwa', settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
-    'dpad.title':'Diagonal pad (move cursor)','dpad.toggle':'🎮 Show diagonal pad',
+    'dpad.title':'Diagonal pad (move cursor)',
     'dpad.ul':'Move up-left','dpad.ur':'Move up-right',
     'dpad.dl':'Move down-left','dpad.dr':'Move down-right','dpad.place':'Place here (selected emoji)',
     ttHelp:'How to play',
@@ -4364,8 +4363,6 @@ function refreshDpad(){
   const sh=document.getElementById('dpad-show');
   if(el) el.style.display = dpadVisible ? '' : 'none';
   if(sh) sh.classList.toggle('is-on', dpadVisible);
-  const t=document.getElementById('dpad-toggle');
-  if(t) t.classList.toggle('is-on', dpadVisible);
   syncDpadDisabled();   // 進めない方向のボタンを disable（移動判定と完全一致）
 }
 (function wireDpad(){
@@ -4409,12 +4406,6 @@ window.addEventListener('keydown',e=>{
            Q:[-1,-1],E:[1,-1],Z:[-1,1],C:[1,1]};
   if(K[e.key]){ e.preventDefault(); moveActive(K[e.key][0],K[e.key][1]); return; }
   if(e.key===' '||e.key==='Enter'){ e.preventDefault(); dpadPlace(); }
-});
-document.getElementById('dpad-toggle')?.addEventListener('click',e=>{
-  e.stopPropagation();
-  dpadVisible=!dpadVisible;
-  refreshDpad();
-  if(typeof saveState==='function') saveState();
 });
 // 右側マップボタン列の 🎮：押すたびに斜めキーの表示／非表示をトグル（is-on でオン状態を表す）
 document.getElementById('dpad-show')?.addEventListener('click',e=>{
