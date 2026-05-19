@@ -1437,6 +1437,9 @@ let animT     = 0;
 let hoverCell = null;
 let activeCell = { c:(GRID/2)|0, r:(GRID/2)|0 };   // 矢印D-padで動かすアクティブマス（初期=中央）
 let dpadVisible = true;          // D-pad表示（設定で切替・セーブに保存）
+// 名前付き保存のスロット名（最近セーブ／ロードしたもの）。GIF 透かしの「庭名」として焼き込む。
+// 「全リセット」「新規マップ」では空に戻す。saveState/applyState で永続化。
+let currentGardenName = '';
 let dpadRepeat = null;           // 長押し連続移動タイマー
 let drawMode  = '3d'; // '2d' | '3d'
 let moonScreenPos = null; // {x, y, r} or null when moon not visible
@@ -4665,6 +4668,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   history=[];
   lastGen = null;
   genClean = false;
+  currentGardenName = '';
   clearSave();
   document.getElementById('menu-popup').style.display = 'none';
   showToast(tr('toast.clearAll'));
@@ -4924,6 +4928,36 @@ function gifTopOffset(){
   const tb=document.getElementById('topbar');
   return tb ? Math.max(0, Math.round(tb.getBoundingClientRect().bottom)) : 0;
 }
+// GIF フレーム下部に「庭名・ハッシュタグ・URL」を焼き込む（共有時の出所をわかりやすく）。
+// テキストの行高さは解像度 (gifSize) 比例。庭名は名前付き保存していなければ省略。
+const GIF_HASHTAGS = '#絵文字庭 #emojiNiwa';
+const GIF_URL      = 'https://0x5da3.github.io/emoji-niwa/';
+function _gifDrawWatermark(g, w, h){
+  const lines = [];
+  const name = (typeof currentGardenName === 'string') ? currentGardenName.trim() : '';
+  if(name) lines.push('🌿 ' + name);
+  lines.push(GIF_HASHTAGS);
+  lines.push(GIF_URL);
+  const fs = Math.max(11, Math.round(w * 0.028));
+  const lh = Math.round(fs * 1.25);
+  const padX = Math.round(w * 0.022);
+  const padY = Math.max(4, Math.round(fs * 0.45));
+  const totalH = lh * lines.length + padY * 2;
+  g.save();
+  g.fillStyle = 'rgba(0,0,0,.45)';
+  g.fillRect(0, h - totalH, w, totalH);
+  g.font = `${fs}px -apple-system, "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif`;
+  g.textBaseline = 'middle';
+  g.textAlign = 'left';
+  // 影付きで小さい解像度でも読める
+  g.fillStyle = 'rgba(0,0,0,.55)';
+  let y = h - totalH + padY + lh/2;
+  for(const ln of lines){ g.fillText(ln, padX+1, y+1); y += lh; }
+  g.fillStyle = '#fff';
+  y = h - totalH + padY + lh/2;
+  for(const ln of lines){ g.fillText(ln, padX, y); y += lh; }
+  g.restore();
+}
 function _gifCapture(){
   const W0=cv.width, H0=cv.height, top=gifTopOffset();
   const side=Math.min(W0, H0-top), sx=(W0-side)/2, sy=top;   // 上端=トップバー下
@@ -4935,6 +4969,7 @@ function _gifCapture(){
     updateAnimals(dt); animT+=dt;          // timeOfDay/天気は据え置き
     render();
     gx.drawImage(cv, sx, sy, side, side, 0, 0, gifSize, gifSize);  // 中央正方形→選択解像度へ
+    _gifDrawWatermark(gx, gifSize, gifSize);                       // 庭名・ハッシュタグ・URL を焼き込み
     frames.push(gx.getImageData(0,0,gifSize,gifSize).data);
   }
   animT=sT; timeOfDay=sDay; animalId=sAid;
@@ -5428,6 +5463,7 @@ document.getElementById('nm-create').addEventListener('click',()=>{
   history=[];
   lastGen = null;
   genClean = false;
+  currentGardenName = '';
   nmPopup.style.display='none';
   resetView();
   if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
@@ -6196,6 +6232,7 @@ function saveState(){
       fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
       autosaveMs,
       fpsCap,
+      currentGardenName,
       gifSize,
       lang,
       lastStoreSize,
@@ -6252,6 +6289,8 @@ function saveNamedSlot(name){
   const slot = buildSlotData(name.trim());
   slots.unshift(slot);
   if(!setSavedSlots(slots)){ showToast(tr('toast.slotsError')); return false; }
+  currentGardenName = slot.name;          // GIF 透かしに使う「庭名」を更新
+  if(typeof saveState === 'function') saveState();
   showToast(tr('toast.slotSaved', {name: slot.name}));
   return true;
 }
@@ -6260,6 +6299,7 @@ function loadNamedSlot(id){
   const slot = slots.find(s => s.id === id);
   if(!slot) return;
   if(applyState(slot.data)){
+    currentGardenName = slot.name;        // 読み込んだ庭の名前を引き継ぐ
     saveState();
     restartAutosave();
     closeAllPopups();
@@ -6408,6 +6448,7 @@ function applyState(data){
     showHeights    = !!data.showHeights;
     heightsTouched = !!data.heightsTouched;
     dpadVisible    = data.dpadVisible !== false;   // 旧セーブ（未設定）は既定ON
+    currentGardenName = (typeof data.currentGardenName === 'string') ? data.currentGardenName : '';
 
     // muted も共有ペイロードには無い。無い場合は閲覧者のミュート設定を維持。
     if(typeof data.muted === 'boolean') muted = !!data.muted;
