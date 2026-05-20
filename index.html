@@ -90,8 +90,8 @@ body.fullscreen #btn-fullscreen{background:rgba(93,186,106,.35);border-color:rgb
 #ae-off.active{background:rgba(204,72,72,.55);border-color:rgba(232,128,128,.85);box-shadow:0 0 0 1px rgba(232,128,128,.35)}
 .sound-opt{padding:6px 4px;font-size:10px;line-height:1.2}
 .sound-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
-.autosave-opt{padding:6px 2px;font-size:10px;line-height:1.2}
-.autosave-opt.active,.fps-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
+.autosave-opt,.gif-res-opt{padding:6px 2px;font-size:10px;line-height:1.2}
+.autosave-opt.active,.fps-opt.active,.gif-res-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 .lang-opt{padding:7px 4px;font-size:11px}
 .lang-opt.active{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.7);color:#fff;box-shadow:0 0 0 1px rgba(168,224,99,.3)}
 #minimap{position:fixed;left:10px;bottom:calc(215px + var(--mpch,0px));z-index:27;border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;display:none;background:rgba(8,16,10,.93);backdrop-filter:blur(10px)}
@@ -198,8 +198,10 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 #gif-frame-overlay{display:none;position:fixed;inset:0;z-index:60;pointer-events:none}
 #gif-frame-sq{position:absolute;border:2px solid rgba(168,224,99,.95);box-shadow:0 0 0 9999px rgba(0,0,0,.55);border-radius:6px;pointer-events:none}
 #gif-frame-cap{position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:61;font-size:12px;color:#a8e063;background:rgba(8,20,10,.92);border:1px solid rgba(120,210,130,.3);border-radius:10px;padding:6px 12px;white-space:nowrap}
-#gif-frame-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:61;display:flex;gap:10px;align-items:center;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(14px);pointer-events:auto}
+#gif-frame-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:61;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.3);border-radius:14px;padding:10px 14px;backdrop-filter:blur(14px);pointer-events:auto;max-width:94vw}
 #gif-frame-bar .tbtn{padding:8px 16px}
+#gif-frame-res{display:inline-flex;gap:4px;padding:3px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.04)}
+#gif-frame-res .gif-res-opt{padding:5px 10px;font-size:10px;line-height:1.2}
 #btn-gif-ok{background:rgba(93,186,106,.3);border-color:rgba(168,224,99,.6)}
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 #map-btns{position:fixed;right:10px;top:60px;z-index:27;display:grid;grid-template-columns:repeat(2,36px);gap:6px;justify-items:center}
@@ -226,25 +228,43 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 .tbtn.is-on{background:rgba(93,186,106,.35);border-color:rgba(168,224,99,.6);color:#fff}
 
 /* ── スマホ横向き：縦 500px 以下の landscape にのみ適用（iPad 横は対象外） ─────────────
-   - 絵文字パレットを 2 行表示にして箱庭の視認エリアを確保
-   - 斜めキーを画面左下に逃がして右側のマップボタン列と重ならない位置に
+   - 左半分＝キャンバス、右半分＝操作UI（パレット・斜めキー・マップボタン列）
+   - パレットを画面右半分に限定し、右端のマップボタン列と被らないよう padding-right
+   - 斜めキーをパレット上かつ map-btns の左に配置（左メニューと重ならない）
    - 上部バー・モードバー・コーナーボタンを若干コンパクトに */
 @media (orientation:landscape) and (max-height:500px){
-  /* パレット：3〜4行（高さ 183px）→ 2行（42*2+gap 5 = 89px） */
-  #palette{height:89px;grid-auto-rows:42px}
-  #palette-wrap{padding:4px 8px 6px}
+  /* ── 上部 ───────────────────────────────────── */
+  #topbar{height:38px;padding:0 6px;gap:3px}
+  #topbar .tbtn{padding:3px 8px;font-size:10px}
+  #modebar{top:42px}
+  #modebar .tbtn{padding:4px 10px;font-size:10px}
+
+  /* ── 左コラム：8 ボタンを 2 列グリッドに ─────── */
+  #corner-btns{top:46px;left:6px;display:grid;grid-template-columns:repeat(2,32px);gap:4px;flex-direction:initial}
+  #corner-btns .tbtn{width:32px;height:30px;padding:0;font-size:13px;line-height:1;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  #corner-btns #btn-cornermin{grid-column:1/-1;width:auto;height:18px;padding:0;font-size:13px}
+
+  /* ── 右コラム：map-btns も同じ寸法で統一 ─────── */
+  #map-btns{top:46px;right:6px;grid-template-columns:repeat(2,32px);gap:4px}
+  #map-btns .mapbtn{width:32px;height:30px;font-size:13px;border-radius:8px}
+  #map-btns #btn-3d,#map-btns #btn-heights{height:22px;min-width:68px;margin-top:0}
+
+  /* ── パレット：全幅・2 行コンパクト・左右の列ぶん padding ── */
+  #palette{height:84px;grid-auto-rows:40px;gap:4px}
+  #palette-wrap{left:0;padding:3px 80px 6px 80px}
+  #cattabs{padding:0 0 4px}
+  #cattabs .cattab{padding:2px 8px;font-size:10px}
   /* チャット枠を出している間は palette より上で表示量を控えめに */
   #mp-chat.exp #mpc-log{height:min(28vh,160px)}
-  /* 斜めキー：右側 map-btns と被らないよう左下隅へ（palette と minimap の間） */
-  #dpad{top:auto;bottom:110px;right:auto;left:10px;transform:none}
-  /* minimap デフォルト位置はそのままだが、palette が縮んだぶん持ち上げる */
-  #minimap{bottom:calc(110px + var(--mpch,0px))}
-  /* マップボタン列：横向きでは縦に詰めて 2D/3D・#️⃣ を省スペース化 */
-  #map-btns{top:54px;gap:4px}
-  #map-btns #btn-3d,#map-btns #btn-heights{height:26px;margin-top:0}
-  /* トップバー：高さを控えめに（50→42） */
-  #topbar{height:42px}
-  #modebar{top:46px}
+
+  /* ── 斜めキー：パレット上 / 右コラム左に ───── */
+  #dpad{top:auto;bottom:122px;left:auto;right:78px;transform:none;
+        grid-template-columns:24px 8px 24px;grid-template-rows:repeat(3,24px);gap:4px 3px;padding:2px;opacity:.78}
+  #dpad .dpadbtn{width:24px;height:24px;font-size:11px;border-radius:6px}
+  #dpad .dpad-mid{font-size:12px}
+
+  /* ── ミニマップ：パレット縮小に合わせ持ち上げ ─ */
+  #minimap{bottom:calc(100px + var(--mpch,0px))}
 }
 </style>
 
@@ -342,9 +362,6 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
     </div>
   </div>
   <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
-    <button class="tbtn" id="dpad-toggle" data-i18n="dpad.toggle" style="width:100%">🎮 斜めキーを表示</button>
-  </div>
-  <div style="border-top:1px solid rgba(120,210,130,.15);margin-top:10px;padding-top:10px">
     <div data-i18n="changelogLabel" style="font-size:11px;color:rgba(180,220,180,.6);margin-bottom:4px">📝 更新履歴</div>
     <div id="changelog" style="font-size:11px;color:rgba(180,220,180,.75);max-height:140px;overflow-y:auto;line-height:1.5;scrollbar-width:thin"></div>
   </div>
@@ -415,12 +432,32 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
   </div>
 </div>
 
+<!-- SAVE POPUP -->
+
+<div id="save-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:280px;max-width:92vw;max-height:80vh;overflow-y:auto">
+  <div data-i18n="saveTitle" style="font-size:13px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:10px">💾 保存</div>
+  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+    <button class="tbtn" id="btn-save-overwrite" data-i18n="saveOverwrite">💾 上書き保存</button>
+    <button class="tbtn" id="btn-save-named-open" data-i18n="saveNamed">🏷️ 名前をつけて保存</button>
+    <div id="save-name-area" style="display:none;flex-direction:column;gap:5px;margin-top:2px">
+      <input id="save-name-input" type="text" maxlength="30" data-i18n-placeholder="saveNamePh" style="background:rgba(255,255,255,.07);border:1px solid rgba(120,210,130,.3);border-radius:8px;color:#e8f5e9;padding:7px 10px;font-size:12px;outline:none;width:100%;box-sizing:border-box">
+      <div style="display:flex;gap:6px">
+        <button class="tbtn" id="btn-save-name-cancel" data-i18n="cancel" style="flex:1">キャンセル</button>
+        <button class="tbtn" id="btn-save-name-ok" data-i18n="saveDo" style="flex:2;background:rgba(93,186,106,.45);border-color:rgba(168,224,99,.6);color:#fff;font-weight:700">💾 保存する</button>
+      </div>
+    </div>
+  </div>
+  <div data-i18n="savedGardens" style="font-size:11px;color:rgba(180,220,180,.5);margin-bottom:6px">📂 保存した庭</div>
+  <div id="save-slots-list"></div>
+</div>
+
 <!-- GIF CAPTURE-FRAME OVERLAY (📸 で撮影範囲を提示→OKで実行) -->
 
 <div id="gif-frame-overlay">
   <div id="gif-frame-sq"></div>
   <div id="gif-frame-cap" data-i18n="gifFrameHint">📸 この範囲がGIFになります</div>
   <div id="gif-frame-bar">
+    <div id="gif-frame-res" role="group" aria-label="📸 GIF 解像度"></div>
     <button class="tbtn" id="btn-gif-cancel" data-i18n="gifFrameCancel">キャンセル</button>
     <button class="tbtn" id="btn-gif-ok" data-i18n="gifFrameOk">📸 GIFを作成</button>
   </div>
@@ -1302,7 +1339,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.12.4'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.14.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -1414,6 +1451,9 @@ let animT     = 0;
 let hoverCell = null;
 let activeCell = { c:(GRID/2)|0, r:(GRID/2)|0 };   // 矢印D-padで動かすアクティブマス（初期=中央）
 let dpadVisible = true;          // D-pad表示（設定で切替・セーブに保存）
+// 名前付き保存のスロット名（最近セーブ／ロードしたもの）。
+// 「全リセット」「新規マップ」では空に戻す。saveState/applyState で永続化。
+let currentGardenName = '';
 let dpadRepeat = null;           // 長押し連続移動タイマー
 let drawMode  = '3d'; // '2d' | '3d'
 let moonScreenPos = null; // {x, y, r} or null when moon not visible
@@ -1444,7 +1484,7 @@ const I18N = {
     'wlabel:hail':'雹','wlabel:sandstorm':'砂','wlabel:sakura':'桜','wlabel:leaves':'紅','wlabel:':'天気',
     timeSelect:'時刻を選択', timePause:'⏸ 時間を止める', timeResume:'▶ 時間を進める',
     appTitle:'🌿 絵文字庭', settingsTitle:'⚙️ 設定', newMap:'🆕 新規マップ', clearAll:'🗑 全リセット',
-    'dpad.title':'斜めキー（カーソル移動）','dpad.toggle':'🎮 斜めキーを表示',
+    'dpad.title':'斜めキー（カーソル移動）',
     'dpad.ul':'左上へ','dpad.ur':'右上へ',
     'dpad.dl':'左下へ','dpad.dr':'右下へ','dpad.place':'ここに置く（選択中の絵文字）',
     ttHelp:'遊び方',
@@ -1498,6 +1538,7 @@ const I18N = {
     'tt:grass':'草','tt:sand':'砂','tt:water':'水','tt:snow':'雪','tt:dark':'岩','tt:custom':'色',
     'as:0':'オフ','as:30000':'30秒','as:60000':'1分','as:180000':'3分','as:300000':'5分',
     'fps:30':'30','fps:60':'60',
+    'gres:320':'標準 (320)','gres:720':'高 (720)','gres:1080':'最大 (1080)',
     'toast.clearAll':'🗑 全リセットしました', 'toast.newMap':'🆕 {n}×{n} マップを作成しました',
     'toast.genMap':'🗺 {name}を生成しました', 'toast.genRandom':'🎲 ランダムマップ生成！',
     'toast.genMapDecor':'🗺 {name}を生成（🌳 自動配置 {n}個）', 'toast.genRandomDecor':'🎲 ランダムマップ生成（🌳 自動配置 {n}個）',
@@ -1515,6 +1556,14 @@ const I18N = {
     'toast.storeOnce':'🏪 は1つだけ置けます',
     'toast.autosaveOff':'💾 オートセーブ：オフ', 'toast.autosaveSet':'💾 オートセーブ：{label}ごと',
     'toast.langSet':'🌐 言語を日本語にしました',
+    saveTitle:'💾 保存', saveOverwrite:'💾 上書き保存', saveNamed:'🏷️ 名前をつけて保存',
+    saveNamePh:'庭の名前…', saveDo:'💾 保存する',
+    savedGardens:'📂 保存した庭', slotsEmpty:'（保存なし）',
+    slotLoad:'開く', slotDelete:'削除', slotDeleteConfirm:'「{name}」を削除しますか？',
+    'toast.slotSaved':'💾 「{name}」に保存しました',
+    'toast.slotLoaded':'📂 「{name}」を開きました',
+    'toast.slotsFull':'⚠️ 保存スロットが満杯です（最大{max}件）',
+    'toast.slotsError':'⚠️ 保存に失敗しました（容量不足かも）',
   },
   en: {
     weatherBtn:'☀️ Weather', undo:'↩ Undo', gen:'🎲 Generate', effects:'✨ Effects',
@@ -1534,7 +1583,7 @@ const I18N = {
     'wlabel:hail':'Hail','wlabel:sandstorm':'Sand','wlabel:sakura':'Sakura','wlabel:leaves':'Leaves','wlabel:':'Weather',
     timeSelect:'Select time', timePause:'⏸ Pause time', timeResume:'▶ Resume time',
     appTitle:'🌿 emoji-niwa', settingsTitle:'⚙️ Settings', newMap:'🆕 New map', clearAll:'🗑 Reset all',
-    'dpad.title':'Diagonal pad (move cursor)','dpad.toggle':'🎮 Show diagonal pad',
+    'dpad.title':'Diagonal pad (move cursor)',
     'dpad.ul':'Move up-left','dpad.ur':'Move up-right',
     'dpad.dl':'Move down-left','dpad.dr':'Move down-right','dpad.place':'Place here (selected emoji)',
     ttHelp:'How to play',
@@ -1588,6 +1637,7 @@ const I18N = {
     'tt:grass':'Grass','tt:sand':'Sand','tt:water':'Water','tt:snow':'Snow','tt:dark':'Rock','tt:custom':'Color',
     'as:0':'Off','as:30000':'30s','as:60000':'1m','as:180000':'3m','as:300000':'5m',
     'fps:30':'30','fps:60':'60',
+    'gres:320':'Std (320)','gres:720':'High (720)','gres:1080':'Max (1080)',
     'toast.clearAll':'🗑 Reset everything', 'toast.newMap':'🆕 Created a {n}×{n} map',
     'toast.genMap':'🗺 Generated {name}', 'toast.genRandom':'🎲 Random map generated!',
     'toast.genMapDecor':'🗺 Generated {name} (🌳 auto-placed {n})', 'toast.genRandomDecor':'🎲 Random map (🌳 auto-placed {n})',
@@ -1605,6 +1655,14 @@ const I18N = {
     'toast.storeOnce':'Only one 🏪 can be placed',
     'toast.autosaveOff':'💾 Autosave: off', 'toast.autosaveSet':'💾 Autosave: every {label}',
     'toast.langSet':'🌐 Language set to English',
+    saveTitle:'💾 Save', saveOverwrite:'💾 Overwrite', saveNamed:'🏷️ Save as…',
+    saveNamePh:'Garden name…', saveDo:'💾 Save',
+    savedGardens:'📂 Saved gardens', slotsEmpty:'(no saves)',
+    slotLoad:'Open', slotDelete:'Delete', slotDeleteConfirm:'Delete "{name}"?',
+    'toast.slotSaved':'💾 Saved as "{name}"',
+    'toast.slotLoaded':'📂 Opened "{name}"',
+    'toast.slotsFull':'⚠️ Save slots full (max {max})',
+    'toast.slotsError':'⚠️ Save failed (storage may be full)',
   },
 };
 function tr(key, vars){
@@ -1617,6 +1675,7 @@ function tr(key, vars){
 function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = tr(el.dataset.i18nTitle); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = tr(el.dataset.i18nPlaceholder); });
   document.documentElement.lang = lang;
   // Dynamic / JS-driven text that the generic pass above can't cover
   if(typeof refreshWeatherBtn === 'function') refreshWeatherBtn();
@@ -4320,8 +4379,6 @@ function refreshDpad(){
   const sh=document.getElementById('dpad-show');
   if(el) el.style.display = dpadVisible ? '' : 'none';
   if(sh) sh.classList.toggle('is-on', dpadVisible);
-  const t=document.getElementById('dpad-toggle');
-  if(t) t.classList.toggle('is-on', dpadVisible);
   syncDpadDisabled();   // 進めない方向のボタンを disable（移動判定と完全一致）
 }
 (function wireDpad(){
@@ -4365,12 +4422,6 @@ window.addEventListener('keydown',e=>{
            Q:[-1,-1],E:[1,-1],Z:[-1,1],C:[1,1]};
   if(K[e.key]){ e.preventDefault(); moveActive(K[e.key][0],K[e.key][1]); return; }
   if(e.key===' '||e.key==='Enter'){ e.preventDefault(); dpadPlace(); }
-});
-document.getElementById('dpad-toggle')?.addEventListener('click',e=>{
-  e.stopPropagation();
-  dpadVisible=!dpadVisible;
-  refreshDpad();
-  if(typeof saveState==='function') saveState();
 });
 // 右側マップボタン列の 🎮：押すたびに斜めキーの表示／非表示をトグル（is-on でオン状態を表す）
 document.getElementById('dpad-show')?.addEventListener('click',e=>{
@@ -4623,6 +4674,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
   history=[];
   lastGen = null;
   genClean = false;
+  currentGardenName = '';
   clearSave();
   document.getElementById('menu-popup').style.display = 'none';
   showToast(tr('toast.clearAll'));
@@ -4705,7 +4757,7 @@ refreshBgmToggle();
 const menuPopup = document.getElementById('menu-popup');
 
 // Exclusive popup helper
-const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','help-popup','share-popup'];
+const ALL_POPUPS = ['menu-popup','fx-popup','newmap-popup','gen-popup','weather-popup','time-popup','sound-popup','help-popup','share-popup','save-popup'];
 function openPopup(id){
   for(const p of ALL_POPUPS) document.getElementById(p).style.display = (p === id ? 'block' : 'none');
 }
@@ -4750,7 +4802,7 @@ document.getElementById('share-do').addEventListener('click', async e=>{
     let url;
     try{ url = await buildShareUrl(); }
     catch(_){ showToast(tr('toast.shareError')); return; }
-    try{ await navigator.share({title:'emoji-niwa', url}); }
+    try{ await navigator.share({title:'emoji-niwa', text:GIF_HASHTAGS+' '+url, url}); }
     catch(_){ /* キャンセル等は無視（保存系ではないのでトーストなし） */ }
   } else {
     await copyShareUrl();   // シェア非対応端末はコピーにフォールバック
@@ -4768,7 +4820,8 @@ document.getElementById('share-copy').addEventListener('click', async e=>{
 //   UI は cv 非描画ゆえ含まれない。保存後ヒントは端末別（iOS/Android/その他）。
 //   Live Photo 化は端末側の Shortcut/アプリで（埋め込み不可・文言案内のみ）。
 // ═══════════════════════════════════════════
-const GIF_SECONDS = 3, GIF_FPS = 12, GIF_SIZE = 320;
+const GIF_SECONDS = 3, GIF_FPS = 12;
+let gifSize = 720;   // GIF 出力の正方形ピクセル（📸 撮影フレーム上で 320/720/1080 を選択・セーブに保存。既定720＝高解像度）
 let gifBusy = false, gifFraming = false;
 
 // 全フレームを median-cut で ≤256 色に量子化
@@ -4843,28 +4896,32 @@ function _gifEncode(frames, size, delayCs){
     for(let i=0;i<256;i++){ const p=pal[i],dr=p[0]-r,dg=p[1]-g,db=p[2]-b,d=dr*dr+dg*dg+db*db; if(d<bd){bd=d;bi=i;} }
     cache[key]=bi; return bi;
   };
-  const b=[]; const w16=v=>b.push(v&255,(v>>8)&255);
-  for(const c of 'GIF89a') b.push(c.charCodeAt(0));
-  w16(size); w16(size); b.push(0xF7,0,0);
-  for(let i=0;i<256;i++){ const p=pal[i]; b.push(p[0],p[1],p[2]); }
-  b.push(0x21,0xFF,0x0B);
-  for(const c of 'NETSCAPE2.0') b.push(c.charCodeAt(0));
-  b.push(0x03,0x01,0,0,0x00);
+  // 出力は通常配列ではなく可変長 Uint8Array（高解像度でも JS 配列肥大でクラッシュしない）
+  let out=new Uint8Array(1<<16), L=0;
+  const need=k=>{ if(L+k<=out.length) return; let n=out.length; while(n<L+k) n*=2; const t=new Uint8Array(n); t.set(out); out=t; };
+  const u8=v=>{ need(1); out[L++]=v&255; };
+  const w16=v=>{ need(2); out[L++]=v&255; out[L++]=(v>>8)&255; };
+  const str=s=>{ need(s.length); for(let i=0;i<s.length;i++) out[L++]=s.charCodeAt(i); };
+  str('GIF89a'); w16(size); w16(size); u8(0xF7); u8(0); u8(0);
+  for(let i=0;i<256;i++){ const p=pal[i]; u8(p[0]); u8(p[1]); u8(p[2]); }
+  u8(0x21); u8(0xFF); u8(0x0B); str('NETSCAPE2.0'); u8(0x03); u8(0x01); u8(0); u8(0); u8(0x00);
   const px=size*size;
-  for(const f of frames){
-    b.push(0x21,0xF9,0x04,0x00, delayCs&255,(delayCs>>8)&255, 0x00,0x00);
-    b.push(0x2C); w16(0); w16(0); w16(size); w16(size); b.push(0x00, 0x08);
+  for(let fi=0; fi<frames.length; fi++){
+    const f=frames[fi];
+    u8(0x21); u8(0xF9); u8(0x04); u8(0x00); u8(delayCs&255); u8((delayCs>>8)&255); u8(0x00); u8(0x00);
+    u8(0x2C); w16(0); w16(0); w16(size); w16(size); u8(0x00); u8(0x08);
     const idx=new Uint8Array(px);
     for(let p=0,q=0;p<px;p++,q+=4) idx[p]=near(f[q],f[q+1],f[q+2]);
+    frames[fi]=null;                       // 使い終えたフレームを解放（高解像度のピークメモリ抑制）
     const lz=_gifLZW(idx);
     for(let i=0;i<lz.length;i+=255){
-      const m=Math.min(255,lz.length-i); b.push(m);
-      for(let j=0;j<m;j++) b.push(lz[i+j]);
+      const m=Math.min(255,lz.length-i); u8(m);
+      need(m); for(let j=0;j<m;j++) out[L++]=lz[i+j];
     }
-    b.push(0x00);
+    u8(0x00);
   }
-  b.push(0x3B);
-  return new Blob([new Uint8Array(b)],{type:'image/gif'});
+  u8(0x3B);
+  return new Blob([out.subarray(0,L)],{type:'image/gif'});
 }
 
 // 「今の見たまま」を正方形に。キャンバスのサイズ・スケール・カメラは一切
@@ -4877,18 +4934,20 @@ function gifTopOffset(){
   const tb=document.getElementById('topbar');
   return tb ? Math.max(0, Math.round(tb.getBoundingClientRect().bottom)) : 0;
 }
+// ハッシュタグ（共有テキストで使用）
+const GIF_HASHTAGS = '#絵文字庭 #emojiNiwa';
 function _gifCapture(){
   const W0=cv.width, H0=cv.height, top=gifTopOffset();
   const side=Math.min(W0, H0-top), sx=(W0-side)/2, sy=top;   // 上端=トップバー下
   const sT=animT, sDay=timeOfDay, sAn=JSON.stringify(animals), sAid=animalId;
-  const g=document.createElement('canvas'); g.width=g.height=GIF_SIZE;
+  const g=document.createElement('canvas'); g.width=g.height=gifSize;
   const gx=g.getContext('2d', { willReadFrequently:true });
   const n=Math.round(GIF_SECONDS*GIF_FPS), dt=1/GIF_FPS, frames=[];
   for(let i=0;i<n;i++){
     updateAnimals(dt); animT+=dt;          // timeOfDay/天気は据え置き
     render();
-    gx.drawImage(cv, sx, sy, side, side, 0, 0, GIF_SIZE, GIF_SIZE);  // 中央正方形→等倍縮小
-    frames.push(gx.getImageData(0,0,GIF_SIZE,GIF_SIZE).data);
+    gx.drawImage(cv, sx, sy, side, side, 0, 0, gifSize, gifSize);  // 中央正方形→選択解像度へ
+    frames.push(gx.getImageData(0,0,gifSize,gifSize).data);
   }
   animT=sT; timeOfDay=sDay; animalId=sAid;
   for(const k in animals) delete animals[k];
@@ -4926,20 +4985,15 @@ async function runGifExport(){
     await new Promise(r=>setTimeout(r,50));      // トースト描画を待つ
     const frames=_gifCapture();
     await new Promise(r=>setTimeout(r,0));
-    const blob=_gifEncode(frames, GIF_SIZE, Math.round(100/GIF_FPS));
-    const file=new File([blob], 'emoji-niwa-'+Date.now()+'.gif', {type:'image/gif'});
-    let saved=false;
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file], title:'emoji-niwa'}); saved=true; }
-      catch(_){ saved=false; }   // キャンセル等＝保存されていない
-    } else {
-      const u=URL.createObjectURL(blob);
-      const a=document.createElement('a'); a.href=u; a.download=file.name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(u),4000);
-      saved=true;
-    }
-    if(saved) showToast(tr(_gifHintKey()));   // 保存した時だけヒントを出す
+    const blob=_gifEncode(frames, gifSize, Math.round(100/GIF_FPS));
+    const fname='emoji-niwa-'+Date.now()+'.gif';
+    // シェアシート経由だと受け側で再エンコードされ静止画になることがあるため、
+    // 常にダウンロードで .gif のまま保存する（ユーザーが Files/写真から共有可能）
+    const u=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=u; a.download=fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),4000);
+    showToast(tr(_gifHintKey()));
   }catch(err){ showToast(tr('toast.gifError')); }
   finally{ gifBusy=false; }
 }
@@ -5381,6 +5435,7 @@ document.getElementById('nm-create').addEventListener('click',()=>{
   history=[];
   lastGen = null;
   genClean = false;
+  currentGardenName = '';
   nmPopup.style.display='none';
   resetView();
   if(typeof refreshScatterUI==='function'){scCount=Math.min(scCount,GRID*GRID);refreshScatterUI();}
@@ -5873,6 +5928,17 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.14.1',
+    ja:['📸 GIF 内の透かしテキスト（庭名・ハッシュタグ・URL）を削除しました',
+        '📸 GIF はシェアシートではなく常にダウンロード保存に変更（受け側で静止画に変換されるのを回避）'],
+    en:['📸 Removed the in-GIF watermark (garden name / hashtags / URL)',
+        '📸 GIF export now always downloads instead of opening the share sheet (prevents the receiver re-encoding it to a still image)'] },
+  { v:'0.14.0',
+    ja:['📸 GIF 解像度の選択を ⚙️ 設定から「📸 撮影フレーム上」に移動。撮影前にその場で 標準320／高720／最大1080 を切り替えられます（既定は高720）'],
+    en:['📸 Moved the GIF resolution picker out of ⚙️ settings and into the 📸 capture frame bar — pick Std 320 / High 720 / Max 1080 right before recording (default High 720)'] },
+  { v:'0.13.0',
+    ja:['📸 GIF の解像度を ⚙️ 設定で選べるように（標準320／高720／最大1080）。Live Photo 化をより高解像度で'],
+    en:['📸 Choose GIF resolution in ⚙️ settings (Std 320 / High 720 / Max 1080) for sharper Live Photos'] },
   { v:'0.12.4',
     ja:['🎮 十字キーの「無効表示なのに動ける」不一致を修正（向き切替後も表示が常に最新）'],
     en:['🎮 Fixed D-pad showing a direction disabled while it could still move (state now always in sync)'] },
@@ -5939,6 +6005,7 @@ const AUTOSAVE_PRESETS = [
   {ms:300000, label:'5分'},
 ];
 const FPS_PRESETS = [30, 60]; // 描画FPS上限候補（30=省電力）
+const GIF_RES_PRESETS = [320, 720, 1080]; // 📸 GIF 正方形px（標準/高/最大）
 let fpsCap = 30; // 既定30。dt連続なので演算は不変、描画頻度のみ
 let autosaveMs = 60000;
 let autosaveTimerId = null;
@@ -5967,6 +6034,11 @@ function refreshAutosaveUI(){
 function refreshFpsUI(){
   document.querySelectorAll('#fps-opts .fps-opt').forEach(b => {
     b.classList.toggle('active', Number(b.dataset.v) === fpsCap);
+  });
+}
+function refreshGifResUI(){
+  document.querySelectorAll('#gif-frame-res .gif-res-opt').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.v) === gifSize);
   });
 }
 
@@ -6140,6 +6212,8 @@ function saveState(){
       fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
       autosaveMs,
       fpsCap,
+      currentGardenName,
+      gifSize,
       lang,
       lastStoreSize,
     };
@@ -6151,6 +6225,153 @@ function clearSave(){
   if(visiting||mpActive) return;   // 閲覧/マルチプレイ中は自分のセーブを消さない
   try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
 }
+
+// NAMED SAVE SLOTS
+// ═══════════════════════════════════════════
+const SLOT_KEY = 'emoji-niwa-slots';
+const SLOT_MAX = 10;
+
+function getSavedSlots(){
+  try{ return JSON.parse(localStorage.getItem(SLOT_KEY)||'[]'); }catch(_){ return []; }
+}
+function setSavedSlots(slots){
+  try{ localStorage.setItem(SLOT_KEY, JSON.stringify(slots)); return true; }catch(_){ return false; }
+}
+function buildSlotData(name){
+  return {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name,
+    ts: Date.now(),
+    data: {
+      v: SAVE_VERSION,
+      grid: GRID,
+      terrain: {...terrain}, items: {...items}, heights: {...heights},
+      animals: {...animals}, animalId,
+      history: history.length > HISTORY_SAVE_CAP ? history.slice(-HISTORY_SAVE_CAP) : [...history],
+      recent: [...CATEGORIES['📌 履歴']],
+      selCat, selEmoji, selTerrain, mode,
+      timeOfDay, dayPaused, weather,
+      drawMode, showHeights, heightsTouched, dpadVisible,
+      muted, selectedSound, bgmOn, bgmVol,
+      weatherRandomOn,
+      weatherRandomPool: [...weatherRandomPool],
+      fx: { aurora:auroraOn, fireworks:fireworksOn, bubbles:bubblesOn, mist:mistOn },
+      autosaveMs, fpsCap, lang, lastStoreSize,
+    }
+  };
+}
+function saveNamedSlot(name){
+  const slots = getSavedSlots();
+  if(slots.length >= SLOT_MAX){
+    showToast(tr('toast.slotsFull', {max:SLOT_MAX}));
+    return false;
+  }
+  const slot = buildSlotData(name.trim());
+  slots.unshift(slot);
+  if(!setSavedSlots(slots)){ showToast(tr('toast.slotsError')); return false; }
+  currentGardenName = slot.name;
+  if(typeof saveState === 'function') saveState();
+  showToast(tr('toast.slotSaved', {name: slot.name}));
+  return true;
+}
+function loadNamedSlot(id){
+  const slots = getSavedSlots();
+  const slot = slots.find(s => s.id === id);
+  if(!slot) return;
+  if(applyState(slot.data)){
+    currentGardenName = slot.name;        // 読み込んだ庭の名前を引き継ぐ
+    saveState();
+    restartAutosave();
+    closeAllPopups();
+    showToast(tr('toast.slotLoaded', {name: slot.name}));
+  }
+}
+function deleteNamedSlot(id){
+  setSavedSlots(getSavedSlots().filter(s => s.id !== id));
+  renderSaveSlots();
+}
+function renderSaveSlots(){
+  const list = document.getElementById('save-slots-list');
+  if(!list) return;
+  const slots = getSavedSlots();
+  list.textContent = '';
+  if(slots.length === 0){
+    const empty = document.createElement('div');
+    empty.style.cssText = 'font-size:11px;color:rgba(180,220,180,.4);text-align:center;padding:8px 0';
+    empty.textContent = tr('slotsEmpty');
+    list.appendChild(empty);
+    return;
+  }
+  const fmtOpts = {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'};
+  const locale = lang === 'en' ? 'en-US' : 'ja-JP';
+  for(const slot of slots){
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(120,210,130,.1)';
+    const info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+    const nameEl = document.createElement('div');
+    nameEl.style.cssText = 'font-size:12px;color:#e8f5e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+    nameEl.textContent = slot.name;
+    const tsEl = document.createElement('div');
+    tsEl.style.cssText = 'font-size:10px;color:rgba(180,220,180,.5);margin-top:1px';
+    tsEl.textContent = new Date(slot.ts).toLocaleString(locale, fmtOpts);
+    info.appendChild(nameEl); info.appendChild(tsEl);
+    const btnLoad = document.createElement('button');
+    btnLoad.className = 'tbtn';
+    btnLoad.style.cssText = 'padding:4px 9px;font-size:11px;flex-shrink:0';
+    btnLoad.textContent = tr('slotLoad');
+    btnLoad.onclick = () => loadNamedSlot(slot.id);
+    const btnDel = document.createElement('button');
+    btnDel.className = 'tbtn';
+    btnDel.style.cssText = 'padding:4px 7px;font-size:11px;flex-shrink:0;opacity:.55';
+    btnDel.title = tr('slotDelete');
+    btnDel.textContent = '🗑';
+    btnDel.onclick = () => {
+      if(confirm(tr('slotDeleteConfirm', {name: slot.name}))) deleteNamedSlot(slot.id);
+    };
+    row.appendChild(info); row.appendChild(btnLoad); row.appendChild(btnDel);
+    list.appendChild(row);
+  }
+}
+function openSavePopup(){
+  openPopup('save-popup');
+  document.getElementById('save-name-area').style.display = 'none';
+  document.getElementById('save-name-input').value = '';
+  renderSaveSlots();
+}
+
+// save-popup イベント配線
+document.getElementById('btn-save-overwrite').addEventListener('click', e => {
+  e.stopPropagation();
+  saveState(); flashSaved(); showToast(tr('toast.saved'));
+  closeAllPopups();
+});
+document.getElementById('btn-save-named-open').addEventListener('click', e => {
+  e.stopPropagation();
+  const area = document.getElementById('save-name-area');
+  area.style.display = 'flex';
+  document.getElementById('save-name-input').focus();
+});
+document.getElementById('btn-save-name-cancel').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('save-name-area').style.display = 'none';
+  document.getElementById('save-name-input').value = '';
+});
+document.getElementById('btn-save-name-ok').addEventListener('click', e => {
+  e.stopPropagation();
+  const input = document.getElementById('save-name-input');
+  const name = input.value.trim();
+  if(!name) { input.focus(); return; }
+  if(saveNamedSlot(name)){
+    document.getElementById('save-name-area').style.display = 'none';
+    input.value = '';
+    renderSaveSlots();
+  }
+});
+document.getElementById('save-name-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('btn-save-name-ok').click(); }
+  if(e.key === 'Escape'){ document.getElementById('btn-save-name-cancel').click(); }
+});
 
 function loadState(){
   let data;
@@ -6207,6 +6428,7 @@ function applyState(data){
     showHeights    = !!data.showHeights;
     heightsTouched = !!data.heightsTouched;
     dpadVisible    = data.dpadVisible !== false;   // 旧セーブ（未設定）は既定ON
+    currentGardenName = (typeof data.currentGardenName === 'string') ? data.currentGardenName : '';
 
     // muted も共有ペイロードには無い。無い場合は閲覧者のミュート設定を維持。
     if(typeof data.muted === 'boolean') muted = !!data.muted;
@@ -6222,6 +6444,7 @@ function applyState(data){
       autosaveMs = data.autosaveMs;
     }
     if(FPS_PRESETS.includes(data.fpsCap)) fpsCap = data.fpsCap;
+    if(GIF_RES_PRESETS.includes(data.gifSize)) gifSize = data.gifSize;
 
     if(data.lang === 'en' || data.lang === 'ja') lang = data.lang;
     if(data.lastStoreSize === 3 || data.lastStoreSize === 1) lastStoreSize = data.lastStoreSize;
@@ -6293,6 +6516,23 @@ FPS_PRESETS.forEach(v => {
 });
 refreshFpsUI();
 
+// 📸 GIF 撮影フレーム上の解像度切替（旧 ⚙️ 設定内から移設）
+GIF_RES_PRESETS.forEach(v => {
+  const b = document.createElement('button');
+  b.className = 'tbtn gif-res-opt';
+  b.dataset.v = v;
+  b.dataset.i18n = 'gres:'+v;
+  b.textContent = tr('gres:'+v);
+  b.addEventListener('click', e => {
+    e.stopPropagation();
+    gifSize = v;
+    refreshGifResUI();
+    saveState();
+  });
+  document.getElementById('gif-frame-res').appendChild(b);
+});
+refreshGifResUI();
+
 // 起動分岐: #auth=（ログイン受領）→ #r=（マルチプレイルーム）→ #w=（共有リンク閲覧）→ 通常ロード
 (async () => {
   let h = location.hash || '';
@@ -6334,9 +6574,9 @@ window.addEventListener('pagehide', saveState);
 document.addEventListener('visibilitychange', () => { if(document.hidden) saveState(); });
 
 // Manual save button (💾, next to ⚙️ settings)
-document.getElementById('btn-save').addEventListener('click', () => {
-  saveState();
-  showToast(tr('toast.saved'));
+document.getElementById('btn-save').addEventListener('click', e => {
+  e.stopPropagation();
+  openSavePopup();
 });
 
 // Language switch (settings menu)
