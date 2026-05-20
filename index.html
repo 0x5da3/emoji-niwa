@@ -1339,7 +1339,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.14.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.14.2'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -4986,14 +4986,19 @@ async function runGifExport(){
     const frames=_gifCapture();
     await new Promise(r=>setTimeout(r,0));
     const blob=_gifEncode(frames, gifSize, Math.round(100/GIF_FPS));
-    const fname='emoji-niwa-'+Date.now()+'.gif';
-    // シェアシート経由だと受け側で再エンコードされ静止画になることがあるため、
-    // 常にダウンロードで .gif のまま保存する（ユーザーが Files/写真から共有可能）
-    const u=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=u; a.download=fname;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(u),4000);
-    showToast(tr(_gifHintKey()));
+    const file=new File([blob], 'emoji-niwa-'+Date.now()+'.gif', {type:'image/gif'});
+    let saved=false;
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:'emoji-niwa'}); saved=true; }
+      catch(_){ saved=false; }   // キャンセル等＝保存されていない
+    } else {
+      const u=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=u; a.download=file.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u),4000);
+      saved=true;
+    }
+    if(saved) showToast(tr(_gifHintKey()));   // 保存した時だけヒントを出す
   }catch(err){ showToast(tr('toast.gifError')); }
   finally{ gifBusy=false; }
 }
@@ -5928,6 +5933,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.14.2',
+    ja:['📸 GIF 保存をシステムの共有シート経由に戻しました（共有／写真に保存などを選択可。対応端末以外は自動でダウンロード）'],
+    en:['📸 GIF saving goes through the system share sheet again (pick Share / Save to Photos / etc.; auto-falls back to download on unsupported devices)'] },
   { v:'0.14.1',
     ja:['📸 GIF 内の透かしテキスト（庭名・ハッシュタグ・URL）を削除しました',
         '📸 GIF はシェアシートではなく常にダウンロード保存に変更（受け側で静止画に変換されるのを回避）'],
