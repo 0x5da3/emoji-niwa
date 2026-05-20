@@ -4989,14 +4989,19 @@ async function runGifExport(){
     const frames=_gifCapture();
     await new Promise(r=>setTimeout(r,0));
     const blob=_gifEncode(frames, gifSize, Math.round(100/GIF_FPS));
-    const fname='emoji-niwa-'+Date.now()+'.gif';
-    // シェアシート経由だと受け側で再エンコードされ静止画になることがあるため、
-    // 常にダウンロードで .gif のまま保存する（ユーザーが Files/写真から共有可能）
-    const u=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=u; a.download=fname;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(u),4000);
-    showToast(tr(_gifHintKey()));
+    const file=new File([blob], 'emoji-niwa-'+Date.now()+'.gif', {type:'image/gif'});
+    let saved=false;
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:'emoji-niwa'}); saved=true; }
+      catch(_){ saved=false; }   // キャンセル等＝保存されていない
+    } else {
+      const u=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=u; a.download=file.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u),4000);
+      saved=true;
+    }
+    if(saved) showToast(tr(_gifHintKey()));   // 保存した時だけヒントを出す
   }catch(err){ showToast(tr('toast.gifError')); }
   finally{ gifBusy=false; }
 }
@@ -6004,6 +6009,9 @@ const CHANGELOG = [
   { v:'0.15.0',
     ja:['🎬 動画書き出し（WebM・5秒）を追加。📸の枠と同じ範囲を録画します（iOS など非対応端末では従来どおりGIFのみ）'],
     en:['🎬 Added video export (WebM, 5s) — records the same framed area as the 📸 GIF (devices without support, e.g. iOS Safari, keep GIF only)'] },
+  { v:'0.14.2',
+    ja:['📸 GIF 保存をシステムの共有シート経由に戻しました（共有／写真に保存などを選択可。対応端末以外は自動でダウンロード）'],
+    en:['📸 GIF saving goes through the system share sheet again (pick Share / Save to Photos / etc.; auto-falls back to download on unsupported devices)'] },
   { v:'0.14.1',
     ja:['📸 GIF 内の透かしテキスト（庭名・ハッシュタグ・URL）を削除しました',
         '📸 GIF はシェアシートではなく常にダウンロード保存に変更（受け側で静止画に変換されるのを回避）'],
