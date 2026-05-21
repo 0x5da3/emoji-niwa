@@ -339,7 +339,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 
 <div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
   <div data-i18n="appTitle" style="font-size:15px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:2px">🌿 絵文字庭</div>
-  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.15.0</div>
+  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.15.1</div>
   <div style="border-top:1px solid rgba(120,210,130,.22);margin:0 -4px 12px"></div>
   <div data-i18n="settingsTitle" style="font-size:12px;font-weight:600;color:rgba(180,220,180,.6);text-align:center;margin-bottom:10px">⚙️ 設定</div>
   <div style="display:flex;flex-direction:column;gap:6px">
@@ -1340,7 +1340,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.15.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.15.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -4103,10 +4103,13 @@ function hitMoon(sx, sy){
 }
 function tryMoonTap(sx, sy){
   if(!hitMoon(sx, sy)) return false;
-  // Burst of meteors
-  const total = 18 + Math.floor(Math.random() * 12);
-  for(let i = 0; i < total; i++){
-    setTimeout(spawnMeteor, i * (60 + Math.random() * 140));
+  // 30秒間ゆるやかに流れる流星群（ばらつき付きで自然に）
+  const DUR_MS = 30000;
+  const MEAN_MS = 1100;
+  let t = 0;
+  while(t < DUR_MS){
+    setTimeout(spawnMeteor, t);
+    t += MEAN_MS * (0.55 + Math.random() * 0.9);
   }
   playSfx('sparkle');
   return true;
@@ -6006,6 +6009,9 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.15.1',
+    ja:['🌠 月をタップした時の流星群を約30秒間ゆるやかに降るように調整'],
+    en:['🌠 Meteor shower from tapping the moon now lasts ~30 seconds, gently'] },
   { v:'0.15.0',
     ja:['🎬 動画書き出し（WebM・5秒）を追加。📸の枠と同じ範囲を録画します（iOS など非対応端末では従来どおりGIFのみ）'],
     en:['🎬 Added video export (WebM, 5s) — records the same framed area as the 📸 GIF (devices without support, e.g. iOS Safari, keep GIF only)'] },
