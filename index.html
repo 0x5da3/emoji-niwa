@@ -4105,7 +4105,7 @@ function tryMoonTap(sx, sy){
   if(!hitMoon(sx, sy)) return false;
   // 30秒間ゆるやかに流れる流星群（ばらつき付きで自然に）
   const DUR_MS = 30000;
-  const MEAN_MS = 1100;
+  const MEAN_MS = 400;   // 約2.7×濃密化（30秒で約75個を自然なばらつきで散らす）
   let t = 0;
   while(t < DUR_MS){
     setTimeout(spawnMeteor, t);
@@ -6009,9 +6009,6 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
-  { v:'0.15.1',
-    ja:['🌠 月をタップした時の流星群を約30秒間ゆるやかに降るように調整'],
-    en:['🌠 Meteor shower from tapping the moon now lasts ~30 seconds, gently'] },
   { v:'0.15.0',
     ja:['🎬 動画書き出し（WebM・5秒）を追加。📸の枠と同じ範囲を録画します（iOS など非対応端末では従来どおりGIFのみ）'],
     en:['🎬 Added video export (WebM, 5s) — records the same framed area as the 📸 GIF (devices without support, e.g. iOS Safari, keep GIF only)'] },
