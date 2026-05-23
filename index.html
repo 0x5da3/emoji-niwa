@@ -203,7 +203,6 @@ body.palette-collapsed #palette,body.palette-collapsed #terrain-palette{display:
 #gif-frame-res{display:inline-flex;gap:4px;padding:3px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.04)}
 #gif-frame-res .gif-res-opt{padding:5px 10px;font-size:10px;line-height:1.2}
 #btn-gif-ok{background:rgba(93,186,106,.3);border-color:rgba(168,224,99,.6)}
-#btn-vid-ok{background:rgba(93,186,106,.3);border-color:rgba(168,224,99,.6)}
 #gen-popup{display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:35;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:10px;backdrop-filter:blur(16px);width:320px;max-width:94vw;max-height:82vh;overflow-y:auto;box-shadow:0 8px 28px rgba(0,0,0,.5)}
 #map-btns{position:fixed;right:10px;top:60px;z-index:27;display:grid;grid-template-columns:repeat(2,36px);gap:6px;justify-items:center}
 #map-btns #btn-3d{grid-column:1/-1;width:auto;min-width:76px;box-sizing:border-box;justify-content:center;height:30px;justify-self:center;margin-top:2px}
@@ -340,7 +339,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
 
 <div id="menu-popup" style="display:none;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:36;background:rgba(8,20,10,.97);border:1px solid rgba(120,210,130,.25);border-radius:14px;padding:14px;backdrop-filter:blur(16px);min-width:260px">
   <div data-i18n="appTitle" style="font-size:15px;font-weight:700;color:#a8e063;text-align:center;margin-bottom:2px">🌿 絵文字庭</div>
-  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.12.4</div>
+  <div id="app-version" style="font-size:10px;color:rgba(180,220,180,.45);letter-spacing:.04em;text-align:center;margin-bottom:10px">v0.15.1</div>
   <div style="border-top:1px solid rgba(120,210,130,.22);margin:0 -4px 12px"></div>
   <div data-i18n="settingsTitle" style="font-size:12px;font-weight:600;color:rgba(180,220,180,.6);text-align:center;margin-bottom:10px">⚙️ 設定</div>
   <div style="display:flex;flex-direction:column;gap:6px">
@@ -461,7 +460,7 @@ body.corner-collapsed #corner-btns .tbtn:not(#btn-cornermin){display:none}
     <div id="gif-frame-res" role="group" aria-label="📸 GIF 解像度"></div>
     <button class="tbtn" id="btn-gif-cancel" data-i18n="gifFrameCancel">キャンセル</button>
     <button class="tbtn" id="btn-gif-ok" data-i18n="gifFrameOk">📸 GIFを作成</button>
-    <button class="tbtn" id="btn-vid-ok" data-i18n="vidFrameOk">📹 動画を作成</button>
+    <button class="tbtn" id="btn-gif-video" data-i18n="gifFrameVideo" style="display:none">🎬 動画を作成</button>
   </div>
 </div>
 
@@ -1341,7 +1340,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.15.0'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.15.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -1472,13 +1471,12 @@ const I18N = {
     weatherBtn:'☀️ 天気', undo:'↩ 戻す', gen:'🎲 生成', effects:'✨ 演出',
     ttSettings:'設定', ttSave:'保存', ttSound:'サウンド', ttGif:'GIF書き出し',
     'toast.gifMaking':'🎞️ GIFを生成中…', 'toast.gifError':'⚠️ GIF生成に失敗しました',
-    'toast.vidMaking':'📹 動画を録画中（約3秒）…', 'toast.vidSaved':'💾 動画を保存しました（X等にアップロードできます）',
-    'toast.vidError':'⚠️ 動画生成に失敗しました', 'toast.vidUnsupported':'⚠️ この端末は動画書き出しに未対応です（GIFをお使いください）',
+    'toast.videoMaking':'🎬 動画を録画中…（5秒）', 'toast.videoSaved':'💾 動画を保存しました', 'toast.videoError':'⚠️ 動画書き出しに失敗しました',
     'toast.gifHint':'💾 保存後、iOSのショートカット/対応アプリでGIF→Live Photoに変換できます',
     'toast.gifHintAndroid':'💾 GIFを保存しました。ライブ壁紙/動く画像アプリで活用できます',
     'toast.gifHintSaved':'💾 GIFを保存しました',
     'toast.audioBlocked':'🔈 画面を一度タップすると音が鳴ります',
-    gifFrameHint:'📸 この範囲がGIFになります', gifFrameOk:'📸 GIFを作成', vidFrameOk:'📹 動画を作成', gifFrameCancel:'キャンセル',
+    gifFrameHint:'📸 この範囲がGIF／動画になります', gifFrameOk:'📸 GIFを作成', gifFrameVideo:'🎬 動画を作成', gifFrameCancel:'キャンセル',
     weatherRandom:'🎲 ランダム切替',
     weatherRandomHint:'候補から30〜60秒ごとに切替（タップで候補を選択）',
     weatherSelect:'天気を選択',
@@ -1573,13 +1571,12 @@ const I18N = {
     weatherBtn:'☀️ Weather', undo:'↩ Undo', gen:'🎲 Generate', effects:'✨ Effects',
     ttSettings:'Settings', ttSave:'Save', ttSound:'Sound', ttGif:'Export GIF',
     'toast.gifMaking':'🎞️ Making GIF…', 'toast.gifError':'⚠️ GIF export failed',
-    'toast.vidMaking':'📹 Recording video (~3s)…', 'toast.vidSaved':'💾 Video saved (uploadable to X etc.)',
-    'toast.vidError':'⚠️ Video export failed', 'toast.vidUnsupported':'⚠️ This device can’t export video (use GIF instead)',
+    'toast.videoMaking':'🎬 Recording video… (5s)', 'toast.videoSaved':'💾 Video saved', 'toast.videoError':'⚠️ Video export failed',
     'toast.gifHint':'💾 After saving, convert GIF→Live Photo via an iOS Shortcut/app',
     'toast.gifHintAndroid':'💾 GIF saved — use it in a live-wallpaper / motion-photo app',
     'toast.gifHintSaved':'💾 GIF saved',
     'toast.audioBlocked':'🔈 Tap the screen once to enable sound',
-    gifFrameHint:'📸 This area becomes the GIF', gifFrameOk:'📸 Make GIF', vidFrameOk:'📹 Make video', gifFrameCancel:'Cancel',
+    gifFrameHint:'📸 This area becomes the GIF / video', gifFrameOk:'📸 Make GIF', gifFrameVideo:'🎬 Make video', gifFrameCancel:'Cancel',
     weatherRandom:'🎲 Random switch',
     weatherRandomHint:'Switches among picks every 30–60s (tap to choose picks)',
     weatherSelect:'Select weather',
@@ -4106,10 +4103,13 @@ function hitMoon(sx, sy){
 }
 function tryMoonTap(sx, sy){
   if(!hitMoon(sx, sy)) return false;
-  // Burst of meteors
-  const total = 18 + Math.floor(Math.random() * 12);
-  for(let i = 0; i < total; i++){
-    setTimeout(spawnMeteor, i * (60 + Math.random() * 140));
+  // 30秒間ゆるやかに流れる流星群（ばらつき付きで自然に）
+  const DUR_MS = 30000;
+  const MEAN_MS = 400;   // 約2.7×濃密化（30秒で約75個を自然なばらつきで散らす）
+  let t = 0;
+  while(t < DUR_MS){
+    setTimeout(spawnMeteor, t);
+    t += MEAN_MS * (0.55 + Math.random() * 0.9);
   }
   playSfx('sparkle');
   return true;
@@ -5009,6 +5009,76 @@ async function runGifExport(){
   finally{ gifBusy=false; }
 }
 
+// 🎬 WebM 動画書き出し（canvas.captureStream + MediaRecorder）。
+// iOS Safari など非対応端末では起動時に 🎬 ボタンを隠し、従来 GIF フローのみ提供。
+const WEBM_SECONDS = 5;
+const WEBM_FPS = 30;
+function webmMime(){
+  if(typeof MediaRecorder==='undefined') return '';
+  for(const m of ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm']){
+    try{ if(MediaRecorder.isTypeSupported(m)) return m; }catch(_){ }
+  }
+  return '';
+}
+function videoExportSupported(){
+  return !!HTMLCanvasElement.prototype.captureStream && !!webmMime();
+}
+let webmBusy = false;
+async function runWebmExport(){
+  if(webmBusy || gifBusy) return;
+  if(!videoExportSupported()){ showToast(tr('toast.videoError')); return; }
+  webmBusy = true;
+  let timer = null;
+  try{
+    showToast(tr('toast.videoMaking'));
+    await new Promise(r=>setTimeout(r,50));      // トースト描画を待つ
+    const W0=cv.width, H0=cv.height, top=gifTopOffset();
+    const side=Math.min(W0, H0-top), sx=(W0-side)/2, sy=top;
+    const g=document.createElement('canvas'); g.width=g.height=gifSize;
+    const gx=g.getContext('2d');
+    const stream = g.captureStream(WEBM_FPS);
+    const mime = webmMime();
+    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4000000 });
+    const chunks = [];
+    rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+    const stopped = new Promise(res => { rec.onstop = res; });
+    rec.start();
+    // 実時間で cv の撮影矩形を g へ複製しつづける（GIF と違い rAF/天気/時間が進む実機録画）
+    timer = setInterval(()=>{
+      gx.drawImage(cv, sx, sy, side, side, 0, 0, gifSize, gifSize);
+    }, 1000/WEBM_FPS);
+    await new Promise(r=>setTimeout(r, WEBM_SECONDS*1000));
+    clearInterval(timer); timer=null;
+    rec.stop();
+    await stopped;
+    const blob = new Blob(chunks, { type: mime || 'video/webm' });
+    const fname = 'emoji-niwa-'+Date.now()+'.webm';
+    // GIF と同様、シェアシートの再エンコード回避のためダウンロード固定
+    const u = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=u; a.download=fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u), 4000);
+    showToast(tr('toast.videoSaved'));
+  }catch(err){
+    showToast(tr('toast.videoError'));
+  }finally{
+    if(timer) clearInterval(timer);
+    webmBusy = false;
+  }
+}
+// 起動時：対応していなければ 🎬 ボタンを完全に隠す（iOS Safari 等は GIF のみ）
+(function initVideoBtn(){
+  const b=document.getElementById('btn-gif-video'); if(!b) return;
+  if(!videoExportSupported()){ b.style.display='none'; return; }
+  b.style.display='';
+  b.addEventListener('click', e=>{
+    e.stopPropagation();
+    if(webmBusy || gifBusy) return;
+    showGifFrame(false);
+    runWebmExport();
+  });
+})();
+
 document.getElementById('btn-gif').addEventListener('click', e=>{
   e.stopPropagation();
   if(gifBusy) return;
@@ -5025,78 +5095,6 @@ document.getElementById('btn-gif-ok').addEventListener('click', e=>{
   showGifFrame(false);
   runGifExport();
 });
-document.getElementById('btn-vid-ok').addEventListener('click', e=>{
-  e.stopPropagation();
-  showGifFrame(false);
-  runVideoExport();
-});
-
-// 📹 動画書き出し（MediaRecorder + canvas.captureStream・依存ゼロ）
-//   X (Twitter) は GIF を画像扱いするので「動画として再生」させたい場合に使用。
-//   Safari/iOS は MP4(H.264)、それ以外は WebM(VP9/VP8) を自動選択。
-//   3 秒・無音（X は既定ミュート再生）。撮影フレーム上の解像度（gifSize）を共用。
-const VIDEO_SECONDS = 3, VIDEO_FPS = 30;
-function pickVideoMime(){
-  if(typeof MediaRecorder === 'undefined') return null;
-  const cands = [
-    'video/mp4;codecs=avc1.42E01E',
-    'video/mp4;codecs=avc1',
-    'video/mp4',
-    'video/webm;codecs=vp9',
-    'video/webm;codecs=vp8',
-    'video/webm',
-  ];
-  for(const m of cands) if(MediaRecorder.isTypeSupported(m)) return m;
-  return null;
-}
-async function runVideoExport(){
-  if(gifBusy) return;
-  const mime = pickVideoMime();
-  if(!mime){ showToast(tr('toast.vidUnsupported')); return; }
-  gifBusy = true;
-  try{
-    showToast(tr('toast.vidMaking'));
-    await new Promise(r=>setTimeout(r,50));
-    const W0=cv.width, H0=cv.height, top=gifTopOffset();
-    const side=Math.min(W0, H0-top), sx=(W0-side)/2, sy=top;
-    const off=document.createElement('canvas'); off.width=off.height=gifSize;
-    const ox=off.getContext('2d');
-    // captureStream(fps) でブラウザが指定 FPS で canvas をサンプリング
-    const stream=off.captureStream(VIDEO_FPS);
-    const rec=new MediaRecorder(stream, {mimeType:mime, videoBitsPerSecond: 3_000_000});
-    const chunks=[];
-    rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
-    const done = new Promise(res => { rec.onstop = res; });
-    // 初期フレームを描いてから録画開始（先頭の空フレーム回避）
-    ox.drawImage(cv, sx, sy, side, side, 0, 0, gifSize, gifSize);
-    rec.start();
-    const n=Math.round(VIDEO_SECONDS*VIDEO_FPS), interval=1000/VIDEO_FPS;
-    for(let i=1;i<n;i++){
-      await new Promise(r=>setTimeout(r, interval));
-      // 主ループが回り続ける live cv をフレーム間隔でサンプリング（状態は非破壊）
-      ox.drawImage(cv, sx, sy, side, side, 0, 0, gifSize, gifSize);
-    }
-    rec.stop();
-    stream.getTracks().forEach(t=>t.stop());
-    await done;
-    const blob=new Blob(chunks, {type:mime});
-    const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
-    const file=new File([blob], 'emoji-niwa-'+Date.now()+'.'+ext, {type:mime});
-    let saved=false;
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file], title:'emoji-niwa'}); saved=true; }
-      catch(_){ saved=false; }   // キャンセル等＝保存されていない
-    } else {
-      const u=URL.createObjectURL(blob);
-      const a=document.createElement('a'); a.href=u; a.download=file.name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(u),4000);
-      saved=true;
-    }
-    if(saved) showToast(tr('toast.vidSaved'));
-  }catch(err){ showToast(tr('toast.vidError')); }
-  finally{ gifBusy=false; }
-}
 window.addEventListener('resize', ()=>{
   if(document.getElementById('gif-frame-overlay').style.display==='block') layoutGifFrame();
 });
@@ -6012,8 +6010,8 @@ const SAVE_VERSION = 1;
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
   { v:'0.15.0',
-    ja:['📹 動画書き出しを追加。📸 撮影フレームの「📹 動画を作成」で X 等にアップロードできる動画（Safari/iOS は MP4／その他は WebM・3秒・無音）を保存できます'],
-    en:['📹 Added video export. Tap “📹 Make video” on the 📸 capture frame to save a real video file uploadable to X (MP4 on Safari/iOS, WebM elsewhere; 3s, silent)'] },
+    ja:['🎬 動画書き出し（WebM・5秒）を追加。📸の枠と同じ範囲を録画します（iOS など非対応端末では従来どおりGIFのみ）'],
+    en:['🎬 Added video export (WebM, 5s) — records the same framed area as the 📸 GIF (devices without support, e.g. iOS Safari, keep GIF only)'] },
   { v:'0.14.2',
     ja:['📸 GIF 保存をシステムの共有シート経由に戻しました（共有／写真に保存などを選択可。対応端末以外は自動でダウンロード）'],
     en:['📸 GIF saving goes through the system share sheet again (pick Share / Save to Photos / etc.; auto-falls back to download on unsupported devices)'] },
