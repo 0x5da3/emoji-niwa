@@ -1340,7 +1340,7 @@ function playFireworkBoom(which){
 // ═══════════════════════════════════════════
 let GRID = 10;
 const TILE_W = 40, TILE_H = 40; // square tiles
-const APP_VERSION = '0.15.1'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
+const APP_VERSION = '0.15.2'; // セマンティックバージョニング (SemVer: MAJOR.MINOR.PATCH)
 try{ const _v=document.getElementById('app-version'); if(_v) _v.textContent='v'+APP_VERSION; }catch(_){}
 
 const CATEGORIES = {
@@ -5009,25 +5009,34 @@ async function runGifExport(){
   finally{ gifBusy=false; }
 }
 
-// 🎬 WebM 動画書き出し（canvas.captureStream + MediaRecorder）。
-// iOS Safari など非対応端末では起動時に 🎬 ボタンを隠し、従来 GIF フローのみ提供。
-const WEBM_SECONDS = 5;
-const WEBM_FPS = 30;
-function webmMime(){
+// 🎬 動画書き出し（canvas.captureStream + MediaRecorder）。
+// MP4(H.264) を最優先＝iOS Safari でも動画が出るので X 等にそのままアップロード可能。
+// 非対応コーデックは順に WebM(VP9/VP8) へフォールバック。捕まらなければ 🎬 を隠して GIF のみに。
+const VIDEO_SECONDS = 5;
+const VIDEO_FPS = 30;
+function videoMime(){
   if(typeof MediaRecorder==='undefined') return '';
-  for(const m of ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm']){
+  // MP4 を先頭に：Safari/iOS は WebM 非対応・MP4(H.264) のみ対応
+  for(const m of [
+    'video/mp4;codecs=avc1.42E01E',
+    'video/mp4;codecs=avc1',
+    'video/mp4',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+  ]){
     try{ if(MediaRecorder.isTypeSupported(m)) return m; }catch(_){ }
   }
   return '';
 }
 function videoExportSupported(){
-  return !!HTMLCanvasElement.prototype.captureStream && !!webmMime();
+  return !!HTMLCanvasElement.prototype.captureStream && !!videoMime();
 }
-let webmBusy = false;
-async function runWebmExport(){
-  if(webmBusy || gifBusy) return;
+let videoBusy = false;
+async function runVideoExport(){
+  if(videoBusy || gifBusy) return;
   if(!videoExportSupported()){ showToast(tr('toast.videoError')); return; }
-  webmBusy = true;
+  videoBusy = true;
   let timer = null;
   try{
     showToast(tr('toast.videoMaking'));
@@ -5036,8 +5045,8 @@ async function runWebmExport(){
     const side=Math.min(W0, H0-top), sx=(W0-side)/2, sy=top;
     const g=document.createElement('canvas'); g.width=g.height=gifSize;
     const gx=g.getContext('2d');
-    const stream = g.captureStream(WEBM_FPS);
-    const mime = webmMime();
+    const stream = g.captureStream(VIDEO_FPS);
+    const mime = videoMime();
     const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4000000 });
     const chunks = [];
     rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
@@ -5046,36 +5055,47 @@ async function runWebmExport(){
     // 実時間で cv の撮影矩形を g へ複製しつづける（GIF と違い rAF/天気/時間が進む実機録画）
     timer = setInterval(()=>{
       gx.drawImage(cv, sx, sy, side, side, 0, 0, gifSize, gifSize);
-    }, 1000/WEBM_FPS);
-    await new Promise(r=>setTimeout(r, WEBM_SECONDS*1000));
+    }, 1000/VIDEO_FPS);
+    await new Promise(r=>setTimeout(r, VIDEO_SECONDS*1000));
     clearInterval(timer); timer=null;
     rec.stop();
+    stream.getTracks().forEach(t=>t.stop());
     await stopped;
-    const blob = new Blob(chunks, { type: mime || 'video/webm' });
-    const fname = 'emoji-niwa-'+Date.now()+'.webm';
-    // GIF と同様、シェアシートの再エンコード回避のためダウンロード固定
-    const u = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=u; a.download=fname;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(u), 4000);
-    showToast(tr('toast.videoSaved'));
+    const isMp4 = (mime||'').startsWith('video/mp4');
+    const blob = new Blob(chunks, { type: mime || (isMp4 ? 'video/mp4' : 'video/webm') });
+    const ext = isMp4 ? 'mp4' : 'webm';
+    const fname = 'emoji-niwa-'+Date.now()+'.'+ext;
+    // X 等への直接投稿を容易にするため、対応端末は共有シート→非対応はダウンロード
+    const file = new File([blob], fname, {type: blob.type});
+    let saved=false;
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:'emoji-niwa'}); saved=true; }
+      catch(_){ saved=false; }   // キャンセル等＝保存されていない
+    } else {
+      const u = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=u; a.download=fname;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u), 4000);
+      saved=true;
+    }
+    if(saved) showToast(tr('toast.videoSaved'));
   }catch(err){
     showToast(tr('toast.videoError'));
   }finally{
     if(timer) clearInterval(timer);
-    webmBusy = false;
+    videoBusy = false;
   }
 }
-// 起動時：対応していなければ 🎬 ボタンを完全に隠す（iOS Safari 等は GIF のみ）
+// 起動時：対応していなければ 🎬 ボタンを完全に隠す（極めて古い WebView 等）
 (function initVideoBtn(){
   const b=document.getElementById('btn-gif-video'); if(!b) return;
   if(!videoExportSupported()){ b.style.display='none'; return; }
   b.style.display='';
   b.addEventListener('click', e=>{
     e.stopPropagation();
-    if(webmBusy || gifBusy) return;
+    if(videoBusy || gifBusy) return;
     showGifFrame(false);
-    runWebmExport();
+    runVideoExport();
   });
 })();
 
@@ -6009,6 +6029,11 @@ const SAVE_VERSION = 1;
 // 更新履歴（バージョン導入以降のみ。新しい版を先頭に追記していく）。
 // バージョン番号は #88 で導入の APP_VERSION（SemVer）と整合させる。
 const CHANGELOG = [
+  { v:'0.15.2',
+    ja:['🎬 iOS Safari でも 🎬 動画書き出しが使えるようになりました（MP4(H.264) で X 等にそのままアップロード可能）',
+        '🎬 動画保存もシステムの共有シート経由に（X アプリ等へ直接共有可。非対応端末はダウンロード）'],
+    en:['🎬 Video export now works on iOS Safari too (MP4 (H.264), uploadable to X right away)',
+        '🎬 Video saving uses the system share sheet too (post straight to X etc.; falls back to download on unsupported devices)'] },
   { v:'0.15.0',
     ja:['🎬 動画書き出し（WebM・5秒）を追加。📸の枠と同じ範囲を録画します（iOS など非対応端末では従来どおりGIFのみ）'],
     en:['🎬 Added video export (WebM, 5s) — records the same framed area as the 📸 GIF (devices without support, e.g. iOS Safari, keep GIF only)'] },
